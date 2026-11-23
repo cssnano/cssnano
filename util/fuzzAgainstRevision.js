@@ -1,3 +1,12 @@
+// Runs a package's current fuzzer against the plugin source of an older
+// revision, to show a fuzzer or bug fix fails before the fix and passes after.
+//
+//   node util/fuzzAgainstRevision.js <pkg> <rev> [-- <fuzz options>]
+//
+// `pkg` is a directory under packages/cssnano/script (such as
+// postcss-convert-values). Exit 0 means the fuzzer passed, 1 that it found a
+// counterexample, 2 that it never ran to a verdict. The old revision is copied
+// into a temporary directory under packages/, removed when the run ends.
 import { spawnSync } from 'node:child_process';
 import {
   cpSync,
@@ -34,11 +43,25 @@ export function describeOutcome({ status, signal }) {
 }
 
 /**
+ * Maps the fuzzer's exit onto the documented codes, so a bisect script can
+ * tell a counterexample from a crash.
+ *
+ * @param {{ status: number | null, signal: NodeJS.Signals | null }} result
+ * @return {0 | 1 | 2}
+ */
+export function exitCodeOf({ status }) {
+  if (status === 0) {
+    return 0;
+  }
+  return status === FAILURE_EXIT_CODE ? 1 : 2;
+}
+
+/**
  * Runs a package's current fuzzer against the plugin `src` of an older commit.
  *
  * A fuzzer or bug fix is only evidence if the check fails before the fix and
  * passes after it. The current `script/` is copied beside the old `src` so the
- * check runs unchanged; the working tree is never modified.
+ * check runs unchanged; tracked files are never modified.
  *
  * @param {string} pkg Package directory name, e.g. `postcss-convert-values`
  * @param {string} rev Any git revision, e.g. `HEAD~1`
@@ -273,7 +296,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
       rest.filter((argument) => argument !== '--')
     );
     console.log(`fuzz against ${rev}: ${describeOutcome(result)}`);
-    process.exit(result.status ?? 1);
+    process.exit(exitCodeOf(result));
   } catch (error) {
     console.error(error instanceof Error ? error.message : error);
     process.exit(2);

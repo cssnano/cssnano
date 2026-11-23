@@ -1,3 +1,9 @@
+// Compares the default preset's minified size over each framework fixture
+// between a base revision and the working tree.
+//
+//   node util/corpusSize.js [--base <rev>]    (default base: main)
+//
+// Exit 1 when any fixture grew; exit 2 when a side could not be measured.
 import { spawnSync } from 'node:child_process';
 import { readdirSync, readFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';

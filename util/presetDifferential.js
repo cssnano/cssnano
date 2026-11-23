@@ -1,3 +1,11 @@
+// Compares the default preset's output on generated merge inputs between a
+// base revision and the working tree, and lists every case that differs.
+//
+//   node util/presetDifferential.js [--base <rev>] [--base-options <json>]
+//     [--options <json>] [--seed <n>] [--count <n>] [--show <n>]
+//
+// Exit 1 when any output differs. The base options let each side run with
+// different preset options.
 import { spawnSync } from 'node:child_process';
 import {
   mkdtempSync,
@@ -21,14 +29,7 @@ import { testTargets } from './testHelpers.js';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const frameworksDir = join(root, 'frameworks');
-const mergeScripts = join(
-  root,
-  'packages',
-  'cssnano',
-  'script',
-  'passes',
-  'merge'
-);
+const mergeScripts = join(root, 'packages', 'cssnano', 'script', 'merge');
 const candidateSrc = join(root, 'packages', 'cssnano', 'src');
 const usage =
   'usage: node util/presetDifferential.js [--base <rev>] [--base-options <json>] [--options <json>] [--seed <n>] [--count <n>] [--show <n>]';
@@ -56,7 +57,7 @@ export function parsePresetOptions(flag, text) {
 }
 
 /**
- * @param {string} file A generator module, relative to the merge pass scripts
+ * @param {string} file A generator module, relative to packages/cssnano/script/merge
  * @return {Promise<Record<string, Function>>}
  */
 function loadGenerator(file) {
