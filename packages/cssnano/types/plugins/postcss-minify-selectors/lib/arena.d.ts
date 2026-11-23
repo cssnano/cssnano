@@ -3,6 +3,7 @@
  * @typedef {'valid' | 'invalid' | 'opaque'} ParseStatus
  * @typedef {'outer-unforgiving' | 'forgiving' | 'unforgiving' | 'relative' | 'compound-only'} ListMode
  * @typedef {readonly [number, number, number]} Specificity
+ * @typedef {{id:number,tuple:[number,number,number]}} SpecificityEntry
  * @typedef {{status:'valid',specificity:Specificity}|{status:'opaque'}} SpecificityResult
  * @typedef {number} SemanticFacts
  * @typedef {{kind:NodeKind,startToken:number,endToken:number,subtreeEnd:number,status:ParseStatus,specificity?:Specificity,specificityId?:number,facts?:SemanticFacts,payload:number}} ArenaNode
@@ -18,6 +19,10 @@ export type NodeKind = 'list' | 'complex' | 'compound' | 'combinator' | 'qualifi
 export type ParseStatus = 'valid' | 'invalid' | 'opaque';
 export type ListMode = 'outer-unforgiving' | 'forgiving' | 'unforgiving' | 'relative' | 'compound-only';
 export type Specificity = readonly [number, number, number];
+export type SpecificityEntry = {
+    id: number;
+    tuple: [number, number, number];
+};
 export type SpecificityResult = {
     status: 'valid';
     specificity: Specificity;
@@ -105,10 +110,9 @@ declare class SelectorArenaBuilder {
     base: number;
     /** @type {ArenaNode[]} */ nodes: ArenaNode[];
     /** @type {number[]} */ frames: number[];
-    specificityByKey: Map<string, {
-        id: number;
-        tuple: Specificity;
-    }>;
+    /** @type {Map<number, Map<number, Map<number, SpecificityEntry>>>} */
+    specificityTree: Map<number, Map<number, Map<number, SpecificityEntry>>>;
+    specificityCount: number;
     /** @type {{lists:ListPayload[],combinators:CombinatorPayload[],qualifiedNames:QualifiedNamePayload[],pseudos:PseudoPayload[],attributes:AttributePayload[]}} */
     payloads: {
         lists: ListPayload[];
@@ -137,11 +141,13 @@ declare class SelectorArenaBuilder {
         specificity?: Specificity;
         facts?: SemanticFacts;
     }): void;
-    /** @param {Specificity} specificity */
-    internSpecificity(specificity: Specificity): {
-        id: number;
-        tuple: Specificity;
-    };
+    /**
+     * Interns a specificity by its three components, one nested map each, so
+     * equal tuples share an id and ids are dense in first-seen order.
+     *
+     * @param {Specificity} specificity
+     */
+    internSpecificity(specificity: Specificity): SpecificityEntry;
     /** @param {NodeKind} kind @param {number} startToken @param {number} endToken @param {{status?:ParseStatus,payload?:number,specificity?:Specificity,facts?:SemanticFacts}} [options] */
     leaf(kind: NodeKind, startToken: number, endToken: number, options?: {
         status?: ParseStatus;

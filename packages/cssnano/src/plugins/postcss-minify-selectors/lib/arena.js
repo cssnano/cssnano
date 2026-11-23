@@ -3,6 +3,7 @@
  * @typedef {'valid' | 'invalid' | 'opaque'} ParseStatus
  * @typedef {'outer-unforgiving' | 'forgiving' | 'unforgiving' | 'relative' | 'compound-only'} ListMode
  * @typedef {readonly [number, number, number]} Specificity
+ * @typedef {{id:number,tuple:[number,number,number]}} SpecificityEntry
  * @typedef {{status:'valid',specificity:Specificity}|{status:'opaque'}} SpecificityResult
  * @typedef {number} SemanticFacts
  * @typedef {{kind:NodeKind,startToken:number,endToken:number,subtreeEnd:number,status:ParseStatus,specificity?:Specificity,specificityId?:number,facts?:SemanticFacts,payload:number}} ArenaNode
@@ -38,9 +39,10 @@ class SelectorArenaBuilder {
     this.base = base;
     /** @type {ArenaNode[]} */ this.nodes = [];
     /** @type {number[]} */ this.frames = [];
-    this.specificityByKey = new Map([
-      ['0,0,0', { id: 0, tuple: ZERO_SPECIFICITY }],
-    ]);
+    /** @type {Map<number, Map<number, Map<number, SpecificityEntry>>>} */
+    this.specificityTree = new Map();
+    this.specificityCount = 0;
+    this.internSpecificity(ZERO_SPECIFICITY);
     /** @type {{lists:ListPayload[],combinators:CombinatorPayload[],qualifiedNames:QualifiedNamePayload[],pseudos:PseudoPayload[],attributes:AttributePayload[]}} */
     this.payloads = {
       lists: [],
@@ -111,14 +113,29 @@ class SelectorArenaBuilder {
     this.#closeFrame(nodeIndex);
   }
 
-  /** @param {Specificity} specificity */
+  /**
+   * Interns a specificity by its three components, one nested map each, so
+   * equal tuples share an id and ids are dense in first-seen order.
+   *
+   * @param {Specificity} specificity
+   */
   internSpecificity(specificity) {
-    const key = specificity.join(',');
-    let found = this.specificityByKey.get(key);
+    const [a, b, c] = specificity;
+    let byB = this.specificityTree.get(a);
+    if (!byB) {
+      byB = new Map();
+      this.specificityTree.set(a, byB);
+    }
+    let byC = byB.get(b);
+    if (!byC) {
+      byC = new Map();
+      byB.set(b, byC);
+    }
+    let found = byC.get(c);
     if (!found) {
-      const tuple = /** @type {[number, number, number]} */ ([...specificity]);
-      found = { id: this.specificityByKey.size, tuple };
-      this.specificityByKey.set(key, found);
+      const tuple = /** @type {[number, number, number]} */ ([a, b, c]);
+      found = { id: this.specificityCount++, tuple };
+      byC.set(c, found);
     }
     return found;
   }
