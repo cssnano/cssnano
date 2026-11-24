@@ -14,7 +14,7 @@ import type { LonghandRound } from '../merge/longhand/canonicalize.js';
  *
  * @param {BlockRecords} records the build of the stylesheet
  * @param {RunContext} context the run that built the records; its token lists read the values
- * @param {DeclarationPlans} [plans] what the walk applies to the declarations and rules; none leaves them as built
+ * @param {DeclarationPlans} [plans] what the walk applies to the declarations and rules; none applies only the escape at the end of a block, which a merge must keep
  * @param {LonghandRound} [round] the longhand round of the run
  * @param {readonly string[]} [browsers] the targets the merge folds the summaries for; none when the merge is off
  * @return {ArenaIndex[]} the outermost overridable at-rules, in document order

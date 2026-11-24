@@ -30,12 +30,13 @@ export function stripStrayRawSemicolon(records, index) {
 }
 
 /**
- * The value of a declaration with the character its last backslash escapes.
- * The parser puts that character in the raw after the block when the value
- * ends the block's text, so the escape would otherwise take the closing brace.
- * An important flag follows its value, so the escape there takes the flag's
- * own whitespace. The value is the one the comment removal left, so the
- * character joins what the declaration keeps.
+ * The value of a declaration with the character after its last backslash. The
+ * parser puts that character in the raw after the block when the value ends the
+ * block's text, so the character moves into the value: a merge that moves the
+ * declaration or appends one after it would otherwise let the backslash take
+ * the `;` or `}`. An important flag follows its value, so the escape there
+ * takes the flag's own whitespace. The value is the one the comment removal
+ * left, so the character joins what the declaration keeps.
  *
  * @param {BlockRecords} records
  * @param {RunContext} run
@@ -58,5 +59,28 @@ export function withBlockEscape(records, run, index, value) {
   if (important) return value;
   const text = tokensText(run.tokenLists.get(value));
   if (!cssnanoUtils.endsWithEscapingBackslash(text)) return value;
+  /** @type {RuleRecord | BlockRecord} */ (block).after = after.slice(1);
   return run.valueIds.idOf(run.tokenLists, tokenizeMode(prop), text + after[0]);
+}
+
+/**
+ * The folded value with the character its final backslash had before the fold.
+ * A stage may trim the newline that makes the backslash an invalid escape, and
+ * the backslash would then escape the `;` or `}` after it.
+ *
+ * @param {RunContext} run
+ * @param {string} prop the declaration's property
+ * @param {TokenListId} escaped the value with the character `withBlockEscape` gave it
+ * @param {TokenListId} folded the value the stages folded `escaped` to
+ * @returns {TokenListId} the id of the folded value with the character, or `folded` when it keeps one
+ */
+export function withEscapeKept(run, prop, escaped, folded) {
+  const text = tokensText(run.tokenLists.get(folded));
+  if (!cssnanoUtils.endsWithEscapingBackslash(text)) return folded;
+  const before = tokensText(run.tokenLists.get(escaped));
+  return run.valueIds.idOf(
+    run.tokenLists,
+    tokenizeMode(prop),
+    text + before[before.length - 1]
+  );
 }

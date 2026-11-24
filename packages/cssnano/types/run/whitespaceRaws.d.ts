@@ -19,12 +19,13 @@ import type { RunContext } from './runContext.js';
  */
 export declare function stripStrayRawSemicolon(records: BlockRecords, index: ArenaIndex): void;
 /**
- * The value of a declaration with the character its last backslash escapes.
- * The parser puts that character in the raw after the block when the value
- * ends the block's text, so the escape would otherwise take the closing brace.
- * An important flag follows its value, so the escape there takes the flag's
- * own whitespace. The value is the one the comment removal left, so the
- * character joins what the declaration keeps.
+ * The value of a declaration with the character after its last backslash. The
+ * parser puts that character in the raw after the block when the value ends the
+ * block's text, so the character moves into the value: a merge that moves the
+ * declaration or appends one after it would otherwise let the backslash take
+ * the `;` or `}`. An important flag follows its value, so the escape there
+ * takes the flag's own whitespace. The value is the one the comment removal
+ * left, so the character joins what the declaration keeps.
  *
  * @param {BlockRecords} records
  * @param {RunContext} run
@@ -33,4 +34,16 @@ export declare function stripStrayRawSemicolon(records: BlockRecords, index: Are
  * @returns {TokenListId} the id of the value with the character, or `value` when no escape is open
  */
 export declare function withBlockEscape(records: BlockRecords, run: RunContext, index: ArenaIndex, value: TokenListId): TokenListId;
+/**
+ * The folded value with the character its final backslash had before the fold.
+ * A stage may trim the newline that makes the backslash an invalid escape, and
+ * the backslash would then escape the `;` or `}` after it.
+ *
+ * @param {RunContext} run
+ * @param {string} prop the declaration's property
+ * @param {TokenListId} escaped the value with the character `withBlockEscape` gave it
+ * @param {TokenListId} folded the value the stages folded `escaped` to
+ * @returns {TokenListId} the id of the folded value with the character, or `folded` when it keeps one
+ */
+export declare function withEscapeKept(run: RunContext, prop: string, escaped: TokenListId, folded: TokenListId): TokenListId;
 //# sourceMappingURL=whitespaceRaws.d.ts.map

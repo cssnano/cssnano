@@ -78,3 +78,38 @@ test('keeps a comment in a selector whose escaped space it also has, with the se
   assert.equal(result.css, '.a /*c*/ .b\\ {top:0}');
   assert.equal(result.root.first.selector, '.a  .b\\');
 });
+
+/**
+ * @param {string} css
+ * @param {string[]} [disable] the stages to turn off
+ * @return {Promise<string>}
+ */
+async function minifyDefault(css, disable = []) {
+  const result = await postcss(
+    defaultPreset({ disable, browserslist: { query: testTargets } })
+  ).process(css, { from: undefined });
+  return result.css;
+}
+
+// A backslash before a newline is an invalid escape. A stage that rewrites the
+// value must keep the newline, or the backslash escapes the closing brace.
+const invalidEscapeEnds = [
+  ['font-family', 'a{font-family:a b\\\n}'],
+  ['font', 'a{font:1px 2px\\\n}'],
+  ['border', 'a{border:calc(3px)\\\n}'],
+];
+
+for (const [name, css] of invalidEscapeEnds) {
+  test(`the default preset keeps the newline after a final backslash of a ${name} value`, async () => {
+    assert.equal(await minifyDefault(css), css);
+  });
+}
+
+test('the default preset without whitespace normalization keeps the newline after a final backslash of a font-family value it merges', async () => {
+  assert.equal(
+    await minifyDefault('a{color:red}a{font-family:a b\\\n}', [
+      'normalizeWhitespace',
+    ]),
+    'a{color:red;font-family:a b\\\n}'
+  );
+});
