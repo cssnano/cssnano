@@ -47,6 +47,16 @@ async function loadCase(caseName, file) {
   return cases[caseName];
 }
 
+// A run started by hand names only the case. Finding its module loads every
+// case module, so the benchmark driver passes --module instead.
+async function caseModuleOf(caseName) {
+  const { caseFileOf } = await import('./cases/index.js');
+  if (!Object.hasOwn(caseFileOf, caseName)) {
+    throw new Error(`unknown benchmark case "${caseName}"`);
+  }
+  return caseFileOf[caseName];
+}
+
 function selectCorpus(caseName, benchmarkCase, directory) {
   if (benchmarkCase) return [{ name: caseName, source: benchmarkCase.css }];
   const corpus = readdirSync(directory)
@@ -186,14 +196,14 @@ async function main() {
   if (values.case && values.dir) {
     throw new Error('--case and --dir cannot be used together');
   }
-  if (values.case && !values.module) {
-    throw new Error('--case needs --module, the file that defines the case');
-  }
   if (values.module && !values.case) {
     throw new Error('--module needs --case, the case to run from it');
   }
   const benchmarkCase = values.case
-    ? await loadCase(values.case, values.module)
+    ? await loadCase(
+        values.case,
+        values.module ?? (await caseModuleOf(values.case))
+      )
     : null;
   const corpus = selectCorpus(values.case, benchmarkCase, values.dir);
   const processor = createProcessor(benchmarkCase, values.preset);
