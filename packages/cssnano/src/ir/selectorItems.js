@@ -1,4 +1,9 @@
 import cssnanoUtils from '#utils';
+import {
+  contentEnd,
+  contentStart,
+  topLevelSeparatorAt,
+} from '../values/topLevelSeparator.js';
 
 const { TokenType } = cssnanoUtils;
 
@@ -30,23 +35,13 @@ export function textBetween(tokens, first, last) {
 export function selectorItemsOf(tokens) {
   /** @type {string[]} */
   const items = [];
-  let depth = 0;
-  let first = -1;
-  let last = -1;
-  for (let index = 0; index < tokens.length; index++) {
-    const type = tokens[index][0];
-    if (depth === 0 && type === TokenType.Comma) {
-      items.push(textBetween(tokens, first, last));
-      first = -1;
-      continue;
-    }
-    if (type === TokenType.Function || type === TokenType.OpenParen) depth++;
-    else if (type === TokenType.CloseParen && depth > 0) depth--;
-    if (type === TokenType.Whitespace || type === TokenType.EOF) continue;
-    if (first === -1) first = index;
-    last = index;
+  for (let start = 0; start <= tokens.length;) {
+    const end = topLevelSeparatorAt(tokens, start, TokenType.Comma);
+    const first = contentStart(tokens, start, end);
+    const stop = contentEnd(tokens, first, end);
+    items.push(first === stop ? '' : textBetween(tokens, first, stop - 1));
+    start = end + 1;
   }
-  items.push(textBetween(tokens, first, last));
   return items;
 }
 
@@ -60,22 +55,13 @@ export function selectorItemsOf(tokens) {
 export function selectorItemRangesOf(tokens) {
   /** @type {number[]} */
   const ranges = [];
-  let depth = 0;
-  let first = -1;
-  let last = -1;
-  for (let index = 0; index < tokens.length; index++) {
-    const type = tokens[index][0];
-    if (depth === 0 && type === TokenType.Comma) {
-      ranges.push(first, last);
-      first = -1;
-      continue;
-    }
-    if (type === TokenType.Function || type === TokenType.OpenParen) depth++;
-    else if (type === TokenType.CloseParen && depth > 0) depth--;
-    if (type === TokenType.Whitespace || type === TokenType.EOF) continue;
-    if (first === -1) first = index;
-    last = index;
+  for (let start = 0; start <= tokens.length;) {
+    const end = topLevelSeparatorAt(tokens, start, TokenType.Comma);
+    const first = contentStart(tokens, start, end);
+    const stop = contentEnd(tokens, first, end);
+    if (first === stop) ranges.push(-1, -1);
+    else ranges.push(first, stop - 1);
+    start = end + 1;
   }
-  ranges.push(first, last);
   return ranges;
 }
