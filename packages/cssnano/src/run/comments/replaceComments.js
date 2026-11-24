@@ -51,6 +51,19 @@ function mathDepthChange(parens, token) {
 }
 
 /**
+ * Whether a whitespace token is a newline after a final backslash, which makes
+ * the backslash an invalid escape. The newline must stay, or the backslash
+ * would escape whatever follows.
+ *
+ * @param {string} previousRaw the text of the token before the whitespace
+ * @param {string} raw the whitespace
+ * @return {boolean}
+ */
+function isNewlineAfterBackslash(previousRaw, raw) {
+  return previousRaw === '\\' && /^[\n\r\f]/v.test(raw);
+}
+
+/**
  * Reconstruct an ordinary value with comments removed or preserved,
  * normalizing whitespace and math operator spacing.
  *
@@ -63,6 +76,8 @@ function normalizeValue(tokens, canRemove) {
   let pendingSpace = false;
   let started = false;
   let mathDepth = 0;
+  // The raw text of the last token kept, which a newline after a backslash checks.
+  let lastRaw = '';
 
   /** @type {boolean[]} */
   const parens = [];
@@ -77,8 +92,10 @@ function normalizeValue(tokens, canRemove) {
     }
 
     if (type === TokenType.Whitespace) {
-      if (started) {
-        pendingSpace = true;
+      pendingSpace = true;
+      if (isNewlineAfterBackslash(lastRaw, raw)) {
+        result += '\n';
+        pendingSpace = false;
       }
       continue;
     }
@@ -97,6 +114,7 @@ function normalizeValue(tokens, canRemove) {
       result += raw;
       pendingSpace = true;
       started = true;
+      lastRaw = raw;
       continue;
     }
 
@@ -121,6 +139,7 @@ function normalizeValue(tokens, canRemove) {
     pendingSpace = false;
     result += raw;
     started = true;
+    lastRaw = raw;
   }
 
   return result;
@@ -195,7 +214,7 @@ export function replaceCommentsInSelector(tokens, canRemove) {
 
     if (type === TokenType.Whitespace) {
       if (started) {
-        if (lastRaw === '\\' && /^[\n\r\f]/v.test(raw)) pendingNewline = true;
+        if (isNewlineAfterBackslash(lastRaw, raw)) pendingNewline = true;
         pendingSpace = true;
       }
       continue;

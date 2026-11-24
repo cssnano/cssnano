@@ -16,7 +16,11 @@ import {
   withBit,
 } from './context.js';
 import { visitAtRule } from './atRuleWalk.js';
-import { keepBlockEscape, visitDeclaration } from './declarationWalk.js';
+import {
+  keepBlockEscape,
+  keepCommentNewlineEscape,
+  visitDeclaration,
+} from './declarationWalk.js';
 import { isOutermostOverridable } from './overridable.js';
 import { visitRule } from './ruleWalk.js';
 import { fillRule } from '../ir/selectorList.js';
@@ -167,7 +171,9 @@ class RecordWalk {
     const comments = this.#plans?.comments;
     if (comments === null || comments === undefined) return;
     const { text } = /** @type {NodeEntry} */ (this.#records.entry(index));
-    if (comments.canRemove(text)) remove(this.#records, index);
+    if (!comments.canRemove(text)) return;
+    keepCommentNewlineEscape(this.#records, this.#context, index);
+    remove(this.#records, index);
   }
 
   /**
