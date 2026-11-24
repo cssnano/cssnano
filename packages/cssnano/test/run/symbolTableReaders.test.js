@@ -328,15 +328,30 @@ suite('the symbol transforms read the text the host walk stored', () => {
     assert.equal(tokenizeTotal() - before, 0);
   });
 
-  test('`preludeListOf` reads the list stored for an at-rule statement whose backslash escapes a space, without tokenizing', () => {
+  test('`preludeListOf` gives the prelude text of an at-rule statement whose backslash escapes a space', () => {
     const { records, context } = buildRecords('@layer a\\ ;');
     const index = records.links.firstChild(records.root.index);
-    const before = tokenizeTotal();
     assert.equal(
       tokensText(preludeListOf(context.tokenLists, records.entry(index))),
       'a\\ '
     );
+  });
+
+  test('`preludeListOf` reads the list stored for an at-rule statement whose backslash escapes a space, without tokenizing', () => {
+    const { records, context } = buildRecords('@layer a\\ ;');
+    const index = records.links.firstChild(records.root.index);
+    const before = tokenizeTotal();
+    preludeListOf(context.tokenLists, records.entry(index));
     assert.equal(tokenizeTotal() - before, 0);
+  });
+
+  test('`preludeListOf` gives the prelude text of an at-rule block whose backslash escapes a space', () => {
+    const { records, context } = buildRecords('@keyframes a\\ {}');
+    const index = records.links.firstChild(records.root.index);
+    assert.equal(
+      tokensText(preludeListOf(context.tokenLists, records.entry(index))),
+      'a\\ '
+    );
   });
 
   test('`preludeListOf` reads the list stored for an at-rule whose backslash precedes a newline, without tokenizing', () => {
