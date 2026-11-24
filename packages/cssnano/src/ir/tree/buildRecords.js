@@ -25,6 +25,7 @@ import {
   writtenValueListOf,
 } from '../valueList.js';
 import { tokenizeMode, tokenizeModeOfKeys } from '../../values/tokenizeMode.js';
+import { escapedSpaceOf } from './escapedSpace.js';
 
 /** @import {SelectorIds} from '../selectorIds.js' */
 const { asciiLowerCase, isAnonymousLayer, sourceValue } = cssnanoUtils;
@@ -120,55 +121,42 @@ export function recordDeclaration(node, context) {
 
 /**
  * The id of an at-rule's prelude: the list of its params, interned in the run,
- * so equal preludes share an id.
+ * so equal preludes share an id. The separator's escaped space, when there is
+ * one, is the prelude's last character, as the grammar reads it.
  *
  * @param {import('postcss').AtRule} node
  * @param {RunContext} context
+ * @param {string} space the escaped space, or ''
  * @return {TokenListId}
  */
-function preludeIdOf(node, context) {
+function preludeIdOf(node, context, space) {
   // A node a plugin created may have no params, which its prelude spells as none.
   const params = node.params ?? '';
-  return context.valueIds.idOf(context.tokenLists, undefined, params);
+  return context.valueIds.idOf(
+    context.tokenLists,
+    undefined,
+    space === '' ? params : params + space
+  );
 }
 
 /**
- * Moves the whitespace character a final backslash escapes from the node's
- * separator into its selector or params, where the grammar puts it. The node's
- * text is unchanged, and it then spells the same tokens as in a list. A raw that
- * holds comments keeps them, with the character appended to both spellings.
+ * The list of an at-rule's params as written, when its prelude does not spell
+ * them: params that dropped a comment. -1 otherwise.
  *
- * @param {import('postcss').Rule | import('postcss').AtRule} node
- * @return {void}
+ * @param {import('postcss').AtRule} node
+ * @param {RunContext} context
+ * @param {string} space the escaped space, or ''
+ * @return {TokenListId | -1}
  */
-function takeEscapedSpace(node) {
-  const { between } = node.raws;
-  if (between === undefined || !/^[ \t]/v.test(between)) return;
-  const space = between[0];
-  if (node.type === 'rule') {
-    if (!cssnanoUtils.endsWithEscapingBackslash(sourceSelector(node))) return;
-    const raw = node.raws.selector;
-    if (raw !== undefined && raw.value === node.selector) {
-      raw.value += space;
-      raw.raw += space;
-    } else {
-      delete node.raws.selector;
-    }
-    node.selector += space;
-  } else {
-    if (!cssnanoUtils.endsWithEscapingBackslash(sourceParams(node) ?? '')) {
-      return;
-    }
-    const raw = node.raws.params;
-    if (raw !== undefined && raw.value === node.params) {
-      raw.value += space;
-      raw.raw += space;
-    } else {
-      delete node.raws.params;
-    }
-    node.params = (node.params ?? '') + space;
-  }
-  node.raws.between = between.slice(1);
+function writtenPreludeOf(node, context, space) {
+  const params = node.params ?? '';
+  const written = sourceParams(node) ?? '';
+  if (written === params) return -1;
+  return context.valueIds.idOf(
+    context.tokenLists,
+    undefined,
+    space === '' ? written : written + space
+  );
 }
 
 /**
@@ -188,21 +176,6 @@ function writtenSelectorListId(context, written) {
   const tokens = cssnanoUtils.tokens(written + '\n');
   tokens.pop();
   return valueIds.danglingEscapeIdOf(tokenLists, written, tokens);
-}
-
-/**
- * The list of an at-rule's params as written, when its prelude does not spell
- * them: params that dropped a comment. -1 otherwise.
- *
- * @param {import('postcss').AtRule} node
- * @param {RunContext} context
- * @return {TokenListId | -1}
- */
-function writtenPreludeOf(node, context) {
-  const params = node.params ?? '';
-  const written = sourceParams(node) ?? '';
-  if (written === params) return -1;
-  return context.valueIds.idOf(context.tokenLists, undefined, written);
 }
 
 /**
@@ -268,86 +241,147 @@ class RecordBuild {
    * @return {void}
    */
   fillChildren(container, node) {
-    const { context } = this;
-    const { tokenLists, selectorIds } = context;
     // A node a plugin emptied may have no child list, which holds no children.
     for (const child of /** @type {ChildNode[]} */ (node.nodes ?? [])) {
       if (child.type === 'rule') {
-        takeEscapedSpace(child);
-        const written = sourceSelector(child);
-        const writtenList = writtenSelectorListId(context, written);
-        const writtenTokens = tokenLists.get(writtenList);
-        const record = new RuleRecord(
-          child.raws.before ?? null,
-          selectorIds.idsOfList(tokenLists, writtenTokens)
-        );
-        record.writtenList = writtenList;
-        holdContainerRaws(record, child);
-        this.place(container.index, record, child);
-        // A rule that holds a rule or an at-rule nests, and gets its context.
-        if (child.nodes.some(isRuleOrAtRule)) {
-          record.context = containerContext(
-            context.declarations,
-            container.context,
-            record
-          );
-        }
-        this.fillChildren(record, child);
+        this.#fillRule(container, child);
       } else if (child.type === 'atrule' && child.nodes) {
-        takeEscapedSpace(child);
-        const name = recordNameOf(child.name);
-        const category = atRuleKindOf(name);
-        const preludeId = preludeIdOf(child, context);
-        const nested = new BlockRecord(
-          AT_RULE_BLOCK,
-          child.raws.before ?? null,
-          category,
-          name,
-          category === LAYER && isAnonymousLayer(tokenLists.get(preludeId)),
-          preludeId
-        );
-        nested.writtenList = writtenPreludeOf(child, context);
-        holdContainerRaws(nested, child);
-        nested.afterName = child.raws.afterName ?? null;
-        this.place(container.index, nested, child);
-        nested.context = containerContext(
-          context.declarations,
-          container.context,
-          nested
-        );
-        this.fillChildren(nested, child);
+        this.#fillBlock(container, child);
       } else if (child.type === 'decl') {
-        this.place(container.index, recordDeclaration(child, context), child);
+        this.place(
+          container.index,
+          recordDeclaration(child, this.context),
+          child
+        );
       } else if (child.type === 'atrule') {
-        const name = recordNameOf(child.name);
-        const category = atRuleKindOf(name);
-        const preludeId = preludeIdOf(child, context);
-        const entry = new NodeEntry(
-          AT_RULE_STATEMENT,
-          child.raws.before ?? null,
-          category,
-          name,
-          category === LAYER && isAnonymousLayer(tokenLists.get(preludeId)),
-          preludeId
-        );
-        entry.writtenList = writtenPreludeOf(child, context);
-        entry.between = child.raws.between ?? null;
-        entry.afterName = child.raws.afterName ?? null;
-        this.place(container.index, entry, child);
+        this.#fillStatement(container, child);
       } else {
-        const text = /** @type {Comment} */ (child).text;
-        const entry = new NodeEntry(
-          COMMENT,
-          child.raws.before ?? null,
-          NO_AT_RULE,
-          '',
-          false,
-          NO_PRELUDE,
-          text,
-          cssnanoUtils.isImportantComment(text)
-        );
-        this.place(container.index, entry, child);
+        this.#fillComment(container, /** @type {Comment} */ (child));
       }
     }
+  }
+
+  /**
+   * Places a rule in its container, then fills its children. A rule that holds
+   * a rule or an at-rule nests, and gets its context.
+   *
+   * @param {BlockRecord | RuleRecord} container
+   * @param {Rule} child
+   * @return {void}
+   */
+  #fillRule(container, child) {
+    const { context } = this;
+    const { tokenLists, selectorIds } = context;
+    const written = sourceSelector(child);
+    const space = escapedSpaceOf(written, child.raws.between);
+    const writtenList = writtenSelectorListId(
+      context,
+      space === '' ? written : written + space
+    );
+    const writtenTokens = tokenLists.get(writtenList);
+    const record = new RuleRecord(
+      child.raws.before ?? null,
+      selectorIds.idsOfList(tokenLists, writtenTokens)
+    );
+    record.writtenList = writtenList;
+    holdContainerRaws(record, child);
+    if (space !== '') {
+      record.between = /** @type {string} */ (child.raws.between).slice(1);
+    }
+    this.place(container.index, record, child);
+    if (child.nodes.some(isRuleOrAtRule)) {
+      record.context = containerContext(
+        context.declarations,
+        container.context,
+        record
+      );
+    }
+    this.fillChildren(record, child);
+  }
+
+  /**
+   * Places an at-rule block in its container, then fills its children.
+   *
+   * @param {BlockRecord | RuleRecord} container
+   * @param {AtRule} child
+   * @return {void}
+   */
+  #fillBlock(container, child) {
+    const { context } = this;
+    const { tokenLists } = context;
+    const name = recordNameOf(child.name);
+    const category = atRuleKindOf(name);
+    const space = escapedSpaceOf(sourceParams(child) ?? '', child.raws.between);
+    const preludeId = preludeIdOf(child, context, space);
+    const nested = new BlockRecord(
+      AT_RULE_BLOCK,
+      child.raws.before ?? null,
+      category,
+      name,
+      category === LAYER && isAnonymousLayer(tokenLists.get(preludeId)),
+      preludeId
+    );
+    nested.writtenList = writtenPreludeOf(child, context, space);
+    holdContainerRaws(nested, child);
+    if (space !== '') {
+      nested.between = /** @type {string} */ (child.raws.between).slice(1);
+    }
+    nested.afterName = child.raws.afterName ?? null;
+    this.place(container.index, nested, child);
+    nested.context = containerContext(
+      context.declarations,
+      container.context,
+      nested
+    );
+    this.fillChildren(nested, child);
+  }
+
+  /**
+   * Places an at-rule statement, which has no children, in its container.
+   *
+   * @param {BlockRecord | RuleRecord} container
+   * @param {AtRule} child
+   * @return {void}
+   */
+  #fillStatement(container, child) {
+    const { context } = this;
+    const { tokenLists } = context;
+    const name = recordNameOf(child.name);
+    const category = atRuleKindOf(name);
+    const preludeId = preludeIdOf(child, context, '');
+    const entry = new NodeEntry(
+      AT_RULE_STATEMENT,
+      child.raws.before ?? null,
+      category,
+      name,
+      category === LAYER && isAnonymousLayer(tokenLists.get(preludeId)),
+      preludeId
+    );
+    entry.writtenList = writtenPreludeOf(child, context, '');
+    entry.between = child.raws.between ?? null;
+    entry.afterName = child.raws.afterName ?? null;
+    this.place(container.index, entry, child);
+  }
+
+  /**
+   * Places a comment in its container.
+   *
+   * @param {BlockRecord | RuleRecord} container
+   * @param {Comment} child
+   * @return {void}
+   */
+  #fillComment(container, child) {
+    const text = child.text;
+    const entry = new NodeEntry(
+      COMMENT,
+      child.raws.before ?? null,
+      NO_AT_RULE,
+      '',
+      false,
+      NO_PRELUDE,
+      text,
+      cssnanoUtils.isImportantComment(text)
+    );
+    this.place(container.index, entry, child);
   }
 }

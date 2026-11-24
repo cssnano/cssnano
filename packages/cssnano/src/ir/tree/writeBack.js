@@ -6,7 +6,7 @@ import {
 } from '../blockRecord.js';
 import { tokensText } from '../../values/tokensText.js';
 import { createChildNodes, nodeOf } from './nodeTable.js';
-import { writeSelector } from './writeSelector.js';
+import { writeHead, writeSelector } from './writeSelector.js';
 import { assertTemplatesHaveNodes } from './recordsCheck.js';
 
 /** @import {AtRule, ChildNode, Container, Declaration, Root, Rule} from 'postcss' */
@@ -106,24 +106,24 @@ function writeDeclarationRaws(record, node) {
 }
 
 /**
- * Assigns the raws of a rule or an at-rule block that its record holds.
+ * Assigns the after and semicolon raws of a rule or an at-rule block that its
+ * record holds. The head and separator are written by writeHead.
  *
  * @param {RuleRecord | Block} record
  * @param {Rule | AtRule} node
  * @return {void}
  */
 function writeContainerRaws(record, node) {
-  if (record.between !== null) node.raws.between = record.between;
   if (record.after !== null) node.raws.after = record.after;
   if (record.semicolon !== null) node.raws.semicolon = record.semicolon;
 }
 
 /**
- * Assigns the prelude of a marked at-rule, as its list spells it, and drops the
- * raw params that spelled the prelude before. An unmarked at-rule keeps its
- * node text.
+ * Assigns the prelude of a marked at-rule statement, as its list spells it, and
+ * drops the raw params that spelled the prelude before. An unmarked statement
+ * keeps its node text. A block's prelude is written by writeHead.
  *
- * @param {Block | NodeEntry} record
+ * @param {NodeEntry} record
  * @param {AtRule} node
  * @param {TokenLists} tokenLists
  * @return {void}
@@ -262,8 +262,8 @@ class WriteBack {
         writeContainerRaws(record, /** @type {Rule} */ (node));
         this.#writeFields(record);
       } else if (record.kind === AT_RULE_BLOCK) {
+        writeHead(record, /** @type {AtRule} */ (node), tokenLists);
         writeContainerRaws(record, /** @type {AtRule} */ (node));
-        writeParams(record, /** @type {AtRule} */ (node), tokenLists);
         if (record.afterName !== null) {
           /** @type {AtRule} */ (node).raws.afterName = record.afterName;
         }
