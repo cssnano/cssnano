@@ -185,7 +185,8 @@ export function keepCommentNewlineEscape(records, run, index) {
   const { links } = records;
   if (links.nextSibling(index) !== -1) return;
   const { before } = records.entry(index);
-  if (before === null || !/^[\n\r\f]/v.test(before)) return;
+  if (before === null || !cssnanoUtils.isCSSNewline(before.charCodeAt(0)))
+    return;
   const prev = links.prevSibling(index);
   if (prev === -1 || records.entry(prev).kind !== DECLARATION) return;
   const block = /** @type {RuleRecord | BlockRecord} */ (

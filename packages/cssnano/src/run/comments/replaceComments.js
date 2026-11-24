@@ -60,7 +60,7 @@ function mathDepthChange(parens, token) {
  * @return {boolean}
  */
 function isNewlineAfterBackslash(previousRaw, raw) {
-  return previousRaw === '\\' && /^[\n\r\f]/v.test(raw);
+  return previousRaw === '\\' && cssnanoUtils.isCSSNewline(raw.charCodeAt(0));
 }
 
 /**
