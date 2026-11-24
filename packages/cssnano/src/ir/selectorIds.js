@@ -17,6 +17,9 @@ export class SelectorIds {
   /** @type {Map<string, TokenListId>} */
   #ids = new Map();
 
+  /** @type {Map<string, TokenListId>} the items that end in an invalid escape, by text */
+  #danglingIds = new Map();
+
   /**
    * @param {TokenLists} tokenLists the run's lists, which take the tokens of a selector new to the build
    * @param {string} selector
@@ -50,15 +53,13 @@ export class SelectorIds {
       const last = ranges[index + 1];
       const text = textBetween(tokens, first, last);
       // An item ending in an invalid escape (a backslash before whitespace) is
-      // not the valid escape the same text makes alone, so it needs its own id.
-      // A trimmed item never ends in a newline, so this key collides with none.
-      const key =
+      // not the valid escape the same text makes alone, so it has its own table.
+      const dangling =
         first !== -1 &&
         tokens[last][0] === TokenType.Delim &&
-        tokens[last][1] === '\\'
-          ? text + '\n'
-          : text;
-      let id = this.#ids.get(key);
+        tokens[last][1] === '\\';
+      const known = dangling ? this.#danglingIds : this.#ids;
+      let id = known.get(text);
       if (id === undefined) {
         /** @type {CSSToken[]} */
         let item;
@@ -71,7 +72,7 @@ export class SelectorIds {
           renumber(item);
         }
         id = tokenLists.push(item);
-        this.#ids.set(key, id);
+        known.set(text, id);
       }
       ids.push(id);
     }
