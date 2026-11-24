@@ -1,4 +1,8 @@
+import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import postcss from 'postcss';
+import litePreset from '../src/presets/lite.js';
+import { testTargets } from '../../../util/testHelpers.js';
 import processCss from './_processCss.js';
 
 // A backslash before a newline is an invalid escape inside a list, so the rule
@@ -123,3 +127,33 @@ test(
   'should keep a list ending in an invalid escape invalid when a comment before a comma is removed',
   processCss('.c/*x*/,.a\\\n{top:0}', '.c,.a\\\n{top:0}')
 );
+
+// `\/` is an escape, so the source has no comment: the slash is part of the
+// selector, and a space after the backslash would make it a valid escaped space.
+test(
+  'should keep a rule head ending in an escaped slash and its separator byte-identical',
+  processCss.passthrough('.a\\/**/{top:0}')
+);
+
+test(
+  'should keep an at-rule prelude ending in an escaped slash and its separator byte-identical',
+  processCss.passthrough('@media x\\/**/{.a{top:0}}')
+);
+
+const liteProcessor = postcss(
+  litePreset({ browserslist: { query: testTargets } })
+);
+
+test('the lite preset keeps a rule head ending in an escaped slash and its separator byte-identical', async () => {
+  const { css } = await liteProcessor.process('.a\\/**/{top:0}', {
+    from: undefined,
+  });
+  assert.equal(css, '.a\\/**/{top:0}');
+});
+
+test('the lite preset keeps an at-rule prelude ending in an escaped slash and its separator byte-identical', async () => {
+  const { css } = await liteProcessor.process('@media x\\/**/{.a{top:0}}', {
+    from: undefined,
+  });
+  assert.equal(css, '@media x\\/**/{.a{top:0}}');
+});

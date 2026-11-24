@@ -12,7 +12,8 @@ import { replaceComments } from './replaceComments.js';
 /**
  * Removes the comments in the gap between a rule's or at-rule's prelude and
  * its block. A newline after a final backslash stays: it makes the backslash an
- * invalid escape, where the next character would otherwise be escaped.
+ * invalid escape, where the next character would otherwise be escaped. A gap
+ * that starts with a slash after an open escape is left as written.
  *
  * @param {BlockRecords} records
  * @param {import('../../ir/tokenLists.js').TokenLists} tokenLists
@@ -25,6 +26,11 @@ export function removeBetween(records, tokenLists, index, comments) {
   );
   const { between } = record;
   if (between === null || !between.includes('/*')) return;
+  const escapes = cssnanoUtils.endsWithEscapingBackslash(
+    headText(tokenLists, record)
+  );
+  // After an open escape, the slash of `/*` is escaped, so nothing here is a comment.
+  if (escapes && between.startsWith('/')) return;
   const cleaned = replaceComments(
     tokenize({ css: between }),
     comments.canRemove,
@@ -32,8 +38,6 @@ export function removeBetween(records, tokenLists, index, comments) {
     false
   );
   const keepsNewline =
-    /^[\n\r\f]/v.test(between) &&
-    !/^[\n\r\f]/v.test(cleaned) &&
-    cssnanoUtils.endsWithEscapingBackslash(headText(tokenLists, record));
+    /^[\n\r\f]/v.test(between) && !/^[\n\r\f]/v.test(cleaned) && escapes;
   writeBetween(records, index, keepsNewline ? '\n' + cleaned : cleaned);
 }
