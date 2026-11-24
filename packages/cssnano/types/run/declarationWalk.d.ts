@@ -32,6 +32,8 @@ export type DeclarationPlans = {
 };
 /** @import {ArenaIndex} from '../ir/blockRecord.js' */
 /** @import {DeclarationRecord} from '../ir/declarationRecord.js' */
+/** @import {RuleRecord} from '../ir/ruleRecord.js' */
+/** @import {BlockRecord} from '../ir/blockRecord.js' */
 /** @import {TokenListId} from '../ir/tokenLists.js' */
 /** @import {BlockRecords} from '../ir/blockRecords.js' */
 /** @import {RunContext} from './runContext.js' */
@@ -67,6 +69,18 @@ export declare function declarationPlansOf(stages: readonly Stage[], normalizeWh
  * @param {ArenaIndex} index the declaration's index
  */
 export declare function keepBlockEscape(records: BlockRecords, run: RunContext, index: ArenaIndex): void;
+/**
+ * Keeps the newline that a comment held before its removal, when the comment
+ * ends a block whose last declaration ends in a backslash. PostCSS keeps that
+ * newline in the comment's raw before, so the removal would leave the escape to
+ * take the `}`. The newline moves into the value and the rest of the whitespace
+ * into the block's after raw, as `withBlockEscape` does for a declaration.
+ *
+ * @param {BlockRecords} records
+ * @param {RunContext} run
+ * @param {ArenaIndex} index a comment, before it is removed
+ */
+export declare function keepCommentNewlineEscape(records: BlockRecords, run: RunContext, index: ArenaIndex): void;
 /**
  * Runs the declaration part of the walk over one declaration record, in
  * document order: its stray semicolon, its comments, the character an escape

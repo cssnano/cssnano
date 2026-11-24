@@ -288,7 +288,9 @@ class RecordBuild {
   #fillBlock(container, child) {
     const { context } = this;
     const space = escapedSpaceOf(sourceParams(child) ?? '', child.raws.between);
-    const nested = this.#atRuleRecord(BlockRecord, AT_RULE_BLOCK, child, space);
+    const nested = /** @type {BlockRecord} */ (
+      this.#atRuleRecord(AT_RULE_BLOCK, child, space)
+    );
     holdContainerRaws(nested, child);
     nested.between = separatorOf(child.raws.between, space) ?? null;
     this.place(container.index, nested, child);
@@ -304,26 +306,24 @@ class RecordBuild {
    * Builds the record of an at-rule with a block or a statement. Both take the
    * same name, category, prelude, written prelude and afterName.
    *
-   * @param {typeof BlockRecord | typeof NodeEntry} Record the class of the record
-   * @param {number} kind the kind of the record
+   * @param {typeof AT_RULE_BLOCK | typeof AT_RULE_STATEMENT} kind
    * @param {AtRule} child
    * @param {string} space the escaped space of the prelude, from escapedSpaceOf
    * @return {BlockRecord | NodeEntry}
    */
-  #atRuleRecord(Record, kind, child, space) {
+  #atRuleRecord(kind, child, space) {
     const { context } = this;
     const { tokenLists } = context;
     const name = recordNameOf(child.name);
     const category = atRuleKindOf(name);
     const preludeId = preludeIdOf(child, context, space);
-    const record = new Record(
-      kind,
-      child.raws.before ?? null,
-      category,
-      name,
-      category === LAYER && isAnonymousLayer(tokenLists.get(preludeId)),
-      preludeId
-    );
+    const anonymous =
+      category === LAYER && isAnonymousLayer(tokenLists.get(preludeId));
+    const before = child.raws.before ?? null;
+    const record =
+      kind === AT_RULE_BLOCK
+        ? new BlockRecord(kind, before, category, name, anonymous, preludeId)
+        : new NodeEntry(kind, before, category, name, anonymous, preludeId);
     record.writtenList = writtenPreludeOf(child, context, space);
     record.afterName = child.raws.afterName ?? null;
     return record;
@@ -338,11 +338,8 @@ class RecordBuild {
    */
   #fillStatement(container, child) {
     const space = escapedSpaceOf(sourceParams(child) ?? '', child.raws.between);
-    const entry = this.#atRuleRecord(
-      NodeEntry,
-      AT_RULE_STATEMENT,
-      child,
-      space
+    const entry = /** @type {NodeEntry} */ (
+      this.#atRuleRecord(AT_RULE_STATEMENT, child, space)
     );
     entry.between = separatorOf(child.raws.between, space) ?? null;
     this.place(container.index, entry, child);

@@ -112,7 +112,7 @@ declare class SelectorArenaBuilder {
     /** @type {number[]} */ frames: number[];
     /** @type {Map<number, Map<number, Map<number, SpecificityEntry>>>} */
     specificityTree: Map<number, Map<number, Map<number, SpecificityEntry>>>;
-    specificityCount: number;
+    /** @type {number} */ specificityCount: number;
     /** @type {{lists:ListPayload[],combinators:CombinatorPayload[],qualifiedNames:QualifiedNamePayload[],pseudos:PseudoPayload[],attributes:AttributePayload[]}} */
     payloads: {
         lists: ListPayload[];
