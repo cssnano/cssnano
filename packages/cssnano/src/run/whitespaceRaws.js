@@ -1,6 +1,6 @@
 import cssnanoUtils from '#utils';
 import { AT_RULE_BLOCK, RULE } from '../ir/blockRecord.js';
-import { writeBefore } from '../ir/rawEdits.js';
+import { writeAfter, writeBefore } from '../ir/rawEdits.js';
 import { tokenizeMode } from '../values/tokenizeMode.js';
 import { tokensText } from '../values/tokensText.js';
 
@@ -32,7 +32,8 @@ export function stripStrayRawSemicolon(records, index) {
 /**
  * The value of a declaration with the character after its last backslash. The
  * parser puts that character in the raw after the block when the value ends the
- * block's text, so the character moves into the value: a merge that moves the
+ * block's text, so the character moves out of that raw, with writeAfter, into
+ * the value: a merge that moves the
  * declaration or appends one after it would otherwise let the backslash take
  * the `;` or `}`. An important flag follows its value, so the escape there
  * takes the flag's own whitespace. The value is the one the comment removal
@@ -47,9 +48,8 @@ export function stripStrayRawSemicolon(records, index) {
 export function withBlockEscape(records, run, index, value) {
   const { links } = records;
   if (links.nextSibling(index) !== -1) return value;
-  const block = records.entry(
-    /** @type {ArenaIndex} */ (links.parentOf(index))
-  );
+  const parent = /** @type {ArenaIndex} */ (links.parentOf(index));
+  const block = records.entry(parent);
   if (block.kind !== RULE && block.kind !== AT_RULE_BLOCK) return value;
   const { after } = /** @type {RuleRecord | BlockRecord} */ (block);
   if (!after) return value;
@@ -59,7 +59,7 @@ export function withBlockEscape(records, run, index, value) {
   if (important) return value;
   const text = tokensText(run.tokenLists.get(value));
   if (!cssnanoUtils.endsWithEscapingBackslash(text)) return value;
-  /** @type {RuleRecord | BlockRecord} */ (block).after = after.slice(1);
+  writeAfter(records, parent, after.slice(1));
   return run.valueIds.idOf(run.tokenLists, tokenizeMode(prop), text + after[0]);
 }
 
