@@ -4,13 +4,55 @@ import cssnanoUtils from '#utils';
 import { processCSSFactory } from '../../../../../util/testHelpers.js';
 const plugin = onlyTransform(['mergeLonghand']);
 import {
+  hasExponent,
   isLengthValue,
   parseDimension,
+  scanNumber,
 } from '../../../src/merge/longhand/lengthGrammar.js';
 import { onlyTransform } from '../onlyTransform.js';
 
 const { numeric, tokens } = cssnanoUtils;
 const { passthroughCSS } = processCSSFactory(plugin);
+
+describe('scanNumber', () => {
+  test('ends the number before a unit that follows an exponent', () => {
+    assert.equal(scanNumber('1e3px'), 3);
+  });
+
+  test('leaves the e of a unit as the unit', () => {
+    assert.equal(scanNumber('1em'), 1);
+  });
+
+  test('accepts an uppercase exponent marker', () => {
+    assert.equal(scanNumber('2E-2'), 4);
+  });
+
+  test('finds no number in text without a digit', () => {
+    assert.equal(scanNumber('.e3'), -1);
+  });
+
+  test('returns an index rather than an object, so scanning allocates nothing', () => {
+    assert.equal(typeof scanNumber('1px'), 'number');
+  });
+});
+
+describe('hasExponent', () => {
+  test('reports an exponent only where e is followed by a digit', () => {
+    assert.equal(hasExponent('1e3px'), true);
+  });
+
+  test('leaves the e of a unit as the unit', () => {
+    assert.equal(hasExponent('1em'), false);
+  });
+
+  test('accepts an uppercase exponent marker', () => {
+    assert.equal(hasExponent('2E-2'), true);
+  });
+
+  test('reports no exponent in a number without one', () => {
+    assert.equal(hasExponent('.5'), false);
+  });
+});
 
 describe('parseDimension', () => {
   const spellings = [

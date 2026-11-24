@@ -18,6 +18,8 @@ const { TokenType, asciiLowerCase, decoded, isHexColorDigits, skipTrivia } =
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {ValueComponent} from './componentRanges.js' */
 
+const lengthTypes = /** @type {const} */ (['length']);
+
 /**
  * The classifiers take a component's text and, for a component with a `(`, the
  * tokens of its range in the list that spells the component.
@@ -48,7 +50,7 @@ function isBorderWidth(text, tokens, start, end) {
   /* A substitution fills whichever component is open, so it is not a width. */
   if (
     !isSubstitution(tokens, start, end) &&
-    isFunctionOfType(tokens, start, end, ['length'])
+    isFunctionOfType(tokens, start, end, lengthTypes)
   ) {
     return true;
   }

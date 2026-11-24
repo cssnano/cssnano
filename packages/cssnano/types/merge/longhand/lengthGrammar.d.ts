@@ -1,7 +1,21 @@
 /**
+ * Scans the number at the start of a token, following the number grammar of
+ * CSS Syntax 3.
+ *
+ * @param {string} text
+ * @return {number} the index just past the number, or -1 when no digit starts
+ * the number
+ */
+export declare function scanNumber(text: string): number;
+/**
+ * @param {string} text
+ * @return {boolean} whether the number at the start of the token is in
+ * scientific notation
+ */
+export declare function hasExponent(text: string): boolean;
+/**
  * Splits a whole token into its number and unit, following the number grammar
- * of CSS Syntax 3: an exponent counts only where `e` is followed by a digit,
- * so the `e` of `em` starts a unit.
+ * of CSS Syntax 3 through scanNumber.
  *
  * @param {string} text - lowercased, as spelled in the stylesheet
  * @return {{number: number, unit: string} | undefined} the unit is `''` for a

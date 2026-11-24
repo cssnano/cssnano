@@ -9,6 +9,12 @@ const { TokenType, closeForOpening, numeric, tokens } = cssnanoUtils;
 
 /** @import {Component} from './valueComponents.js' */
 
+const lengthPercentageTypes = /** @type {const} */ ([
+  'length',
+  'percentage',
+  'length-percentage',
+]);
+
 /**
  * Whether the tokens of a balanced term are one function with its arguments.
  *
@@ -37,11 +43,12 @@ function isCompleteFunction(termTokens) {
  */
 export function isValidLengthPercentage(termTokens) {
   if (isCompleteFunction(termTokens)) {
-    return isFunctionOfType(termTokens, 0, termTokens.length, [
-      'length',
-      'percentage',
-      'length-percentage',
-    ]);
+    return isFunctionOfType(
+      termTokens,
+      0,
+      termTokens.length,
+      lengthPercentageTypes
+    );
   }
 
   if (termTokens.length !== 1) {
