@@ -4,6 +4,7 @@ import postcss from 'postcss';
 import { createRunContext } from '../../../src/run/runContext.js';
 import { buildRecords } from '../../../src/ir/tree/buildRecords.js';
 import { writeBack } from '../../../src/ir/tree/writeBack.js';
+import { tokensText } from '../../../src/values/tokensText.js';
 import {
   escapedSpaceOf,
   trailingEscapedSpace,
@@ -128,6 +129,31 @@ test('the record build leaves an at-rule block with an escaped space as the pars
   assert.deepEqual(shapeOf(root.first), before);
 });
 
+test('the record build leaves an at-rule statement with an escaped space as the parser set it', () => {
+  const root = postcss.parse('@layer a\\ ;');
+  const before = shapeOf(root.first);
+  buildRecords(root, createRunContext(true));
+  assert.deepEqual(shapeOf(root.first), before);
+});
+
+test('the record of an at-rule statement holds the escaped space in its prelude', () => {
+  const root = postcss.parse('@layer a\\ ;');
+  const context = createRunContext(true);
+  const { records } = buildRecords(root, context);
+  const entry = records.entry(records.links.firstChild(records.root.index));
+  assert.equal(
+    tokensText(context.tokenLists.get(/** @type {number} */ (entry.preludeId))),
+    'a\\ '
+  );
+});
+
+test('the record of an at-rule statement keeps an empty separator once its escaped space is in the prelude', () => {
+  const root = postcss.parse('@layer a\\ ;');
+  const { records } = buildRecords(root, createRunContext(true));
+  const entry = records.entry(records.links.firstChild(records.root.index));
+  assert.equal(entry.between, '');
+});
+
 test('the record build leaves a rule whose raw holds a comment as the parser set it', () => {
   const root = postcss.parse('.a /*c*/ .b\\ {top:0}');
   assert.notEqual(root.first.raws.selector, undefined);
@@ -163,4 +189,15 @@ test('write-back keeps the comment of a rule whose raw holds it and an escaped s
   writeBack(records, nodes, context.tokenLists);
   assert.equal(String(root), css);
   assert.equal(root.first.selector, '.a  .b\\');
+});
+
+test('write-back restores an at-rule statement with an escaped space to the parsed shape', () => {
+  const css = '@layer a\\ ;';
+  const root = postcss.parse(css);
+  const context = createRunContext(true);
+  const { records, nodes } = buildRecords(root, context);
+  writeBack(records, nodes, context.tokenLists);
+  assert.equal(String(root), css);
+  assert.equal(root.first.params, 'a\\');
+  assert.equal(root.first.raws.between, ' ');
 });

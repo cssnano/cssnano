@@ -1,6 +1,6 @@
 import { isRecordAttached } from '../../run/symbolLists.js';
 import { AT_RULE_BLOCK } from '../../ir/blockRecord.js';
-import { atRuleAt } from '../../ir/declaredText.js';
+import { atRuleAt, preludeListOf } from '../../ir/declaredText.js';
 import { LayerRegistry, hasImport } from './lib/layerRegistry.js';
 import {
   findInterchangeableGroups,
@@ -12,7 +12,6 @@ import {
   VENDOR_PREFIX,
 } from './lib/grammar.js';
 import { scanDeclarations } from './lib/protectedNames.js';
-import { preludeTokens } from './lib/trailingEscape.js';
 import { rewriteReferences } from './lib/valueRewriter.js';
 
 /** @import {DeclarationKeys} from '../../ir/declarationKey.js' */
@@ -101,8 +100,7 @@ function mergeAtRules(lists, remove, records, context) {
     const family = entry.name;
     const namespace = namespaceOf(family);
     const parsed =
-      namespace &&
-      parseAtRuleName(preludeTokens(records, tokenLists, atRule), family);
+      namespace && parseAtRuleName(preludeListOf(tokenLists, entry), family);
     // A statement without a block defines nothing.
     if (!namespace || entry.kind !== AT_RULE_BLOCK || !parsed) {
       continue;

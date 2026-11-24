@@ -1,14 +1,8 @@
 import cssnanoUtils from '#utils';
 import { COMMENT } from '../../../ir/blockRecord.js';
-import {
-  atRuleAt,
-  declaredValue,
-  preludeListOf,
-  preludeTextOf,
-  rawAfterValue,
-} from '../../../ir/declaredText.js';
+import { declaredValue, rawAfterValue } from '../../../ir/declaredText.js';
 
-const { endsWithEscapingBackslash, isCSSWhitespace, tokens } = cssnanoUtils;
+const { endsWithEscapingBackslash, isCSSWhitespace } = cssnanoUtils;
 
 /** @import {ArenaIndex} from '../../../ir/blockRecord.js' */
 /** @import {BlockRecords} from '../../../ir/blockRecords.js' */
@@ -16,39 +10,6 @@ const { endsWithEscapingBackslash, isCSSWhitespace, tokens } = cssnanoUtils;
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {RuleRecord} from '../../../ir/ruleRecord.js' */
 /** @import {TokenLists} from '../../../ir/tokenLists.js' */
-
-/**
- * @param {number} code a UTF-16 code unit
- * @return {boolean} whether it is a CSS newline: LF, CR or FF
- */
-function isNewlineCode(code) {
-  return code === 0x0a || code === 0x0d || code === 0x0c;
-}
-
-/**
- * The tokens of an at-rule's prelude. A dangling backslash escapes the space
- * that PostCSS keeps in `raws.between`, so that space joins the prelude;
- * otherwise the between-block space holds only whitespace and comments, and
- * the stored list of the prelude stands for it.
- *
- * @param {BlockRecords} records
- * @param {TokenLists} tokenLists
- * @param {ArenaIndex} index
- * @return {readonly import('@csstools/css-tokenizer').CSSToken[]}
- */
-export function preludeTokens(records, tokenLists, index) {
-  const entry = atRuleAt(records, index);
-  const between = entry.between ?? '';
-  const params = preludeTextOf(tokenLists, entry);
-  const escapesBetween =
-    between !== '' &&
-    !isNewlineCode(between.charCodeAt(0)) &&
-    endsWithEscapingBackslash(params);
-  if (escapesBetween) {
-    return tokens(params + between);
-  }
-  return preludeListOf(tokenLists, entry);
-}
 
 /**
  * The first code point that PostCSS serializes after the value, which a

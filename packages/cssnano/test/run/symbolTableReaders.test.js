@@ -11,9 +11,7 @@ const { zindexSymbols } =
   await import('../../src/plugins/postcss-zindex/index.js');
 const { mergeIdentsSymbols } =
   await import('../../src/plugins/postcss-merge-idents/index.js');
-const { preludeTokens } =
-  await import('../../src/plugins/postcss-merge-idents/lib/trailingEscape.js');
-const { declaredValue, rawAfterValue } =
+const { declaredValue, preludeListOf, rawAfterValue } =
   await import('../../src/ir/declaredText.js');
 const { createRunContext } = await import('../../src/run/runContext.js');
 const { runDriver } = await import('../../src/run/runDriver.js');
@@ -322,36 +320,38 @@ suite('the symbol transforms read the text the host walk stored', () => {
     assert.equal(root.first.params, 'a/*x*/b');
   });
 
-  test('`preludeTokens` reads the list stored for an at-rule with a trailing comment, without tokenizing', () => {
+  test('`preludeListOf` reads the list stored for an at-rule with a trailing comment, without tokenizing', () => {
     const { records, context } = buildRecords('@keyframes foo /*x*/ {}');
     const index = records.links.firstChild(records.root.index);
     const before = tokenizeTotal();
-    preludeTokens(records, context.tokenLists, index);
+    preludeListOf(context.tokenLists, records.entry(index));
     assert.equal(tokenizeTotal() - before, 0);
   });
 
-  test('`preludeTokens` tokenizes a dangling escape with the space PostCSS keeps after it', () => {
-    const { records, context } = buildRecords('@keyframes a\\ {}');
+  test('`preludeListOf` reads the list stored for an at-rule statement whose backslash escapes a space, without tokenizing', () => {
+    const { records, context } = buildRecords('@layer a\\ ;');
     const index = records.links.firstChild(records.root.index);
+    const before = tokenizeTotal();
     assert.equal(
-      tokensText(preludeTokens(records, context.tokenLists, index)),
+      tokensText(preludeListOf(context.tokenLists, records.entry(index))),
       'a\\ '
     );
+    assert.equal(tokenizeTotal() - before, 0);
   });
 
-  test('`preludeTokens` reads the list stored for an at-rule whose backslash precedes a newline, without tokenizing', () => {
+  test('`preludeListOf` reads the list stored for an at-rule whose backslash precedes a newline, without tokenizing', () => {
     const { records, context } = buildRecords('@keyframes a\\\n{}');
     const index = records.links.firstChild(records.root.index);
     const before = tokenizeTotal();
-    preludeTokens(records, context.tokenLists, index);
+    preludeListOf(context.tokenLists, records.entry(index));
     assert.equal(tokenizeTotal() - before, 0);
   });
 
-  test('`preludeTokens` reads the list stored for an at-rule whose backslashes are an even run, without tokenizing', () => {
+  test('`preludeListOf` reads the list stored for an at-rule whose backslashes are an even run, without tokenizing', () => {
     const { records, context } = buildRecords('@keyframes a\\\\ {}');
     const index = records.links.firstChild(records.root.index);
     const before = tokenizeTotal();
-    preludeTokens(records, context.tokenLists, index);
+    preludeListOf(context.tokenLists, records.entry(index));
     assert.equal(tokenizeTotal() - before, 0);
   });
 });

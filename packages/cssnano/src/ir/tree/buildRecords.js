@@ -348,7 +348,8 @@ class RecordBuild {
     const { tokenLists } = context;
     const name = recordNameOf(child.name);
     const category = atRuleKindOf(name);
-    const preludeId = preludeIdOf(child, context, '');
+    const space = escapedSpaceOf(sourceParams(child) ?? '', child.raws.between);
+    const preludeId = preludeIdOf(child, context, space);
     const entry = new NodeEntry(
       AT_RULE_STATEMENT,
       child.raws.before ?? null,
@@ -357,8 +358,11 @@ class RecordBuild {
       category === LAYER && isAnonymousLayer(tokenLists.get(preludeId)),
       preludeId
     );
-    entry.writtenList = writtenPreludeOf(child, context, '');
+    entry.writtenList = writtenPreludeOf(child, context, space);
     entry.between = child.raws.between ?? null;
+    if (space !== '') {
+      entry.between = /** @type {string} */ (child.raws.between).slice(1);
+    }
     entry.afterName = child.raws.afterName ?? null;
     this.place(container.index, entry, child);
   }

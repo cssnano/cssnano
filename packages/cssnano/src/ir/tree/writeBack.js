@@ -119,32 +119,14 @@ function writeContainerRaws(record, node) {
 }
 
 /**
- * Assigns the prelude of a marked at-rule statement, as its list spells it, and
- * drops the raw params that spelled the prelude before. An unmarked statement
- * keeps its node text. A block's prelude is written by writeHead.
- *
- * @param {NodeEntry} record
- * @param {AtRule} node
- * @param {TokenLists} tokenLists
- * @return {void}
- */
-function writeParams(record, node, tokenLists) {
-  if (!record.marked) return;
-  node.params = tokensText(
-    tokenLists.get(/** @type {TokenListId} */ (record.preludeId))
-  );
-  delete node.raws.params;
-}
-
-/**
- * Assigns the raws of an at-rule statement that its record holds.
+ * Assigns the afterName raw of an at-rule statement that its record holds. The
+ * prelude and separator are written by writeHead.
  *
  * @param {NodeEntry} record
  * @param {AtRule} node
  * @return {void}
  */
 function writeStatementRaws(record, node) {
-  if (record.between !== null) node.raws.between = record.between;
   if (record.afterName !== null) node.raws.afterName = record.afterName;
 }
 
@@ -269,8 +251,8 @@ class WriteBack {
         }
         this.#writeFields(record);
       } else if (record.kind === AT_RULE_STATEMENT) {
+        writeHead(record, /** @type {AtRule} */ (node), tokenLists);
         writeStatementRaws(record, /** @type {AtRule} */ (node));
-        writeParams(record, /** @type {AtRule} */ (node), tokenLists);
       }
     }
   }

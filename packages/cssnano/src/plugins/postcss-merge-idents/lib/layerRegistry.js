@@ -6,8 +6,11 @@ import {
   COMMENT,
 } from '../../../ir/blockRecord.js';
 import { isLayerEntry } from './grammar.js';
-import { preludeTokens } from './trailingEscape.js';
-import { atRuleAt, preludeTextOf } from '../../../ir/declaredText.js';
+import {
+  atRuleAt,
+  preludeListOf,
+  preludeTextOf,
+} from '../../../ir/declaredText.js';
 
 const { decoded } = cssnanoUtils;
 
@@ -148,7 +151,7 @@ class LayerRegistry {
         atRuleAt(this.records, layerRule)
       ).trim()
         ? parseLayerNameList(
-            preludeTokens(this.records, this.tokenLists, layerRule)
+            preludeListOf(this.tokenLists, atRuleAt(this.records, layerRule))
           )
         : null;
       entry =
@@ -189,7 +192,7 @@ class LayerRegistry {
       return;
     }
     const names = parseLayerNameList(
-      preludeTokens(this.records, this.tokenLists, layerRule)
+      preludeListOf(this.tokenLists, atRuleAt(this.records, layerRule))
     );
     if (names === null) {
       return;
