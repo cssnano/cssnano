@@ -19,8 +19,8 @@ describe('border-width', () => {
   test(
     'should keep reading a calc as a width',
     processCSS(
-      'h1{border-top-width:calc(1px + 1%);border-right-width:calc(1px + 1%);border-bottom-width:calc(1px + 1%);border-left-width:calc(1px + 1%)}',
-      'h1{border-width:calc(1px + 1%)}'
+      'h1{border-top-width:calc(1px + 1em);border-right-width:calc(1px + 1em);border-bottom-width:calc(1px + 1em);border-left-width:calc(1px + 1em)}',
+      'h1{border-width:calc(1px + 1em)}'
     )
   );
 

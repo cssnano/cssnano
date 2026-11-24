@@ -2,7 +2,7 @@ import { expandFourSides } from './parseTrbl.js';
 import { isCssWideKeyword } from './isCssWideKeyword.js';
 import cssnanoUtils from '#utils';
 import { isLengthValue } from './lengthGrammar.js';
-import { isUnresolved } from '../../ir/unresolved.js';
+import { isFunctionOfType } from './mathType.js';
 import { closingTokens, splitValue } from './valueComponents.js';
 
 const { TokenType, closeForOpening, numeric, tokens } = cssnanoUtils;
@@ -37,7 +37,11 @@ function isCompleteFunction(termTokens) {
  */
 export function isValidLengthPercentage(termTokens) {
   if (isCompleteFunction(termTokens)) {
-    return isUnresolved(termTokens, 0, termTokens.length);
+    return isFunctionOfType(termTokens, 0, termTokens.length, [
+      'length',
+      'percentage',
+      'length-percentage',
+    ]);
   }
 
   if (termTokens.length !== 1) {

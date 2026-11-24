@@ -2,7 +2,7 @@ import cssnanoUtils from '#utils';
 import { hasHack } from '#stylehacks';
 import { shorthand, initialValues, cssWideKeywords } from '../../../ir/spec.js';
 import { isLengthValue } from '../lengthGrammar.js';
-import { isUnresolved } from '../../../ir/unresolved.js';
+import { isFunctionOfType } from '../mathType.js';
 import { closingTokens } from '../valueComponents.js';
 
 /** @import {DeclarationItem} from '../blockDeclarations.js'; */
@@ -233,17 +233,30 @@ export const setsOtherColumnProperty = (declaration) =>
   (asciiLowerCase(declaration.prop) === columns &&
     parsedValue(declaration).hasTopLevelSlash);
 
-/** @param {string} text @return {boolean} */
-const isUnresolvedText = (text) => {
+/* A count is an integer, which a calculation of a number rounds to. */
+const widthTypes = /** @type {const} */ (['length']);
+const countTypes = /** @type {const} */ (['number']);
+const eitherTypes = /** @type {const} */ (['length', 'number']);
+
+/**
+ * @param {string} text
+ * @param {readonly ('number' | 'length')[]} types what the component's grammar takes
+ * @return {boolean}
+ */
+const isUnresolvedText = (text, types) => {
   // Without a `(` there is no function to be unresolved.
   if (!text.includes('(')) return false;
   const spelled = cssnanoUtils.tokens(text);
-  return isUnresolved(spelled, 0, spelled.length);
+  return isFunctionOfType(spelled, 0, spelled.length, types);
 };
 
-/** @param {string} v @return {boolean} */
-const isKeywordOrUnresolved = (v) =>
-  v === auto || cssWideKeywords.has(v) || isUnresolvedText(v);
+/**
+ * @param {string} v
+ * @param {readonly ('number' | 'length')[]} types
+ * @return {boolean}
+ */
+const isKeywordOrUnresolved = (v, types) =>
+  v === auto || cssWideKeywords.has(v) || isUnresolvedText(v, types);
 
 /**
  * @param {DeclarationItem} d
@@ -260,7 +273,7 @@ export function isValidColumns(d) {
     const val = asciiLowerCase(
       parsed.value.slice(parsed.terms[0].start, parsed.terms[0].end)
     );
-    return isKeywordOrUnresolved(val) || roles[0] !== undefined;
+    return isKeywordOrUnresolved(val, eitherTypes) || roles[0] !== undefined;
   }
 
   if (parsed.terms.length === 2) {
@@ -274,7 +287,7 @@ export function isValidColumns(d) {
         const val = asciiLowerCase(parsed.value.slice(term.start, term.end));
         // CSS-wide keywords cannot combine with other tokens (CSS Cascading 4
         // § 7.2); only unresolved functions keep a two-term value valid.
-        if (isUnresolvedText(val)) {
+        if (isUnresolvedText(val, eitherTypes)) {
           pairRoles.push('unresolved');
         } else {
           return false;
@@ -296,12 +309,14 @@ export function isValidColumns(d) {
 function isValidColumnProperty(d) {
   const value = asciiLowerCase(d.value);
   if (!value) return false;
-  if (isKeywordOrUnresolved(value)) return true;
+  const isWidth = asciiLowerCase(d.prop) === 'column-width';
+  if (isKeywordOrUnresolved(value, isWidth ? widthTypes : countTypes)) {
+    return true;
+  }
   const parsed = parsedValue(d);
   return (
     parsed.terms.length === 1 &&
-    componentRole(parsed.terms[0]) ===
-      (asciiLowerCase(d.prop) === 'column-width' ? 'width' : 'count')
+    componentRole(parsed.terms[0]) === (isWidth ? 'width' : 'count')
   );
 }
 

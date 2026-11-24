@@ -1,5 +1,6 @@
 import cssnanoUtils from '#utils';
 import { isLengthValue, parseDimension } from './lengthGrammar.js';
+import { isFunctionOfType } from './mathType.js';
 import { splitComponents } from './componentRanges.js';
 import { systemColors } from '../../values/systemColors.js';
 
@@ -9,9 +10,10 @@ import {
   colorFunctions,
   namedColors,
 } from '../../ir/spec.js';
-import { isSubstitution, isUnresolved } from '../../ir/unresolved.js';
+import { isSubstitution } from '../../ir/unresolved.js';
 
-const { TokenType, asciiLowerCase, decoded, isHexColorDigits } = cssnanoUtils;
+const { TokenType, asciiLowerCase, decoded, isHexColorDigits, skipTrivia } =
+  cssnanoUtils;
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {ValueComponent} from './componentRanges.js' */
@@ -31,23 +33,6 @@ function isBorderStyle(value) {
   return value !== undefined && lineStyles.has(asciiLowerCase(value));
 }
 
-/**
- * A math function (`calc()`, `min()`, ...) fixes its type from its own syntax
- * rather than deferring it to substitution, and the only border component
- * whose grammar accepts that type is the width — never a `<line-style>`
- * keyword, never a `<color>`.
- *
- * @param {readonly CSSToken[] | undefined} tokens
- * @param {number} start
- * @param {number} end
- * @return {boolean}
- */
-function isTypedAsWidth(tokens, start, end) {
-  return (
-    isUnresolved(tokens, start, end) && !isSubstitution(tokens, start, end)
-  );
-}
-
 /** @type {ComponentClassifier} */
 function isBorderWidth(text, tokens, start, end) {
   if (!text) {
@@ -60,7 +45,11 @@ function isBorderWidth(text, tokens, start, end) {
     return true;
   }
 
-  if (isTypedAsWidth(tokens, start, end)) {
+  /* A substitution fills whichever component is open, so it is not a width. */
+  if (
+    !isSubstitution(tokens, start, end) &&
+    isFunctionOfType(tokens, start, end, ['length'])
+  ) {
     return true;
   }
 
@@ -73,29 +62,24 @@ function isBorderWidth(text, tokens, start, end) {
 }
 
 /**
- * @param {string} text
+ * Only the leading function types the component: `foo(rgb(0 0 0))` and
+ * `calc(rgb(0 0 0))` are not colors. Color functions have no prefixed
+ * spellings, so the name is compared as written: `-webkit-rgb()` is none.
+ *
  * @param {readonly CSSToken[] | undefined} tokens
  * @param {number} start
  * @param {number} end
- * @return {boolean} whether the component calls a function that produces a
- * colour
+ * @return {boolean} whether the component opens with a color function
  */
-function callsColorFunction(text, tokens, start, end) {
-  if (tokens === undefined || !text.includes('(')) {
-    return false;
-  }
-
-  for (let index = start; index < end; index++) {
-    const token = tokens[index];
-    if (
-      token[0] === TokenType.Function &&
-      colorFunctions.has(asciiLowerCase(decoded(token)))
-    ) {
-      return true;
-    }
-  }
-
-  return false;
+function callsColorFunction(tokens, start, end) {
+  if (tokens === undefined) return false;
+  const index = skipTrivia(tokens, start, end);
+  const token = tokens[index];
+  return (
+    index < end &&
+    token[0] === TokenType.Function &&
+    colorFunctions.has(asciiLowerCase(decoded(token)))
+  );
 }
 
 /** @type {ComponentClassifier} */
@@ -123,7 +107,7 @@ function isColor(text, tokens, start, end) {
     return true;
   }
 
-  return callsColorFunction(lowered, tokens, start, end);
+  return callsColorFunction(tokens, start, end);
 }
 
 /**

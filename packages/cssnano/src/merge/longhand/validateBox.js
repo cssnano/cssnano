@@ -8,16 +8,16 @@ import {
   valueTokens,
 } from './componentRanges.js';
 import { isLengthValue, parseDimension } from './lengthGrammar.js';
-import { mathType } from './mathType.js';
-import {
-  isTrustedFunction,
-  substitutionFunctions,
-} from '../../ir/unresolved.js';
-import { withoutVendorPrefix } from '../../ir/vendorPrefix.js';
+import { isFunctionOfType } from './mathType.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 
-const { asciiLowerCase, decoded } = cssnanoUtils;
+const { asciiLowerCase } = cssnanoUtils;
+
+/** @type {readonly import('./mathType.js').MathType[]} */
+const lengthTypes = ['length'];
+/** @type {readonly import('./mathType.js').MathType[]} */
+const lengthPercentageTypes = ['length', 'percentage', 'length-percentage'];
 
 /* CSS user agents ignore box declarations that violate the property's
  * grammar. Each group of box properties has one grammar, which the generated
@@ -40,20 +40,15 @@ const { asciiLowerCase, decoded } = cssnanoUtils;
  */
 function keepsFunction(tokens, start, end, grammar) {
   let opened = false;
-  let substituted = false;
   for (let index = start; index < end; index++) {
     const part = tokens[index];
     switch (part[0]) {
-      case TokenType.Function: {
-        const name = decoded(part);
-        if (!isTrustedFunction(name)) return false;
-        substituted ||= substitutionFunctions.has(
-          withoutVendorPrefix(asciiLowerCase(name))
-        );
+      case TokenType.Function:
         opened = true;
         break;
-      }
       case TokenType.Percentage:
+        // isFunctionOfType skips typing after a substitution, so a bare
+        // percentage beside `var()` must be rejected here.
         if (!grammar.percentage) return false;
         break;
       case TokenType.Whitespace:
@@ -63,12 +58,11 @@ function keepsFunction(tokens, start, end, grammar) {
     }
   }
   if (!opened) return false;
-  if (substituted) return true;
-
-  const type = mathType(tokens, start, end);
-  return (
-    type === 'length' ||
-    (type !== undefined && type !== 'number' && grammar.percentage)
+  return isFunctionOfType(
+    tokens,
+    start,
+    end,
+    grammar.percentage ? lengthPercentageTypes : lengthTypes
   );
 }
 

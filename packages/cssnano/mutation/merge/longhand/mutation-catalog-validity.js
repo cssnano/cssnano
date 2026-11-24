@@ -18,6 +18,10 @@ const lengthGrammar = new URL(
   '../../../src/merge/longhand/lengthGrammar.js',
   import.meta.url
 ).href;
+const mathType = new URL(
+  '../../../src/merge/longhand/mathType.js',
+  import.meta.url
+).href;
 
 export const mutations = [
   {
@@ -60,5 +64,36 @@ export const mutations = [
     target: lengthGrammar,
     find: 'return lengthUnits.has(asciiLowerCase(unit));',
     replace: 'return true;',
+  },
+  {
+    name: 'accept a one-argument round() of a non-number',
+    target: mathType,
+    find: "return this.#count === 1 && type !== 'number' ? undefined : type;",
+    replace: 'return type;',
+  },
+  {
+    name: 'accept a rounding strategy with no comma after it',
+    target: mathType,
+    find: '      if (this.#peek() === TokenType.Comma) {\n        this.#advance();\n        return true;\n      }',
+    replace: '      return true;',
+  },
+  {
+    name: 'accept a rounding keyword as a number anywhere in round()',
+    target: mathType,
+    find: "        return constants.has(asciiLowerCase(decoded(part)))\n          ? 'number'",
+    replace:
+      "        return roundingStrategies.has(asciiLowerCase(decoded(part))) || constants.has(asciiLowerCase(decoded(part)))\n          ? 'number'",
+  },
+  {
+    name: 'accept a non-number argument for pow() and log()',
+    target: mathType,
+    find: "return type === 'number' ? 'number' : undefined;",
+    replace: "return 'number';",
+  },
+  {
+    name: 'make sign() keep the type of its argument',
+    target: mathType,
+    find: "if (rule === 'toNumber') return 'number';",
+    replace: "if (rule === 'toNumber') return type;",
   },
 ];

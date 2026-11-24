@@ -1,47 +1,17 @@
 import { cssWideKeywords } from '../../ir/spec.js';
 import cssnanoUtils from '#utils';
 import { isLengthValue } from './lengthGrammar.js';
+import { mathType } from './mathType.js';
 import { closingTokens } from './valueComponents.js';
 
-const {
-  TokenType,
-  asciiLowerCase,
-  closeForOpening,
-  decoded,
-  mathFunctions,
-  numeric,
-} = cssnanoUtils;
-
-/* Math functions resolve to a value the grammar can accept positionally, and
- * anchor-size() always resolves to a length. */
-const valueFunctions = new Set([...mathFunctions.keys(), 'anchor-size']);
-/* These functions have a fixed result type that cannot be a length. They
- * remain in valueFunctions so valid uses nested in calc() are accepted. */
-const nonLengthResultFunctions = new Set([
-  'acos',
-  'asin',
-  'atan',
-  'atan2',
-  'cos',
-  'exp',
-  'log',
-  'pow',
-  'sign',
-  'sin',
-  'sqrt',
-  'tan',
-]);
-
-/* round() may lead with a <rounding-strategy> keyword, an argument that the
- * math function arity table does not count. */
-const roundingStrategies = new Set(['nearest', 'up', 'down', 'to-zero']);
+const { TokenType, asciiLowerCase, closeForOpening, decoded, numeric } =
+  cssnanoUtils;
 
 /**
- * firstArgument is 'keyword' only while the first argument of round() is a
- * lone <rounding-strategy>, which the arity table does not count. In a
- * calculation, operand records whether the argument so far ends with a value.
+ * name is null for a bare parenthesized group. Math is typed by mathType, so a
+ * frame needs no calculation state.
  *
- * @typedef {{name: string | null, expected: import('@csstools/css-tokenizer').TokenType, commas: number, hasValue: boolean, firstArgument: 'empty' | 'keyword' | 'value', calculation: boolean, operand: boolean}} FunctionFrame
+ * @typedef {{name: string | null, expected: import('@csstools/css-tokenizer').TokenType, commas: number, hasValue: boolean}} FunctionFrame
  */
 
 /** @import {Component} from './valueComponents.js' */
@@ -93,21 +63,27 @@ export function hasCssWideKeyword(component) {
 }
 
 /**
- * Check function names recursively. Detailed value grammar belongs to the
- * individual reducer; rejecting unknown and substitution functions here keeps
- * every reducer conservative without losing raw function spelling.
+ * Checks the nesting, commas and argument counts of a timing function such as
+ * `cubic-bezier(0, 0, 1, 1)`. Only the names in `timingFunctions` may open a
+ * function. The grammar does not check the argument values.
  *
  * @param {Component} component
- * @param {Set<string>} allowed
+ * @param {Set<string>} timingFunctions
  * @return {boolean}
  */
-export function hasAllowedFunctions(component, allowed) {
+export function hasTimingFunctionArguments(component, timingFunctions) {
   /** @type {FunctionFrame[]} */
   const stack = [];
   for (const token of component.tokens) {
     if (token[0] === TokenType.Function) {
       const name = tokenName(token);
-      if (!pushFunctionFrame(stack, name, allowed)) return false;
+      if (!timingFunctions.has(name)) return false;
+      stack.push({
+        name,
+        expected: TokenType.CloseParen,
+        commas: 0,
+        hasValue: false,
+      });
     } else if (token[0] === TokenType.Whitespace) {
       continue;
     } else if (token[0] === TokenType.Comma) {
@@ -117,29 +93,11 @@ export function hasAllowedFunctions(component, allowed) {
     } else {
       const expected = closeForOpening(token[0]);
       if (expected !== undefined) {
-        stack.push({
-          name: null,
-          expected,
-          commas: 0,
-          hasValue: false,
-          firstArgument: 'empty',
-          // Parentheses inside a calculation group a nested calculation.
-          calculation:
-            expected === TokenType.CloseParen &&
-            stack.at(-1)?.calculation === true,
-          operand: false,
-        });
+        stack.push({ name: null, expected, commas: 0, hasValue: false });
       } else {
         const frame = stack.at(-1);
         if (!frame) return false;
-        if (frame.calculation && !consumeCalculationToken(frame, token)) {
-          return false;
-        }
-        const isStrategy =
-          frame.name === 'round' &&
-          token[0] === TokenType.Ident &&
-          roundingStrategies.has(asciiLowerCase(decoded(token)));
-        if (!consumeFunctionValue(frame, isStrategy)) return false;
+        frame.hasValue = true;
       }
     }
   }
@@ -147,65 +105,12 @@ export function hasAllowedFunctions(component, allowed) {
   return operatorsHaveRightOperands(component.tokens);
 }
 
-/** @param {FunctionFrame[]} stack @param {string} name @param {Set<string>} allowed @return {boolean} */
-function pushFunctionFrame(stack, name, allowed) {
-  if (!allowed.has(name)) return false;
-  stack.push({
-    name,
-    expected: TokenType.CloseParen,
-    commas: 0,
-    hasValue: false,
-    firstArgument: 'empty',
-    calculation: mathFunctions.has(name),
-    operand: false,
-  });
-  return true;
-}
-
-/**
- * A calculation alternates values and operators, starting and ending with a
- * value: CSS math has no unary operators and no implicit juxtaposition.
- *
- * @param {FunctionFrame} frame
- * @param {import('@csstools/css-tokenizer').CSSToken} token
- * @return {boolean}
- */
-function consumeCalculationToken(frame, token) {
-  if (token[0] === TokenType.Delim) {
-    if (!isMathOperator(token[1]) || !frame.operand) return false;
-    frame.operand = false;
-    return true;
-  }
-  if (frame.operand) return false;
-  frame.operand = true;
-  return true;
-}
-
-/** @param {FunctionFrame} frame @param {boolean} isStrategy @return {boolean} */
-function consumeFunctionValue(frame, isStrategy) {
-  if (frame.commas > 0) {
-    // Only the first argument may be a strategy; later ones are not
-    // counted, so a repeated keyword would pass the arity check.
-    if (isStrategy) return false;
-  } else if (frame.firstArgument === 'keyword') {
-    // The keyword must stand alone, or the rest of the argument would be
-    // counted as a calculation.
-    return false;
-  } else if (frame.firstArgument === 'empty') {
-    frame.firstArgument = isStrategy ? 'keyword' : 'value';
-  }
-  frame.hasValue = true;
-  return true;
-}
-
 /** @param {FunctionFrame[]} stack @return {boolean} */
 function consumeFunctionComma(stack) {
   const frame = stack.at(-1);
   if (!frame?.name || !frame.hasValue) return false;
-  if (frame.calculation && !frame.operand) return false;
   frame.commas++;
   frame.hasValue = false;
-  frame.operand = false;
   return true;
 }
 
@@ -213,23 +118,9 @@ function consumeFunctionComma(stack) {
 function consumeFunctionCloser(stack, type) {
   const frame = stack.pop();
   if (!frame || frame.expected !== type || !frame.hasValue) return false;
-  if (frame.calculation && !frame.operand) return false;
-  const argumentCount =
-    frame.commas + (frame.firstArgument === 'keyword' ? 0 : 1);
-  if (!functionArityIsValid(frame.name, argumentCount)) return false;
+  if (!timingArityIsValid(frame.name, frame.commas + 1)) return false;
   const parent = stack.at(-1);
-  if (parent) {
-    // A nested value makes a leading keyword part of a larger argument.
-    if (parent.commas === 0) {
-      if (parent.firstArgument === 'keyword') return false;
-      parent.firstArgument = 'value';
-    }
-    if (parent.calculation) {
-      if (parent.operand) return false;
-      parent.operand = true;
-    }
-    parent.hasValue = true;
-  }
+  if (parent) parent.hasValue = true;
   return true;
 }
 
@@ -261,13 +152,8 @@ function operatorHasNoOperand(input, index) {
 }
 
 /** @param {string | null} name @param {number} argumentCount @return {boolean} */
-function functionArityIsValid(name, argumentCount) {
+function timingArityIsValid(name, argumentCount) {
   if (!name) return true;
-  const range = mathFunctions.get(name);
-  if (range) {
-    return argumentCount >= range[0] && argumentCount <= range[1];
-  }
-  if (name === 'anchor-size') return argumentCount === 1 || argumentCount === 2;
   if (name === 'cubic-bezier') return argumentCount === 4;
   if (name === 'steps') return argumentCount === 1 || argumentCount === 2;
   if (name === 'linear') return argumentCount > 0;
@@ -289,10 +175,13 @@ export function directNumeric(component) {
 export function isLengthComponent(component, grammar) {
   if (hasCssWideKeyword(component)) return false;
   if (component.tokens[0]?.[0] === TokenType.Function) {
-    if (nonLengthResultFunctions.has(tokenName(component.tokens[0]))) {
-      return false;
-    }
-    return hasAllowedFunctions(component, valueFunctions);
+    // mathType rejects an unknown or substitution function, which fails closed.
+    const type = mathType(component.tokens, 0, component.tokens.length);
+    return (
+      type === 'length' ||
+      (grammar.percentage &&
+        (type === 'percentage' || type === 'length-percentage'))
+    );
   }
   const value = directNumeric(component);
   if (value) {

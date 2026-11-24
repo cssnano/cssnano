@@ -352,3 +352,25 @@ describe('invalid math function handling', () => {
     passthroughCSS('a{top:1px;bottom:1px;inset:calc(1px + 2deg)}')
   );
 });
+
+/*
+ * mathType does not type anchor-size() or trigonometric functions, so a side
+ * that holds one is of unknown validity and the longhands stay unmerged.
+ */
+describe('sides with functions that mathType cannot type', () => {
+  for (const prop of ['margin', 'padding']) {
+    test(
+      `keeps ${prop} longhands with anchor-size() unmerged, because its type is unknown`,
+      passthroughCSS(
+        `a{${prop}-top:anchor-size(width);${prop}-right:anchor-size(width);${prop}-bottom:anchor-size(width);${prop}-left:anchor-size(width)}`
+      )
+    );
+
+    test(
+      `keeps ${prop} longhands with calc() over sin() unmerged, because angles are not typed`,
+      passthroughCSS(
+        `a{${prop}-top:calc(1px * sin(90deg));${prop}-right:1px;${prop}-bottom:1px;${prop}-left:1px}`
+      )
+    );
+  }
+});
