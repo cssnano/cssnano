@@ -38,6 +38,8 @@ export function removeBetween(records, tokenLists, index, comments) {
     false
   );
   const keepsNewline =
-    /^[\n\r\f]/v.test(between) && !/^[\n\r\f]/v.test(cleaned) && escapes;
+    cssnanoUtils.isCSSNewline(between.charCodeAt(0)) &&
+    !cssnanoUtils.isCSSNewline(cleaned.charCodeAt(0)) &&
+    escapes;
   writeBetween(records, index, keepsNewline ? '\n' + cleaned : cleaned);
 }

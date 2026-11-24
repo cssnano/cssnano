@@ -3,6 +3,7 @@ import lengthUnits from './lengthUnits.js';
 import mathFunctions from './mathFunctions.js';
 import rawCache from './rawCache.js';
 import isAnonymousLayer from './isAnonymousLayer.js';
+import isCSSNewline from './isCSSNewline.js';
 import isCSSWhitespace from './isCSSWhitespace.js';
 import isAsciiDigit from './isAsciiDigit.js';
 import isHexColorDigits from './isHexColorDigits.js';
@@ -34,11 +35,12 @@ import {
   tokens,
 } from './value.js';
 
-/** @type {{rawCache: typeof rawCache, sourceValue: typeof sourceValue, isAnonymousLayer: typeof isAnonymousLayer, isCSSWhitespace: typeof isCSSWhitespace, isAsciiDigit: typeof isAsciiDigit, isHexColorDigits: typeof isHexColorDigits, isHexDigitCode: typeof isHexDigitCode, isImportantComment: typeof isImportantComment, isImportantCommentToken: typeof isImportantCommentToken, isTrivia: typeof isTrivia, skipTrivia: typeof skipTrivia, vendorUnprefixed: typeof vendorUnprefixed, isSubstitutionFunction: typeof isSubstitutionFunction, isSubstitutionToken: typeof isSubstitutionToken, substitutionFunctions: typeof substitutionFunctions, TokenType: typeof TokenType, applyEdits: typeof applyEdits, asciiLowerCase: typeof asciiLowerCase, balancedStructure: typeof balancedStructure, balancedTokens: typeof balancedTokens, calcSumFunctions: typeof calcSumFunctions, closeForOpening: typeof closeForOpening, decoded: typeof decoded, endsWithEscapingBackslash: typeof endsWithEscapingBackslash, lengthUnits: typeof lengthUnits, mathFunctions: typeof mathFunctions, numeric: typeof numeric, tokenEnd: typeof tokenEnd, tokenStart: typeof tokenStart, tokens: typeof tokens}} */
+/** @type {{rawCache: typeof rawCache, sourceValue: typeof sourceValue, isAnonymousLayer: typeof isAnonymousLayer, isCSSNewline: typeof isCSSNewline, isCSSWhitespace: typeof isCSSWhitespace, isAsciiDigit: typeof isAsciiDigit, isHexColorDigits: typeof isHexColorDigits, isHexDigitCode: typeof isHexDigitCode, isImportantComment: typeof isImportantComment, isImportantCommentToken: typeof isImportantCommentToken, isTrivia: typeof isTrivia, skipTrivia: typeof skipTrivia, vendorUnprefixed: typeof vendorUnprefixed, isSubstitutionFunction: typeof isSubstitutionFunction, isSubstitutionToken: typeof isSubstitutionToken, substitutionFunctions: typeof substitutionFunctions, TokenType: typeof TokenType, applyEdits: typeof applyEdits, asciiLowerCase: typeof asciiLowerCase, balancedStructure: typeof balancedStructure, balancedTokens: typeof balancedTokens, calcSumFunctions: typeof calcSumFunctions, closeForOpening: typeof closeForOpening, decoded: typeof decoded, endsWithEscapingBackslash: typeof endsWithEscapingBackslash, lengthUnits: typeof lengthUnits, mathFunctions: typeof mathFunctions, numeric: typeof numeric, tokenEnd: typeof tokenEnd, tokenStart: typeof tokenStart, tokens: typeof tokens}} */
 const cssnanoUtils = {
   rawCache,
   sourceValue,
   isAnonymousLayer,
+  isCSSNewline,
   isCSSWhitespace,
   isAsciiDigit,
   isHexColorDigits,

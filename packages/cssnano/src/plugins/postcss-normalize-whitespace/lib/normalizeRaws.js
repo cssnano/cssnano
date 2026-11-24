@@ -22,7 +22,7 @@ import {
 import { headText } from '../../../ir/headText.js';
 import { isBlankTokens, tokensText } from '../../../values/tokensText.js';
 
-const { endsWithEscapingBackslash } = cssnanoUtils;
+const { endsWithEscapingBackslash, isCSSNewline } = cssnanoUtils;
 
 /** @import {BlockRecords} from '../../../ir/blockRecords.js' */
 /** @import {ArenaIndex, BlockRecord, NodeEntry} from '../../../ir/blockRecord.js' */
@@ -85,7 +85,7 @@ function normalizeDeclaration(records, tokenLists, index) {
  */
 function separatorAfterEscape(source) {
   if (source.startsWith('/')) return source;
-  return /^[\n\r\f]/v.test(source) ? '\n' : ' ';
+  return isCSSNewline(source.charCodeAt(0)) ? '\n' : ' ';
 }
 
 /**
