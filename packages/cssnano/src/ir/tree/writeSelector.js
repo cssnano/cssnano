@@ -9,7 +9,7 @@ import { RULE } from '../blockRecord.js';
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {AtRule, Rule} from 'postcss' */
 /** @import {RuleRecord} from '../ruleRecord.js' */
-/** @import {BlockRecord} from '../blockRecord.js' */
+/** @import {BlockRecord, NodeEntry} from '../blockRecord.js' */
 /** @import {NodeTable} from './nodeTable.js' */
 /** @import {TokenListId, TokenLists} from '../tokenLists.js' */
 
@@ -48,15 +48,15 @@ function writeTemplateRaws(node, template) {
 }
 
 /**
- * Writes the head of a marked rule or at-rule block and its separator. The
- * head is the selector or the prelude as its record spells it. A backslash
- * before a space or tab that ends the marked head escapes it, so the character
- * goes back to the front of the separator, where the parser puts it.
+ * Writes the head of a marked rule or at-rule and its separator. The head is
+ * the selector or the prelude as its record spells it. A backslash before a
+ * space or tab that ends the marked head escapes it, so the character goes back
+ * to the front of the separator, where the parser puts it.
  *
  * An unmarked head keeps its node's text. Its character is read from the node's
  * own separator, which the build left unchanged.
  *
- * @param {RuleRecord | BlockRecord} record
+ * @param {RuleRecord | BlockRecord | NodeEntry} record
  * @param {Rule | AtRule} node
  * @param {TokenLists} tokenLists
  * @return {void}

@@ -58,7 +58,7 @@ function recordBetweenOf(record, node) {
     );
     return space === '' ? raws.between : raws.between?.slice(1);
   }
-  if (record.kind === AT_RULE_BLOCK) {
+  if (record.kind === AT_RULE_BLOCK || record.kind === AT_RULE_STATEMENT) {
     const space = blockSpaceOf(/** @type {AtRule} */ (node));
     return space === '' ? raws.between : raws.between?.slice(1);
   }
@@ -110,7 +110,7 @@ function checkAtRuleFacts(nodes, tokenLists, entry) {
   const node = /** @type {AtRule} */ (nodeOf(nodes, entry.index));
   if (node.type !== 'atrule') return;
   const name = recordNameOf(node.name);
-  const space = entry.kind === AT_RULE_BLOCK ? blockSpaceOf(node) : '';
+  const space = blockSpaceOf(node);
   if (
     entry.atRuleKind !== atRuleKindOf(name) ||
     entry.name !== name ||
