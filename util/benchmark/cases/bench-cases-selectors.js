@@ -17,6 +17,13 @@ export const selectorCases = {
         `.scope-${index} :is(.item-${index}, .item-${index}):not(.disabled) > .child-${index}{color:red}`
     ).join('')
   ),
+  'single-item-keyframe-selectors': pluginCase(
+    'postcss-minify-selectors',
+    Array.from(
+      { length: 20_000 },
+      (_, index) => `@keyframes fade-${index}{to{color:red}}`
+    ).join('')
+  ),
   'nested-selector-deduplication': pluginCase(
     'postcss-minify-selectors',
     Array.from({ length: 40 }, (_, index) => {
