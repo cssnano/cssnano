@@ -28,25 +28,11 @@ export function textBetween(tokens, first, last) {
  * @return {string[]}
  */
 export function selectorItemsOf(tokens) {
+  const ranges = selectorItemRangesOf(tokens);
   /** @type {string[]} */
   const items = [];
-  let depth = 0;
-  let first = -1;
-  let last = -1;
-  for (let index = 0; index < tokens.length; index++) {
-    const type = tokens[index][0];
-    if (depth === 0 && type === TokenType.Comma) {
-      items.push(textBetween(tokens, first, last));
-      first = -1;
-      continue;
-    }
-    if (type === TokenType.Function || type === TokenType.OpenParen) depth++;
-    else if (type === TokenType.CloseParen && depth > 0) depth--;
-    if (type === TokenType.Whitespace || type === TokenType.EOF) continue;
-    if (first === -1) first = index;
-    last = index;
-  }
-  items.push(textBetween(tokens, first, last));
+  for (let index = 0; index < ranges.length; index += 2)
+    items.push(textBetween(tokens, ranges[index], ranges[index + 1]));
   return items;
 }
 
