@@ -12,5 +12,5 @@ export declare function finalizeEntries(arena: SelectorArena, pool: OutputPool, 
     sort?: boolean;
     convertToIs?: boolean;
     keyframe?: boolean;
-}): import("./outputOverlay.js").Emit;
+}): import("./outputOverlay.js").Emit | undefined;
 //# sourceMappingURL=normalizeNode.d.ts.map

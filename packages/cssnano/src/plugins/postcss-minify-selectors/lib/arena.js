@@ -41,7 +41,7 @@ class SelectorArenaBuilder {
     /** @type {number[]} */ this.frames = [];
     /** @type {Map<number, Map<number, Map<number, SpecificityEntry>>>} */
     this.specificityTree = new Map();
-    this.specificityCount = 0;
+    /** @type {number} */ this.specificityCount = 0;
     this.internSpecificity(ZERO_SPECIFICITY);
     /** @type {{lists:ListPayload[],combinators:CombinatorPayload[],qualifiedNames:QualifiedNamePayload[],pseudos:PseudoPayload[],attributes:AttributePayload[]}} */
     this.payloads = {

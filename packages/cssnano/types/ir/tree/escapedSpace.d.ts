@@ -17,4 +17,13 @@ export declare function escapedSpaceOf(head: string, between: string | undefined
  * @return {string} the character, or '' when the text does not end in one
  */
 export declare function trailingEscapedSpace(text: string): string;
+/**
+ * The separator that a record holds for its node: the node's own separator
+ * minus the escaped space that its head keeps, when there is one.
+ *
+ * @param {string | undefined} between the separator the node holds
+ * @param {string} space the escaped space of the head, from escapedSpaceOf
+ * @return {string | undefined}
+ */
+export declare function separatorOf(between: string | undefined, space: string): string | undefined;
 //# sourceMappingURL=escapedSpace.d.ts.map

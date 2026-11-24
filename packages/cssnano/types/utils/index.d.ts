@@ -3,6 +3,7 @@ import lengthUnits from './lengthUnits.js';
 import mathFunctions from './mathFunctions.js';
 import rawCache from './rawCache.js';
 import isAnonymousLayer from './isAnonymousLayer.js';
+import isCSSNewline from './isCSSNewline.js';
 import isCSSWhitespace from './isCSSWhitespace.js';
 import isAsciiDigit from './isAsciiDigit.js';
 import isHexColorDigits from './isHexColorDigits.js';
@@ -21,6 +22,7 @@ declare const moduleExports: {
     rawCache: typeof rawCache;
     sourceValue: typeof sourceValue;
     isAnonymousLayer: typeof isAnonymousLayer;
+    isCSSNewline: typeof isCSSNewline;
     isCSSWhitespace: typeof isCSSWhitespace;
     isAsciiDigit: typeof isAsciiDigit;
     isHexColorDigits: typeof isHexColorDigits;

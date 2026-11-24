@@ -8,7 +8,8 @@ import type { CommentState } from './commentState.js';
 /**
  * Removes the comments in the gap between a rule's or at-rule's prelude and
  * its block. A newline after a final backslash stays: it makes the backslash an
- * invalid escape, where the next character would otherwise be escaped.
+ * invalid escape, where the next character would otherwise be escaped. A gap
+ * that starts with a slash after an open escape is left as written.
  *
  * @param {BlockRecords} records
  * @param {import('../../ir/tokenLists.js').TokenLists} tokenLists

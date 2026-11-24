@@ -6,7 +6,6 @@ import type { TokenLists } from './tokenLists.js';
  * The text a rule's or at-rule's raw separator follows: the last selector, or
  * the prelude.
  *
-
  * @param {TokenLists} tokenLists
  * @param {BlockRecord | NodeEntry | import('./ruleRecord.js').RuleRecord} record
  * @return {string}
