@@ -1,4 +1,9 @@
 import cssnanoUtils from '#utils';
+import {
+  contentEnd,
+  contentStart,
+  topLevelSeparatorAt,
+} from './topLevelSeparator.js';
 
 const { TokenType, tokenEnd, tokenStart, tokens: tokenizeValue } = cssnanoUtils;
 
@@ -24,30 +29,17 @@ function splitAtTopLevel(text, separator) {
   const tokens = tokenizeValue(text);
   /** @type {string[]} */
   const components = [];
-  let depth = 0;
-  let first = -1;
-  let last = -1;
-  const flush = () => {
-    if (first !== -1) {
+  for (let start = 0; start < tokens.length;) {
+    const end = topLevelSeparatorAt(tokens, start, separator);
+    const first = contentStart(tokens, start, end);
+    const stop = contentEnd(tokens, first, end);
+    if (first !== stop) {
       components.push(
-        text.slice(tokenStart(tokens[first]), tokenEnd(tokens[last]))
+        text.slice(tokenStart(tokens[first]), tokenEnd(tokens[stop - 1]))
       );
     }
-    first = -1;
-  };
-  for (let index = 0; index < tokens.length; index++) {
-    const type = tokens[index][0];
-    if (depth === 0 && type === separator) {
-      flush();
-      continue;
-    }
-    if (type === TokenType.Function || type === TokenType.OpenParen) depth++;
-    else if (type === TokenType.CloseParen && depth > 0) depth--;
-    if (type === TokenType.Whitespace || type === TokenType.EOF) continue;
-    if (first === -1) first = index;
-    last = index;
+    start = end + 1;
   }
-  flush();
   return components;
 }
 
