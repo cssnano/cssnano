@@ -1,8 +1,11 @@
 import { tokenize, TokenType } from '@csstools/css-tokenizer';
+import cssnanoUtils from '#utils';
+import { AT_RULE_BLOCK, DECLARATION, RULE } from '../ir/blockRecord.js';
 import { writeBetween, writeImportantSpelling } from '../ir/rawEdits.js';
 import { sourceListOf } from '../ir/writtenList.js';
 import { writeValueList } from '../ir/valueEdits.js';
 import { tokenizeMode } from '../values/tokenizeMode.js';
+import { tokensText } from '../values/tokensText.js';
 import { replaceComments } from './comments/replaceComments.js';
 import {
   stripStrayRawSemicolon,
@@ -13,6 +16,8 @@ import { foldList, planEntry } from './plan.js';
 
 /** @import {ArenaIndex} from '../ir/blockRecord.js' */
 /** @import {DeclarationRecord} from '../ir/declarationRecord.js' */
+/** @import {RuleRecord} from '../ir/ruleRecord.js' */
+/** @import {BlockRecord} from '../ir/blockRecord.js' */
 /** @import {TokenListId} from '../ir/tokenLists.js' */
 /** @import {BlockRecords} from '../ir/blockRecords.js' */
 /** @import {RunContext} from './runContext.js' */
@@ -163,6 +168,41 @@ export function keepBlockEscape(records, run, index) {
   );
   const id = withBlockEscape(records, run, index, source);
   if (id !== source) writeValueList(records, run, index, id);
+}
+
+/**
+ * Keeps the newline that a comment held before its removal, when the comment
+ * ends a block whose last declaration ends in a backslash. PostCSS keeps that
+ * newline in the comment's raw before, so the removal would leave the escape to
+ * take the `}`. The newline moves into the value and the rest of the whitespace
+ * into the block's after raw, as `withBlockEscape` does for a declaration.
+ *
+ * @param {BlockRecords} records
+ * @param {RunContext} run
+ * @param {ArenaIndex} index a comment, before it is removed
+ */
+export function keepCommentNewlineEscape(records, run, index) {
+  const { links } = records;
+  if (links.nextSibling(index) !== -1) return;
+  const { before } = records.entry(index);
+  if (before === null || !/^[\n\r\f]/v.test(before)) return;
+  const prev = links.prevSibling(index);
+  if (prev === -1 || records.entry(prev).kind !== DECLARATION) return;
+  const block = /** @type {RuleRecord | BlockRecord} */ (
+    records.entry(/** @type {ArenaIndex} */ (links.parentOf(index)))
+  );
+  if (block.kind !== RULE && block.kind !== AT_RULE_BLOCK) return;
+  const { important, prop, valueList } = declarationAt(records, prev);
+  if (important) return;
+  const text = tokensText(run.tokenLists.get(valueList));
+  if (!cssnanoUtils.endsWithEscapingBackslash(text)) return;
+  block.after = before.slice(1) + (block.after ?? '');
+  writeValueList(
+    records,
+    run,
+    prev,
+    run.valueIds.idOf(run.tokenLists, tokenizeMode(prop), text + before[0])
+  );
 }
 
 /**

@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
+import { tokenize } from '@csstools/css-tokenizer';
+import { describe, test } from 'node:test';
+import { replaceComments } from '../../src/run/comments/replaceComments.js';
 import postcss from 'postcss';
 import litePreset from '../../src/presets/lite.js';
 import defaultPreset from '../../src/presets/default.js';
@@ -111,5 +113,42 @@ test('the default preset without whitespace normalization keeps the newline afte
       'normalizeWhitespace',
     ]),
     'a{color:red;font-family:a b\\\n}'
+  );
+});
+
+const removeAll = () => true;
+
+describe('replaceComments keeps the newline after a final backslash', () => {
+  test('a removed comment at the end of a value keeps the newline before it', () => {
+    assert.equal(
+      replaceComments(tokenize({ css: 'a\\\n/**/' }), removeAll),
+      'a\\\n'
+    );
+  });
+
+  test('a removed comment between the newline and the next token keeps the newline', () => {
+    assert.equal(
+      replaceComments(tokenize({ css: 'a\\\n/**/ b' }), removeAll),
+      'a\\\n b'
+    );
+  });
+});
+
+for (const [name, preset] of [
+  ['default', defaultPreset],
+  ['lite', litePreset],
+]) {
+  test(`${name} keeps the newline after a final backslash when a comment is removed at the value end`, async () => {
+    const result = await postcss(
+      preset({ browserslist: { query: testTargets } })
+    ).process('.a{color:a\\\n/**/}.b{top:0}', { from: undefined });
+    assert.equal(result.css, '.a{color:a\\\n}.b{top:0}');
+  });
+}
+
+test('lite keeps the newline after a final backslash when a comment before a semicolon goes', async () => {
+  assert.equal(
+    await minify('.a{color:a\\\n/**/;top:0}'),
+    '.a{color:a\\\n;top:0}'
   );
 });
