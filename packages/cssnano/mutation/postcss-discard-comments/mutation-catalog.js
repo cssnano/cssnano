@@ -71,9 +71,8 @@ export const mutations = [
   {
     name: 'preserve removable comment nodes',
     target: walk,
-    find: 'if (comments.canRemove(text)) remove(this.#records, index);',
-    replace:
-      'if (comments.canRemove(text) && false) remove(this.#records, index);',
+    find: 'if (!comments.canRemove(text)) return;',
+    replace: 'if (!comments.canRemove(text) || true) return;',
   },
   {
     name: 'skip declaration comment processing',
