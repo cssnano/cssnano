@@ -194,7 +194,8 @@ describe('Cross-tool compatibility edge cases', () => {
     'retains gradients when background shorthands coexist',
     processCss(
       '.test{background:url("http://placehold.it/100x100");background-repeat:repeat;background-image:linear-gradient(rgba(44,44,44,.1),rgba(44,44,44,.5)),url("http://placehold.it/100x100")}',
-      '.test{background:url(http://placehold.it/100x100);background-repeat:repeat;background-image:linear-gradient(rgba(44,44,44,.1),rgba(44,44,44,.5)),url(http://placehold.it/100x100)}'
+      // The shorthand already sets background-repeat to its initial value, so the longhand is dropped.
+      '.test{background:url(http://placehold.it/100x100);background-image:linear-gradient(rgba(44,44,44,.1),rgba(44,44,44,.5)),url(http://placehold.it/100x100)}'
     )
   );
 
