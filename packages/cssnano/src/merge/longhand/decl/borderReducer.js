@@ -1,6 +1,9 @@
 import cssnanoUtils from '#utils';
 import { isCssWideKeyword } from '../isCssWideKeyword.js';
-import { discardOverriddenInList } from './overriddenDeclarations.js';
+import {
+  candidateLimit,
+  discardOverriddenInList,
+} from './overriddenDeclarations.js';
 import minifyTrbl from '../minifyTrbl.js';
 import minifyWidthStyleColor from '../minifyWsc.js';
 import { expandFourSides } from '../parseTrbl.js';
@@ -128,7 +131,8 @@ function isDeclarationFallback(list, prev, d, features) {
  * @param {ReadonlySet<string>} features the features every target supports
  */
 function updateCell(list, idx, d, value, part, isBarrier, state, features) {
-  for (const prev of state.cellHistory[idx]) {
+  const history = state.cellHistory[idx];
+  for (const prev of history) {
     if (isDeclarationFallback(list, prev, d, features))
       state.fallbacks.add(prev);
   }
@@ -139,7 +143,9 @@ function updateCell(list, idx, d, value, part, isBarrier, state, features) {
     state.cells[idx] = value;
     state.cellComponents[idx] = part;
   }
-  state.cellHistory[idx].add(d);
+  // Past candidateLimit a fallback is missed, which only keeps a declaration,
+  // and the history comparison stays bounded per cell.
+  if (history.size < candidateLimit) history.add(d);
   state.touched.add(idx);
 }
 
