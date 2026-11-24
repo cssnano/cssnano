@@ -1,6 +1,6 @@
 import cssnanoUtils from '#utils';
 import minifyTrbl from '../minifyTrbl.js';
-import { toLower } from '../parseWsc.js';
+import { lowerComponentText } from '../parseWsc.js';
 import { mergeBlockingSupport, needsUnmetSupport } from '../isFallback.js';
 import {
   allBorderShorthands,
@@ -15,6 +15,7 @@ import { minifyCells } from './borderCells.js';
 
 const { asciiLowerCase } = cssnanoUtils;
 /** @import {BlockDeclarations} from '../blockDeclarations.js'; */
+/** @import {SegmentState} from './borderReducer.js' */
 /** @import {ValueComponent} from '../componentRanges.js' */
 
 /* Builds the reset shorthands, component shorthands, side shorthands and
@@ -105,9 +106,11 @@ function addResetCandidates(cells, cellComponents, lane, rawCandidates) {
     if (sideTriples.every((t) => t[o1] === t0[o1] && t[o2] === t0[o2])) {
       const bIndexes = [0, 1, 2].map((k) => (k === c ? -1 : k));
       const bVal = minifyCells(cells, cellComponents, bIndexes);
-      const rawComp = [cells[c], cells[3 + c], cells[6 + c], cells[9 + c]]
-        .filter((cell) => cell !== '')
-        .map(toLower);
+      const rawComp = [c, 3 + c, 6 + c, 9 + c]
+        .filter((index) => cells[index] !== '')
+        .map((index) =>
+          lowerComponentText(cells[index], cellComponents[index])
+        );
       rawCandidates.push({
         decls: [decl('border', bVal), comp(c, minifyTrbl(rawComp))],
         rank: RESET_CANDIDATE,
@@ -278,7 +281,13 @@ function createGroupCandidate(
       const c = group[0] % 3;
       return comp(
         c,
-        minifyTrbl(groups.length === 3 ? groupValues.map(toLower) : groupValues)
+        minifyTrbl(
+          // Keywords match ASCII case-insensitively, so only the spelling
+          // changes; the uppercase fixtures pin lowercasing for this shape only.
+          groups.length === 3
+            ? group.map((i) => lowerComponentText(cells[i], cellComponents[i]))
+            : groupValues
+        )
       );
     }
     return side(
@@ -328,30 +337,22 @@ function createLeafCandidate(cells, touched, blockedCells) {
   };
 }
 /**
- * @param {boolean} hasReset
- * @param {Set<number>} touched
- * @param {Set<number>} barrierCells
- * @param {Set<number>[]} cellHistory
- * @param {string[]} cells
- * @param {(ValueComponent | undefined)[]} cellComponents
+ * @param {SegmentState} state
  * @param {boolean} lane
- * @param {Set<number>} fallbacks
  * @param {BlockDeclarations} list
  * @param {ReadonlySet<string>} features the features every target supports
  * @return {{ decls: { prop: string, value: string }[], rank: number, mask: number, resetIndex: number, coveredCells: Set<number> }[]}
  */
-function createResetCandidates(
-  hasReset,
-  touched,
-  barrierCells,
-  cellHistory,
-  cells,
-  cellComponents,
-  lane,
-  fallbacks,
-  list,
-  features
-) {
+function createResetCandidates(state, lane, list, features) {
+  const {
+    resetFound: hasReset,
+    touched,
+    barrierCells,
+    cellHistory,
+    cells,
+    cellComponents,
+    fallbacks,
+  } = state;
   if (!hasReset || touched.size !== 12 || barrierCells.size !== 0) return [];
   const allDecls = declarationsOfCells(cellHistory, touched);
   for (const d of allDecls) {

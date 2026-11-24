@@ -250,9 +250,9 @@ function flush(
   const full = flushableSlots(slots, list, features);
   if (!full) return;
 
-  const kw = isCssWideKeyword(full[0].value);
-  const rawValues = full.map((s) => s.value).join(' ');
-  const shorthandVal = kw ? full[0].value : formsOf(family).minify(rawValues);
+  const values = full.map((s) => s.value);
+  const kw = isCssWideKeyword(values[0]);
+  const shorthandVal = kw ? values[0] : formsOf(family).minify(values);
   commitShorthand(list, full, contributing, fallbacks, {
     prop: family.shorthand,
     value: shorthandVal,

@@ -78,6 +78,21 @@ for (const family of Object.values(alignmentFamilies)) {
 }
 
 /**
+ * Whether a value holds a CSS whitespace or a backslash, so its components
+ * need the token split rather than the raw text.
+ *
+ * @param {string} text
+ * @return {boolean}
+ */
+function needsTokenSplit(text) {
+  for (let index = 0; index < text.length; index++) {
+    const code = text.charCodeAt(index);
+    if (code === 92 || cssnanoUtils.isCSSWhitespace(code)) return true;
+  }
+  return false;
+}
+
+/**
  * Parses a 1- or 2-value alignment shorthand value into its component slots.
  * Returns null if the value is invalid or malformed per CSS Box Alignment 3.
  *
@@ -88,10 +103,10 @@ for (const family of Object.values(alignmentFamilies)) {
 function parseAlignmentShorthand(family, decl) {
   const trimmed = decl.value.trim();
   const lower = asciiLowerCase(trimmed);
-  if (!/[\s\\]/v.test(lower)) {
-    if (cssWideKeywords.has(lower) || family.symmetricForms.has(lower)) {
-      return [trimmed, trimmed];
-    }
+  // A set member has one ASCII space between its words, so the trimmed text
+  // is the joined raw components that the token path below would return.
+  if (cssWideKeywords.has(lower) || family.symmetricForms.has(lower)) {
+    return [trimmed, trimmed];
   }
 
   const parsed = splitValue(decl.value, undefined, decl.tokens);
@@ -145,7 +160,7 @@ export function parseAlignmentDeclaration(family, decl) {
 
   let normalized = value;
   if (!isCssWideKeyword(value) && !isCustomProp(decl)) {
-    if (/[\s\\]/v.test(value)) {
+    if (needsTokenSplit(value)) {
       const parsed = splitValue(decl.value, undefined, decl.tokens);
       if (!parsed || parsed.length !== 1) return null;
       const components = parsed[0].components;

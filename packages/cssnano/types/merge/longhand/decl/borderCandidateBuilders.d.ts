@@ -1,6 +1,8 @@
 import type { BlockDeclarations } from '../blockDeclarations.js';
+import type { SegmentState } from './borderReducer.js';
 import type { ValueComponent } from '../componentRanges.js';
 /** @import {BlockDeclarations} from '../blockDeclarations.js'; */
+/** @import {SegmentState} from './borderReducer.js' */
 /** @import {ValueComponent} from '../componentRanges.js' */
 /** @param {{prop: string, value: string}[]} decls @param {boolean} [important] */
 declare function declSize(decls: {
@@ -72,19 +74,13 @@ declare function createLeafCandidate(cells: string[], touched: Set<number>, bloc
     coveredCells: Set<number>;
 };
 /**
- * @param {boolean} hasReset
- * @param {Set<number>} touched
- * @param {Set<number>} barrierCells
- * @param {Set<number>[]} cellHistory
- * @param {string[]} cells
- * @param {(ValueComponent | undefined)[]} cellComponents
+ * @param {SegmentState} state
  * @param {boolean} lane
- * @param {Set<number>} fallbacks
  * @param {BlockDeclarations} list
  * @param {ReadonlySet<string>} features the features every target supports
  * @return {{ decls: { prop: string, value: string }[], rank: number, mask: number, resetIndex: number, coveredCells: Set<number> }[]}
  */
-declare function createResetCandidates(hasReset: boolean, touched: Set<number>, barrierCells: Set<number>, cellHistory: Set<number>[], cells: string[], cellComponents: (ValueComponent | undefined)[], lane: boolean, fallbacks: Set<number>, list: BlockDeclarations, features: ReadonlySet<string>): {
+declare function createResetCandidates(state: SegmentState, lane: boolean, list: BlockDeclarations, features: ReadonlySet<string>): {
     decls: {
         prop: string;
         value: string;

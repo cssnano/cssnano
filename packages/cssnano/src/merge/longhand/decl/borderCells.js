@@ -1,5 +1,5 @@
 import minifyWidthStyleColor, { minifyComponents } from '../minifyWsc.js';
-import { toLower } from '../parseWsc.js';
+import { lowerComponentText } from '../parseWsc.js';
 import { isBorderStyle, isBorderWidth, isColor } from '../validateWsc.js';
 
 /** @import {ValueComponent} from '../componentRanges.js' */
@@ -42,7 +42,7 @@ export function minifyCells(cells, cellComponents, indexes) {
     ) {
       return minifyWidthStyleColor(joinCells(cells, indexes));
     }
-    values.push(toLower(text));
+    values.push(lowerComponentText(text, component));
     named++;
   }
   if (named < 2) return minifyWidthStyleColor(joinCells(cells, indexes));

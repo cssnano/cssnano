@@ -48,14 +48,16 @@ function* everyTouchedSet(hasReset) {
     });
     const cells = cellNames.map((_, index) => values[index % 3]);
     const candidates = generateCandidates(
-      cells,
-      { tokens: [], starts: [], ends: [] },
-      cellHistory,
-      touched,
-      new Set(),
-      hasReset,
+      {
+        cells,
+        cellComponents: { tokens: [], starts: [], ends: [] },
+        cellHistory,
+        touched,
+        barrierCells: new Set(),
+        fallbacks: new Set(),
+        resetFound: hasReset,
+      },
       false,
-      new Set(),
       list
     );
     yield { touched, candidates: candidates.map((c) => c.decls) };

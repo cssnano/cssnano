@@ -5,10 +5,7 @@ import isCustomProp from './isCustomProp.js';
  * @param {import('./blockDeclarations.js').DeclarationItem} prop
  * @param {boolean} [includeCustomProps]
  */
-export default (prop, includeCustomProps = true) => {
-  return !(
-    !prop.value ||
-    (includeCustomProps && isCustomProp(prop)) ||
-    (prop.value && isCssWideKeyword(prop.value))
-  );
-};
+export default (prop, includeCustomProps = true) =>
+  Boolean(prop.value) &&
+  !(includeCustomProps && isCustomProp(prop)) &&
+  !isCssWideKeyword(prop.value);

@@ -1,5 +1,6 @@
 import cssnanoUtils from '#utils';
 /** @import {BlockDeclarations} from '../blockDeclarations.js' */
+/** @import {SegmentState} from './borderReducer.js' */
 /** @import {ValueComponent} from '../componentRanges.js' */
 import { setsLonghands } from '../../../ir/spec.js';
 import {
@@ -91,29 +92,20 @@ function compareCandidates(a, b, lane) {
   return 0;
 }
 /**
- * @param {string[]} cells
- * @param {(ValueComponent | undefined)[]} cellComponents
- * @param {Set<number>[]} cellHistory
- * @param {Set<number>} touched
- * @param {Set<number>} barrierCells
- * @param {boolean} hasReset
+ * @param {SegmentState} state the cells and their histories of the segment
  * @param {boolean} lane
- * @param {Set<number>} fallbacks
  * @param {BlockDeclarations} list
  * @param {ReadonlySet<string>} features the features every target supports
  */
-export function generateCandidates(
-  cells,
-  cellComponents,
-  cellHistory,
-  touched,
-  barrierCells,
-  hasReset,
-  lane,
-  fallbacks,
-  list,
-  features
-) {
+export function generateCandidates(state, lane, list, features) {
+  const {
+    cells,
+    cellComponents,
+    cellHistory,
+    touched,
+    barrierCells,
+    fallbacks,
+  } = state;
   const availSides = getAvailableSides(
     cellHistory,
     touched,
@@ -150,18 +142,7 @@ export function generateCandidates(
     ...existingLeafCells,
   ]);
 
-  const resetCands = createResetCandidates(
-    hasReset,
-    touched,
-    barrierCells,
-    cellHistory,
-    cells,
-    cellComponents,
-    lane,
-    fallbacks,
-    list,
-    features
-  );
+  const resetCands = createResetCandidates(state, lane, list, features);
 
   const compCands = getSubsets(availComps).map((sub) =>
     createGroupCandidate(
