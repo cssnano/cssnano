@@ -1,7 +1,11 @@
 import { tokenize, TokenType } from '@csstools/css-tokenizer';
 import cssnanoUtils from '#utils';
 import { AT_RULE_BLOCK, DECLARATION, RULE } from '../ir/blockRecord.js';
-import { writeBetween, writeImportantSpelling } from '../ir/rawEdits.js';
+import {
+  writeAfter,
+  writeBetween,
+  writeImportantSpelling,
+} from '../ir/rawEdits.js';
 import { sourceListOf } from '../ir/writtenList.js';
 import { writeValueList } from '../ir/valueEdits.js';
 import { tokenizeMode } from '../values/tokenizeMode.js';
@@ -189,15 +193,14 @@ export function keepCommentNewlineEscape(records, run, index) {
     return;
   const prev = links.prevSibling(index);
   if (prev === -1 || records.entry(prev).kind !== DECLARATION) return;
-  const block = /** @type {RuleRecord | BlockRecord} */ (
-    records.entry(/** @type {ArenaIndex} */ (links.parentOf(index)))
-  );
+  const parent = /** @type {ArenaIndex} */ (links.parentOf(index));
+  const block = /** @type {RuleRecord | BlockRecord} */ (records.entry(parent));
   if (block.kind !== RULE && block.kind !== AT_RULE_BLOCK) return;
   const { important, prop, valueList } = declarationAt(records, prev);
   if (important) return;
   const text = tokensText(run.tokenLists.get(valueList));
   if (!cssnanoUtils.endsWithEscapingBackslash(text)) return;
-  block.after = before.slice(1) + (block.after ?? '');
+  writeAfter(records, parent, before.slice(1) + (block.after ?? ''));
   writeValueList(
     records,
     run,

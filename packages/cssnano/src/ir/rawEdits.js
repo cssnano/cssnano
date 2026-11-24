@@ -29,6 +29,20 @@ export function writeBefore(records, index, before) {
 }
 
 /**
+ * Writes the whitespace a block prints before its closing brace, which the
+ * printer reads. A caller that moves its first character elsewhere, as an
+ * escape does, writes the rest here.
+ *
+ * @param {BlockRecords} records
+ * @param {ArenaIndex} index the index of a rule, or of the block of an at-rule
+ * @param {string} after
+ * @return {void}
+ */
+export function writeAfter(records, index, after) {
+  /** @type {RuleRecord | BlockRecord} */ (records.entry(index)).after = after;
+}
+
+/**
  * Writes the whitespace the stylesheet prints after its last child.
  *
  * @param {BlockRecords} records
