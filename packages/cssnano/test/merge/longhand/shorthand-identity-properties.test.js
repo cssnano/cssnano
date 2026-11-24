@@ -56,7 +56,7 @@ describe('two-axis shorthand identities', () => {
     )
   );
   test(
-    'accepts a two-argument log nested in a length calculation',
+    'collapses a repeated two-argument log nested in a length calculation',
     processCSS(
       'a{inset:calc(log(10,2) * 1px) 2px calc(log(10,2) * 1px) 2px}',
       'a{inset:calc(log(10,2) * 1px) 2px}'

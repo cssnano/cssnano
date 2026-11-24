@@ -3,17 +3,13 @@ export type FunctionFrame = {
     expected: import('@csstools/css-tokenizer').TokenType;
     commas: number;
     hasValue: boolean;
-    firstArgument: 'empty' | 'keyword' | 'value';
-    calculation: boolean;
-    operand: boolean;
 };
 import type { Component } from './valueComponents.js';
 /**
- * firstArgument is 'keyword' only while the first argument of round() is a
- * lone <rounding-strategy>, which the arity table does not count. In a
- * calculation, operand records whether the argument so far ends with a value.
+ * name is null for a bare parenthesized group. Math is typed by mathType, so a
+ * frame needs no calculation state.
  *
- * @typedef {{name: string | null, expected: import('@csstools/css-tokenizer').TokenType, commas: number, hasValue: boolean, firstArgument: 'empty' | 'keyword' | 'value', calculation: boolean, operand: boolean}} FunctionFrame
+ * @typedef {{name: string | null, expected: import('@csstools/css-tokenizer').TokenType, commas: number, hasValue: boolean}} FunctionFrame
  */
 /** @import {Component} from './valueComponents.js' */
 /** @param {import('@csstools/css-tokenizer').CSSToken} token @return {string} */
@@ -32,15 +28,15 @@ export declare function componentKey(component: Component): string;
 /** @param {Component} component @return {boolean} */
 export declare function hasCssWideKeyword(component: Component): boolean;
 /**
- * Check function names recursively. Detailed value grammar belongs to the
- * individual reducer; rejecting unknown and substitution functions here keeps
- * every reducer conservative without losing raw function spelling.
+ * Checks the nesting, commas and argument counts of a timing function such as
+ * `cubic-bezier(0, 0, 1, 1)`. Only the names in `timingFunctions` may open a
+ * function. The grammar does not check the argument values.
  *
  * @param {Component} component
- * @param {Set<string>} allowed
+ * @param {Set<string>} timingFunctions
  * @return {boolean}
  */
-export declare function hasAllowedFunctions(component: Component, allowed: Set<string>): boolean;
+export declare function hasTimingFunctionArguments(component: Component, timingFunctions: Set<string>): boolean;
 /** @param {Component} component @return {{number: number, unit: string} | false} */
 export declare function directNumeric(component: Component): {
     number: number;

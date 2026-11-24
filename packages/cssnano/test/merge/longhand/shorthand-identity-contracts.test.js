@@ -93,7 +93,7 @@ describe('shorthand identity fail-closed contracts', () => {
     passthroughCSS('a{gap:round(1px +,2px) round(1px +,2px)}')
   );
   test(
-    'folds repeated round() values that combine a rounding strategy with an operator expression',
+    'collapses repeated round() values that combine a rounding strategy with an operator expression',
     processCSS(
       'a{gap:round(up, 1px * 2, 2px) round(up, 1px * 2, 2px)}',
       'a{gap:round(up, 1px * 2, 2px)}'
@@ -141,7 +141,7 @@ describe('shorthand identity rule integration contracts', () => {
     processCSS('a{gap:2rem 2rem;gap:1rem 1rem}', 'a{gap:1rem}')
   );
   test(
-    'folds a round() that leads with a rounding strategy',
+    'collapses a repeated round() that leads with a rounding strategy',
     processCSS(
       'a{gap:round(up,1px,2px) round(up,1px,2px)}',
       'a{gap:round(up,1px,2px)}'

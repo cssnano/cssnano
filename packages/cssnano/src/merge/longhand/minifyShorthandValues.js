@@ -8,8 +8,8 @@ import {
   componentKey,
   componentName,
   directNumeric,
-  hasAllowedFunctions,
   hasCssWideKeyword,
+  hasTimingFunctionArguments,
   isLengthComponent,
   tokenName,
 } from './shorthandValueGrammar.js';
@@ -200,7 +200,7 @@ function isTimingFunction(component) {
   return (
     token[0] === TokenType.Function &&
     timingFunctions.has(tokenName(token)) &&
-    hasAllowedFunctions(component, timingFunctions)
+    hasTimingFunctionArguments(component, timingFunctions)
   );
 }
 

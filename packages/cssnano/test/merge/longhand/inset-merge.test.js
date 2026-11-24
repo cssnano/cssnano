@@ -159,3 +159,16 @@ describe('inset with values the plugin cannot evaluate or that no browser keeps'
     passthroughCSS('a{top:5;right:0;bottom:0;left:0}', modern)
   );
 });
+
+test(
+  'keeps inset sides that use anchor-size() unshortened, because mathType does not type anchor-size()',
+  passthroughCSS('a{inset:anchor-size(width) 1px anchor-size(width) 1px}')
+);
+
+test(
+  'keeps inset longhands with anchor-size() unmerged, because its type is unknown',
+  passthroughCSS(
+    'a{top:anchor-size(width);right:anchor-size(width);bottom:anchor-size(width);left:anchor-size(width)}',
+    modern
+  )
+);

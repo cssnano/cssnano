@@ -136,3 +136,15 @@ describe('calc() support', () => {
     assert.equal(await run(css, 'op_mini all'), css);
   });
 });
+
+describe('round() and mod() support', () => {
+  test('keeps longhands unmerged for Chrome 120, which lacks round() nested in calc()', async () => {
+    const css = `a{${marginSides('calc(round(up, 1px, 2px))')}}`;
+    assert.equal(await run(css, 'chrome 120'), css);
+  });
+
+  test('keeps longhands unmerged for Chrome 120, which lacks a bare mod()', async () => {
+    const css = `a{${marginSides('mod(5px, 2px)')}}`;
+    assert.equal(await run(css, 'chrome 120'), css);
+  });
+});

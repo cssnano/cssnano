@@ -83,15 +83,15 @@ describe('column-height merge blocking', () => {
   test(
     'should merge longhands when another rule contains a numerical division',
     processCSS(
-      'h1{columns:calc(100%/3)}h2{column-width:20em;column-count:2}',
-      'h1{columns:calc(100%/3)}h2{columns:20em 2}'
+      'h1{columns:calc(100px/3)}h2{column-width:20em;column-count:2}',
+      'h1{columns:calc(100px/3)}h2{columns:20em 2}'
     )
   );
 
   test(
     'should merge longhands beside a shorthand containing a numerical division sign',
     processCSS(
-      'h1{columns:calc(100%/3);column-width:20em;column-count:2}',
+      'h1{columns:calc(100px/3);column-width:20em;column-count:2}',
       'h1{columns:20em 2}'
     )
   );
@@ -99,7 +99,7 @@ describe('column-height merge blocking', () => {
   test(
     'should ignore slashes in nested square and curly blocks',
     processCSS(
-      'h1{columns:calc(100%/3);column-width:20em;column-count:2}',
+      'h1{columns:calc(100px/3);column-width:20em;column-count:2}',
       'h1{columns:20em 2}'
     )
   );
