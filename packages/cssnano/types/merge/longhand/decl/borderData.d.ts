@@ -1,6 +1,6 @@
 export declare const widthStyleColor: string[];
 export declare const sides: string[];
-export declare const allSidesBorderShorthands: string[];
+export declare const allSidesBorderShorthands: Set<string>;
 export declare const borderAndSideShorthands: Set<string>;
 export declare const allBorderShorthands: Set<string>;
 export declare const cellProperties: string[];

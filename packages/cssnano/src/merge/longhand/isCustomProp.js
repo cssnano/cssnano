@@ -24,9 +24,20 @@ export function opensCustomPropertyVar(input) {
 }
 
 /**
+ * Whether a value can hold a custom property name or an escape that spells
+ * one, the only spellings a `var()` of a custom property needs.
+ *
+ * @param {string} value
+ * @return {boolean}
+ */
+export function mayNameCustomProperty(value) {
+  return value.includes('--') || value.includes('\\');
+}
+
+/**
  * @param {import('./blockDeclarations.js').DeclarationItem} node
  */
 export default (node) => {
-  if (!node.value.includes('--') && !node.value.includes('\\')) return false;
+  if (!mayNameCustomProperty(node.value)) return false;
   return opensCustomPropertyVar(node.tokens);
 };

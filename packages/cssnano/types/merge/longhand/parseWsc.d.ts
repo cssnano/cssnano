@@ -1,5 +1,15 @@
-/** @type {(v: string) => string} */
-declare const toLower: (v: string) => string;
+import type { ValueComponent } from './componentRanges.js';
+/**
+ * Lowercases the ASCII letters of a component's text, keeping each dashed
+ * ident as written: a custom property name is case-sensitive.
+ *
+ * @param {string} text the text the component spells; any other text is
+ * returned as written, as its token offsets would not apply
+ * @param {ValueComponent | undefined} component the component, whose tokens
+ * name the dashed idents; a component without tokens has none
+ * @return {string}
+ */
+export declare function lowerComponentText(text: string, component: ValueComponent | undefined): string;
 /**
  * Parse a `<line-width> || <line-style> || <color>` value in one pass.
  *
@@ -43,6 +53,5 @@ declare function parseWidthStyleColor(value: string, tokens?: readonly import('@
         color: (import('./componentRanges.js').ValueComponent | undefined);
     };
 } | null;
-export { toLower };
 export default parseWidthStyleColor;
 //# sourceMappingURL=parseWsc.d.ts.map

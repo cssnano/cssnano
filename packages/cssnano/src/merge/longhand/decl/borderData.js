@@ -8,7 +8,9 @@ export const sides = spec.sides;
 /** @param {string[]} parts */
 const borderProperty = (...parts) => `border-${parts.join('-')}`;
 const physicalBorderShorthands = spec.sides.map((side) => borderProperty(side));
-export const allSidesBorderShorthands = spec.shorthand('border').longhands;
+export const allSidesBorderShorthands = new Set(
+  spec.shorthand('border').longhands
+);
 
 /** @type {string[]} */
 const physicalDirectionalProperties = [];
@@ -47,7 +49,7 @@ export const componentCells = widthStyleColor.map((_, c) => [
 
 const precedence = [
   ['border'],
-  physicalBorderShorthands.concat(allSidesBorderShorthands),
+  [...physicalBorderShorthands, ...allSidesBorderShorthands],
   physicalDirectionalProperties,
 ];
 

@@ -1,7 +1,7 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import parseWidthStyleColor, {
-  toLower,
+  lowerComponentText,
 } from '../../../src/merge/longhand/parseWsc.js';
 import minifyWidthStyleColor from '../../../src/merge/longhand/minifyWsc.js';
 import { tokens } from '../../../src/utils/value.js';
@@ -225,13 +225,44 @@ describe('parseWsc values the browser ignores', () => {
   });
 });
 
+/* Lower-cases a whole value as one component that its tokens spell. */
+function lowerValue(value) {
+  const list = tokens(value);
+  return lowerComponentText(value, {
+    raw: value,
+    list,
+    start: 0,
+    end: list.length,
+  });
+}
+
 describe('parseWsc lower-casing', () => {
   test('preserves custom property spelling while lower-casing grammar terms', () => {
-    assert.strictEqual(toLower('VAR(--Foo) SOLID red'), 'var(--Foo) solid red');
+    assert.strictEqual(
+      lowerValue('VAR(--Foo) SOLID red'),
+      'var(--Foo) solid red'
+    );
   });
 
   test('returns an empty value unchanged', () => {
-    assert.strictEqual(toLower(''), '');
+    assert.strictEqual(lowerComponentText('', undefined), '');
+  });
+
+  test('leaves text unlowered when it is not the source slice of the component, because token offsets would then misplace the dashed idents', () => {
+    const value = 'VAR(--Brand-Color)';
+    const list = tokens(value);
+    const component = { raw: value, list, start: 0, end: list.length };
+    assert.strictEqual(
+      lowerComponentText(`  ${value}`, component),
+      `  ${value}`
+    );
+  });
+
+  test('keeps a dashed ident byte-identical in the source slice of a component', () => {
+    assert.strictEqual(
+      lowerValue('SOLID var(--Brand-Color)'),
+      'solid var(--Brand-Color)'
+    );
   });
 });
 

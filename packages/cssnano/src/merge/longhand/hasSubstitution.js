@@ -1,5 +1,8 @@
 import { splitComponents, valueTokens } from './componentRanges.js';
-import { opensCustomPropertyVar } from './isCustomProp.js';
+import {
+  mayNameCustomProperty,
+  opensCustomPropertyVar,
+} from './isCustomProp.js';
 import { isSubstitution } from '../../ir/unresolved.js';
 
 /**
@@ -15,7 +18,7 @@ import { isSubstitution } from '../../ir/unresolved.js';
 export default function hasSubstitution(value, tokens) {
   const spelled = valueTokens(value, tokens);
   return (
-    ((value.includes('--') || value.includes('\\')) &&
+    (mayNameCustomProperty(value) &&
       spelled !== undefined &&
       opensCustomPropertyVar(spelled)) ||
     splitComponents(value, spelled).some((part) =>

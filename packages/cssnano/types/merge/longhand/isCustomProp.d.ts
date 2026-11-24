@@ -5,6 +5,14 @@
  * @return {boolean}
  */
 export declare function opensCustomPropertyVar(input: readonly import('@csstools/css-tokenizer').CSSToken[]): boolean;
+/**
+ * Whether a value can hold a custom property name or an escape that spells
+ * one, the only spellings a `var()` of a custom property needs.
+ *
+ * @param {string} value
+ * @return {boolean}
+ */
+export declare function mayNameCustomProperty(value: string): boolean;
 export default _default;
 /**
  * @param {import('./blockDeclarations.js').DeclarationItem} node

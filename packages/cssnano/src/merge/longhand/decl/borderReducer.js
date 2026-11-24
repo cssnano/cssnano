@@ -57,7 +57,7 @@ function borderBrowserKeeps(declaration) {
     return parseWidthStyleColor(declaration.value, tokens) !== null;
   }
   const component = /** @type {string} */ (prop.split('-').at(-1));
-  if (!allSidesBorderShorthands.includes(prop)) {
+  if (!allSidesBorderShorthands.has(prop)) {
     return specifiesComponent(declaration.value, tokens, component);
   }
   const parts = splitComponents(declaration.value, tokens);
@@ -81,7 +81,7 @@ function normalizeBorderSingleton(list, position) {
       p,
       minifyWidthStyleColor(d.value, declarationTokens(d))
     );
-  } else if (allSidesBorderShorthands.includes(p)) {
+  } else if (allSidesBorderShorthands.has(p)) {
     list.rewrite(position, p, minifyTrbl(componentTexts(d)));
   }
 }
@@ -182,7 +182,7 @@ function applySegmentDeclaration(list, position, state, features) {
     }
     if (isB && !isBarrier && isValidWidthStyleColor(parsed))
       state.resetFound = true;
-  } else if (allSidesBorderShorthands.includes(prop)) {
+  } else if (allSidesBorderShorthands.has(prop)) {
     const c = components.indexOf(prop.slice(7));
     const parts = expandFourSides(splitComponents(d.value, tokens));
     for (let s = 0; s < 4; s++) {
@@ -251,7 +251,7 @@ function reduceSegment(list, segment, lane, features) {
   if (segment.length === 1) {
     const position = segment[0];
     const d = list.at(position);
-    if (allSidesBorderShorthands.includes(asciiLowerCase(d.prop))) {
+    if (allSidesBorderShorthands.has(asciiLowerCase(d.prop))) {
       list.rewrite(position, d.prop, minifyTrbl(componentTexts(d)));
     }
     return;
@@ -260,19 +260,7 @@ function reduceSegment(list, segment, lane, features) {
   const state = analyzeSegment(list, segment, features);
   if (state.touched.size === 0) return;
 
-  const hasReset = state.resetFound;
-  const candidates = generateCandidates(
-    state.cells,
-    state.cellComponents,
-    state.cellHistory,
-    state.touched,
-    state.barrierCells,
-    hasReset,
-    lane,
-    state.fallbacks,
-    list,
-    features
-  );
+  const candidates = generateCandidates(state, lane, list, features);
 
   const best = selectBestCandidate(
     list,

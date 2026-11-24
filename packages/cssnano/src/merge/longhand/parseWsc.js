@@ -3,7 +3,8 @@ import { splitComponents } from './componentRanges.js';
 import { isBorderWidth, isBorderStyle, isColor } from './validateWsc.js';
 import { isSubstitution } from '../../ir/unresolved.js';
 
-const { asciiLowerCase } = cssnanoUtils;
+const { TokenType, asciiLowerCase, decoded, tokenEnd, tokenStart } =
+  cssnanoUtils;
 /** @import {ValueComponent} from './componentRanges.js' */
 /* The values that spell only initial components: a style `none` alone, or the
  * initial width, optionally followed by the initial style and color. A repeated
@@ -11,30 +12,39 @@ const { asciiLowerCase } = cssnanoUtils;
 const none =
   /^[ \t\n\r\f]*(none|medium([ \t\n\r\f]+none([ \t\n\r\f]+currentcolor)?)?)[ \t\n\r\f]*$/v;
 
-/* Approximate https://drafts.csswg.org/css-values-4/#typedef-dashed-ident */
-// eslint-disable-next-line no-control-regex
-const varRE = /--(\w|-|[^\x00-\x7F])+/gv;
-/** @type {(v: string) => string} */
-const toLower = (v) => {
-  let match;
-  let lastIndex = 0;
+/**
+ * Lowercases the ASCII letters of a component's text, keeping each dashed
+ * ident as written: a custom property name is case-sensitive.
+ *
+ * @param {string} text the text the component spells; any other text is
+ * returned as written, as its token offsets would not apply
+ * @param {ValueComponent | undefined} component the component, whose tokens
+ * name the dashed idents; a component without tokens has none
+ * @return {string}
+ */
+export function lowerComponentText(text, component) {
+  if (component === undefined || component.list === undefined) {
+    return asciiLowerCase(text);
+  }
+  const list = component.list;
+  if (component.start >= component.end) return asciiLowerCase(text);
+  const base = tokenStart(list[component.start]);
+  // Token offsets locate idents only in the component's own source slice.
+  if (text.length !== tokenEnd(list[component.end - 1]) - base) return text;
   let result = '';
-  varRE.lastIndex = 0;
-  while ((match = varRE.exec(v)) !== null) {
-    if (match.index > lastIndex) {
-      result += asciiLowerCase(v.substring(lastIndex, match.index));
+  let last = 0;
+  for (let index = component.start; index < component.end; index++) {
+    const token = list[index];
+    if (token[0] !== TokenType.Ident || !decoded(token).startsWith('--')) {
+      continue;
     }
-    result += match[0];
-    lastIndex = match.index + match[0].length;
+    const from = tokenStart(token) - base;
+    const to = tokenEnd(token) - base;
+    result += asciiLowerCase(text.slice(last, from)) + text.slice(from, to);
+    last = to;
   }
-  if (lastIndex < v.length) {
-    result += asciiLowerCase(v.substring(lastIndex));
-  }
-  if (result === '') {
-    return v;
-  }
-  return result;
-};
+  return result + asciiLowerCase(text.slice(last));
+}
 
 /**
  * Parse a `<line-width> || <line-style> || <color>` value in one pass.
@@ -93,19 +103,19 @@ function parseWidthStyleColor(value, tokens) {
       specified++;
       named.style = true;
       parts.style = component;
-      style = toLower(text);
+      style = lowerComponentText(text, component);
     } else if (isBorderWidth(text, part, start, end)) {
       if (width !== undefined) return null;
       specified++;
       named.width = true;
       parts.width = component;
-      width = toLower(text);
+      width = lowerComponentText(text, component);
     } else if (isColor(text, part, start, end)) {
       if (color !== undefined) return null;
       specified++;
       named.color = true;
       parts.color = component;
-      color = toLower(text);
+      color = lowerComponentText(text, component);
     } else if (isSubstitution(part, start, end)) {
       substituted = true;
       substitutions.push(text);
@@ -132,5 +142,4 @@ function parseWidthStyleColor(value, tokens) {
   return { width, style, color, specified: named, parts };
 }
 
-export { toLower };
 export default parseWidthStyleColor;

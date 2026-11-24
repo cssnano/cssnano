@@ -68,8 +68,8 @@ export const mutations = [
   {
     name: 'format a border cell that fails its slot check instead of falling back',
     target: cells,
-    find: '      return minifyWidthStyleColor(joinCells(cells, indexes));\n    }\n    values.push(toLower(text));',
-    replace: '    }\n    values.push(toLower(text));',
+    find: '      return minifyWidthStyleColor(joinCells(cells, indexes));\n    }\n    values.push(lowerComponentText(text, component));',
+    replace: '    }\n    values.push(lowerComponentText(text, component));',
   },
   {
     name: 'classify border cells with the width classifier in the style slot',
