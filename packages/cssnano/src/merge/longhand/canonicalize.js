@@ -20,6 +20,7 @@ import {
 /** @import {BoxSupport} from './targetSupport.js' */
 /** @import {RunContext} from '../../run/runContext.js' */
 import { discardOverriddenDeclarations } from './decl/overriddenDeclarations.js';
+import { discardRedundantBackgroundLonghands } from './decl/backgroundOverrides.js';
 import { isAll } from './decl/importanceLanes.js';
 import {
   foldableShorthands,
@@ -147,6 +148,7 @@ function processContainer(records, block, styleRule, context, columnsDeferred) {
   // Style rules only: at-rule descriptors follow their own validity rules.
   if (styleRule) {
     discardOverriddenDeclarations(list, context.features);
+    discardRedundantBackgroundLonghands(list, context.features);
   }
 
   // Reducers remove items, so reduce only after the loop has read them all.

@@ -141,6 +141,13 @@ export const catalogs = [
   },
   {
     url: new URL(
+      './merge/longhand/mutation-catalog-background-overrides.js',
+      import.meta.url
+    ),
+    test: true,
+  },
+  {
+    url: new URL(
       './merge/longhand/mutation-catalog-text-forms.js',
       import.meta.url
     ),
