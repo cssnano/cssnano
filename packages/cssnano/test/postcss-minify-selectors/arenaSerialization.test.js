@@ -184,3 +184,11 @@ test('trusted arena spans reproduce the source byte for byte', () => {
       source
     );
 });
+
+test('an unchanged keyframe selector that is the only item of its list stays source-backed', () => {
+  const arena = parseSelectorArena('to', { keyframe: true });
+  assert.equal(
+    normalizeArena(arena, { sort: true, convertToIs: true, keyframe: true }),
+    undefined
+  );
+});

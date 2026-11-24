@@ -180,6 +180,16 @@ export function normalizeNode(arena, pool, nodeIndex, normalized, outerSort) {
   return output;
 }
 
+/**
+ * Whether the root list has one item, which is the root's only child.
+ *
+ * @param {SelectorArena} arena
+ * @return {boolean}
+ */
+function hasSingleItem(arena) {
+  return arena.nodes[1]?.subtreeEnd === arena.nodes[0].subtreeEnd;
+}
+
 /** @param {SelectorArena} arena @param {OutputPool} pool @param {Normalized[]} entries @param {{sort?:boolean,convertToIs?:boolean,keyframe?:boolean}} options */
 export function finalizeEntries(arena, pool, entries, options) {
   const sort = options.sort ?? true;
@@ -202,5 +212,9 @@ export function finalizeEntries(arena, pool, entries, options) {
     folded = folded.toSorted((left, right) =>
       compareOutputs(pool, left, right)
     );
-  return pool.emit(joinEntries(pool, folded));
+  const joined = joinEntries(pool, folded);
+  // A list with one source item that stays unchanged has no output of its own,
+  // so it is left to the source. A list of several items that dedupes to one
+  // must still be emitted, without the commas.
+  return hasSingleItem(arena) ? joined.emit : pool.emit(joined);
 }
