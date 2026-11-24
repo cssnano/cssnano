@@ -7,6 +7,9 @@ import {
   RULE,
 } from '../../ir/blockRecord.js';
 import { tokensText } from '../../values/tokensText.js';
+import cssnanoUtils from '#utils';
+
+const { endsWithEscapingBackslash, isCSSWhitespace } = cssnanoUtils;
 
 /** @import {ArenaIndex, BlockRecord, NodeEntry} from '../../ir/blockRecord.js' */
 /** @import {BlockRecords} from '../../ir/blockRecords.js' */
@@ -14,6 +17,23 @@ import { tokensText } from '../../values/tokensText.js';
 /** @import {DeclarationRecord} from '../../ir/declarationRecord.js' */
 /** @import {DeclarationItem} from './blockDeclarations.js' */
 /** @import {RunContext} from '../../run/runContext.js' */
+
+/**
+ * Whether a value ends in the whitespace character after a final backslash.
+ * The backslash escapes a space or tab and is an invalid escape before a
+ * newline; a reducer that trims the character would let it take what follows.
+ *
+ * @param {string} value
+ * @return {boolean}
+ */
+function endsInEscapedWhitespace(value) {
+  const last = value.length - 1;
+  return (
+    last > 0 &&
+    isCSSWhitespace(value.charCodeAt(last)) &&
+    endsWithEscapingBackslash(value, last)
+  );
+}
 
 /**
  * The item of a declaration record: its text, which the value list spells, and
@@ -25,16 +45,17 @@ import { tokensText } from '../../values/tokensText.js';
  */
 function itemOf(record, context) {
   const tokens = context.tokenLists.get(record.valueList);
+  const value = tokensText(tokens);
   return {
     prop: record.prop,
-    value: tokensText(tokens),
+    value,
     tokens,
     important: record.important,
     before: record.before ?? undefined,
     between: record.between ?? undefined,
     importantSpelling: record.importantSpelling ?? undefined,
     inheritedSupport: record.inheritedSupport,
-    kept: holdsImportantComment(tokens),
+    kept: holdsImportantComment(tokens) || endsInEscapedWhitespace(value),
     removed: false,
     rewritten: false,
     source: -1,

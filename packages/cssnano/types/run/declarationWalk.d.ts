@@ -58,6 +58,16 @@ export type DeclarationPlans = {
  */
 export declare function declarationPlansOf(stages: readonly Stage[], normalizeWhitespace: boolean, comments: CommentState | null): DeclarationPlans;
 /**
+ * The declaration part of a walk that has no stages: the character an escape
+ * at the end of its block takes, which the merge must not leave behind when it
+ * moves the declaration.
+ *
+ * @param {BlockRecords} records
+ * @param {RunContext} run
+ * @param {ArenaIndex} index the declaration's index
+ */
+export declare function keepBlockEscape(records: BlockRecords, run: RunContext, index: ArenaIndex): void;
+/**
  * Runs the declaration part of the walk over one declaration record, in
  * document order: its stray semicolon, its comments, the character an escape
  * at the end of its block takes, then its value's fold. A value is written

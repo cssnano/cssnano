@@ -4,7 +4,11 @@ import { sourceListOf } from '../ir/writtenList.js';
 import { writeValueList } from '../ir/valueEdits.js';
 import { tokenizeMode } from '../values/tokenizeMode.js';
 import { replaceComments } from './comments/replaceComments.js';
-import { stripStrayRawSemicolon, withBlockEscape } from './whitespaceRaws.js';
+import {
+  stripStrayRawSemicolon,
+  withBlockEscape,
+  withEscapeKept,
+} from './whitespaceRaws.js';
 import { foldList, planEntry } from './plan.js';
 
 /** @import {ArenaIndex} from '../ir/blockRecord.js' */
@@ -145,6 +149,23 @@ function commentFreeIdOf(run, source, prop, comments) {
 }
 
 /**
+ * The declaration part of a walk that has no stages: the character an escape
+ * at the end of its block takes, which the merge must not leave behind when it
+ * moves the declaration.
+ *
+ * @param {BlockRecords} records
+ * @param {RunContext} run
+ * @param {ArenaIndex} index the declaration's index
+ */
+export function keepBlockEscape(records, run, index) {
+  const source = /** @type {TokenListId} */ (
+    sourceListOf(declarationAt(records, index))
+  );
+  const id = withBlockEscape(records, run, index, source);
+  if (id !== source) writeValueList(records, run, index, id);
+}
+
+/**
  * Runs the declaration part of the walk over one declaration record, in
  * document order: its stray semicolon, its comments, the character an escape
  * at the end of its block takes, then its value's fold. A value is written
@@ -177,8 +198,13 @@ export function visitDeclaration(plans, records, run, context, index) {
     id = commentFreeIdOf(run, source, prop, comments);
     removeImportantComments(records, index, comments);
   }
-  if (plans.normalizeWhitespace) id = withBlockEscape(records, run, index, id);
-  const result =
-    entry.plan === null ? id : foldList(entry, id, context, run, index);
+  const escaped = withBlockEscape(records, run, index, id);
+  let result =
+    entry.plan === null
+      ? escaped
+      : foldList(entry, escaped, context, run, index);
+  if (escaped !== id && result !== escaped) {
+    result = withEscapeKept(run, prop, escaped, result);
+  }
   if (result !== source) writeValueList(records, run, index, result);
 }

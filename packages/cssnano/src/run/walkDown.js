@@ -16,7 +16,7 @@ import {
   withBit,
 } from './context.js';
 import { visitAtRule } from './atRuleWalk.js';
-import { visitDeclaration } from './declarationWalk.js';
+import { keepBlockEscape, visitDeclaration } from './declarationWalk.js';
 import { isOutermostOverridable } from './overridable.js';
 import { visitRule } from './ruleWalk.js';
 import { fillRule } from '../ir/selectorList.js';
@@ -192,8 +192,12 @@ class RecordWalk {
         this.#walkContainer(entry, context, ownContext);
       } else if (kind === COMMENT) {
         this.#removeComment(entry);
-      } else if (kind === DECLARATION && this.#plans !== undefined) {
-        visitDeclaration(this.#plans, records, this.#context, context, entry);
+      } else if (kind === DECLARATION) {
+        if (this.#plans === undefined) {
+          keepBlockEscape(records, this.#context, entry);
+        } else {
+          visitDeclaration(this.#plans, records, this.#context, context, entry);
+        }
       } else if (kind === AT_RULE_STATEMENT && this.#plans !== undefined) {
         const prelude = visitAtRule(
           this.#plans,
@@ -220,7 +224,7 @@ class RecordWalk {
  *
  * @param {BlockRecords} records the build of the stylesheet
  * @param {RunContext} context the run that built the records; its token lists read the values
- * @param {DeclarationPlans} [plans] what the walk applies to the declarations and rules; none leaves them as built
+ * @param {DeclarationPlans} [plans] what the walk applies to the declarations and rules; none applies only the escape at the end of a block, which a merge must keep
  * @param {LonghandRound} [round] the longhand round of the run
  * @param {readonly string[]} [browsers] the targets the merge folds the summaries for; none when the merge is off
  * @return {ArenaIndex[]} the outermost overridable at-rules, in document order

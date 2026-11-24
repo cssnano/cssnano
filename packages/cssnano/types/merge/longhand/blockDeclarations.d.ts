@@ -29,8 +29,9 @@ export type DeclarationItem = {
      */
     inheritedSupport: ReadonlySet<string> | null;
     /**
-     * the value as written holds an important comment, so
-     * no reducer edits the declaration
+     * the value as written holds an important comment, or
+     * ends in the whitespace after a final backslash, so no reducer edits the
+     * declaration
      */
     kept: boolean;
     removed: boolean;
@@ -59,8 +60,9 @@ export type DeclarationItem = {
  * @property {string | undefined} importantSpelling the raw `!important`
  * @property {ReadonlySet<string> | null} inheritedSupport the support a clone
  * needed from its source, or `null` for a declaration the author wrote
- * @property {boolean} kept the value as written holds an important comment, so
- * no reducer edits the declaration
+ * @property {boolean} kept the value as written holds an important comment, or
+ * ends in the whitespace after a final backslash, so no reducer edits the
+ * declaration
  * @property {boolean} removed
  * @property {boolean} rewritten an edit changed the property or the value
  * @property {number} source for a clone, the position of its source; `-1` otherwise
