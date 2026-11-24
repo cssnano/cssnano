@@ -160,25 +160,6 @@ function writtenPreludeOf(node, context, space) {
 }
 
 /**
- * The id of a selector as written. A selector ending in a backslash is followed
- * by a newline in its rule, which makes the backslash an invalid escape, so it
- * is tokenized with that newline, then cut off, and kept under its own key.
- *
- * @param {RunContext} context
- * @param {string} written
- * @return {TokenListId}
- */
-function writtenSelectorListId(context, written) {
-  const { tokenLists, valueIds } = context;
-  if (!written.endsWith('\\'))
-    return valueIds.idOf(tokenLists, undefined, written);
-  // The newline makes the backslash an invalid escape; the list does not keep it.
-  const tokens = cssnanoUtils.tokens(written + '\n');
-  tokens.pop();
-  return valueIds.danglingEscapeIdOf(tokenLists, written, tokens);
-}
-
-/**
  * Builds the records of a stylesheet from its tree, once per run, and the node
  * of each of their entries. Each child is linked into the chain of its parent,
  * and every rule is a container whose children form its own chain.
@@ -274,8 +255,8 @@ class RecordBuild {
     const { tokenLists, selectorIds } = context;
     const written = sourceSelector(child);
     const space = escapedSpaceOf(written, child.raws.between);
-    const writtenList = writtenSelectorListId(
-      context,
+    const writtenList = context.valueIds.selectorListIdOf(
+      tokenLists,
       space === '' ? written : written + space
     );
     const writtenTokens = tokenLists.get(writtenList);

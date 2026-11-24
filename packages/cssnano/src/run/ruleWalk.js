@@ -14,8 +14,8 @@ import { foldList } from './plan.js';
 
 /**
  * The id of a selector without its comments. A selector without a comment
- * start keeps its id. Otherwise the cleaned text is interned in the run, as a
- * selector is in the default mode.
+ * start keeps its id. Otherwise the cleaned text is interned in the run, with
+ * the tokens of a selector list.
  *
  * @param {RunContext} run
  * @param {TokenListId} source the id of the selector as written
@@ -28,7 +28,7 @@ function commentFreeSelectorIdOf(run, source, comments) {
     run.tokenLists.get(source),
     comments.canRemove
   );
-  return run.valueIds.idOf(run.tokenLists, undefined, cleaned);
+  return run.valueIds.selectorListIdOf(run.tokenLists, cleaned);
 }
 
 /**

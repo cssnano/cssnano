@@ -38,18 +38,21 @@ export class ValueIds {
   }
 
   /**
-   * The id of a selector list that ends in a backslash that escapes nothing.
-   * Its tokens differ from those of the same text as a declaration value, so
-   * it has its own table.
+   * The id of a selector list's text. A list that ends in a backslash takes the
+   * tokens that a newline after it gives, since the newline makes the backslash
+   * an invalid escape; the same text as a declaration value would tokenize it as
+   * a valid escape at the end. Such a list has its own table.
    *
    * @param {TokenLists} tokenLists
-   * @param {string} text the list as written
-   * @param {readonly CSSToken[]} tokens
+   * @param {string} text the list as written, or with its comments removed
    * @return {TokenListId}
    */
-  danglingEscapeIdOf(tokenLists, text, tokens) {
+  selectorListIdOf(tokenLists, text) {
+    if (!text.endsWith('\\')) return this.idOf(tokenLists, undefined, text);
     let id = this.#danglingEscapes.get(text);
     if (id === undefined) {
+      const tokens = tokenize(text + '\n');
+      tokens.pop();
       id = tokenLists.push(tokens);
       this.#danglingEscapes.set(text, id);
     }

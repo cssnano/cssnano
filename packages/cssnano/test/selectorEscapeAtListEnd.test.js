@@ -116,3 +116,10 @@ test(
   'should not dedupe an invalid item that ends in a backslash before a comment',
   processCss.passthrough('.a\\ ,.a\\\n/*! x */,.b{top:0}')
 );
+
+// Removing the comment before the comma leaves the list's last item ending in an
+// invalid escape; the list must stay invalid, not become `.a\,.c`.
+test(
+  'should keep a list ending in an invalid escape invalid when a comment before a comma is removed',
+  processCss('.c/*x*/,.a\\\n{top:0}', '.c,.a\\\n{top:0}')
+);
