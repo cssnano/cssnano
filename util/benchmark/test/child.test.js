@@ -122,7 +122,19 @@ test('child rejects --module without --case', () => {
   );
 });
 
-test('child reports --case with --dir as a conflict before a missing --module', () => {
+test('child runs a case named without --module from the module that defines it', () => {
+  const result = runChild([`--case=${CASE}`]);
+  assert.deepEqual(Object.keys(result.outputHashes), [CASE]);
+});
+
+test('child rejects an unknown case named without --module', () => {
+  assert.match(
+    childError(['--case=no-such-case']),
+    /unknown benchmark case "no-such-case"/v
+  );
+});
+
+test('child rejects --case with --dir', () => {
   assert.match(
     childError([`--case=${CASE}`, '--dir=.']),
     /cannot be used together/v

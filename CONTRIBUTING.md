@@ -75,9 +75,9 @@ budget. See
 for the verdict rule and its limits.
 
 ```shell
-pnpm bench:check -- --package=<plugin> --budget=90s
-pnpm bench:check -- --corpus --budget=30m --base=<ref> --candidate=<ref>
-pnpm bench:profile -- --case=selector-reduction
+pnpm bench:check --package=<plugin> --budget=90s
+pnpm bench:check --corpus --budget=30m --base=<ref> --candidate=<ref>
+pnpm bench:profile --case=selector-reduction
 ```
 
 `bench:check` benchmarks the working tree against `HEAD` for a plugin's focused
