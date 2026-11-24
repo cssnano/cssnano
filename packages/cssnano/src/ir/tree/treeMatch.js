@@ -16,6 +16,7 @@ import { differs } from './writeBack.js';
 import { sourceParams, sourceSelector } from '../../utils/sourceText.js';
 import { summariesHold } from '../selectorReads.js';
 import { holdsImportantComment } from '../holdsImportantComment.js';
+import { escapedSpaceOf } from './escapedSpace.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {AtRule, ChildNode, Declaration, Root, Rule} from 'postcss' */
@@ -28,6 +29,41 @@ import { holdsImportantComment } from '../holdsImportantComment.js';
 /** @import {TokenListId, TokenLists} from '../tokenLists.js' */
 
 const { sourceValue } = cssnanoUtils;
+
+/**
+ * The character that a block's separator gives its prelude, as the build took
+ * it: the escaped space that the written prelude ends in.
+ *
+ * @param {AtRule} node
+ * @return {string}
+ */
+function blockSpaceOf(node) {
+  return escapedSpaceOf(sourceParams(node) ?? '', node.raws.between);
+}
+
+/**
+ * The separator a record of a rule or block holds, which excludes the escaped
+ * space that its head holds, so the node's separator minus that character.
+ *
+ * @param {RuleRecord | Block | NodeEntry} record
+ * @param {ChildNode} node
+ * @return {string | undefined}
+ */
+function recordBetweenOf(record, node) {
+  const raws = /** @type {{between?: string}} */ (node.raws);
+  if (record.kind === RULE) {
+    const space = escapedSpaceOf(
+      sourceSelector(/** @type {Rule} */ (node)),
+      raws.between
+    );
+    return space === '' ? raws.between : raws.between?.slice(1);
+  }
+  if (record.kind === AT_RULE_BLOCK) {
+    const space = blockSpaceOf(/** @type {AtRule} */ (node));
+    return space === '' ? raws.between : raws.between?.slice(1);
+  }
+  return raws.between;
+}
 
 const OUT_OF_STEP = 'block record out of step with the tree';
 const STALE = 'stale declarations of a rule record';
@@ -74,13 +110,15 @@ function checkAtRuleFacts(nodes, tokenLists, entry) {
   const node = /** @type {AtRule} */ (nodeOf(nodes, entry.index));
   if (node.type !== 'atrule') return;
   const name = recordNameOf(node.name);
+  const space = entry.kind === AT_RULE_BLOCK ? blockSpaceOf(node) : '';
   if (
     entry.atRuleKind !== atRuleKindOf(name) ||
     entry.name !== name ||
     tokensText(tokenLists.get(/** @type {TokenListId} */ (entry.preludeId))) !==
-      (node.params ?? '') ||
+      (node.params ?? '') + space ||
     (entry.writtenList !== -1 &&
-      tokensText(tokenLists.get(entry.writtenList)) !== sourceParams(node))
+      tokensText(tokenLists.get(entry.writtenList)) !==
+        sourceParams(node) + space)
   ) {
     throw new Error(OUT_OF_STEP);
   }
@@ -118,7 +156,10 @@ function checkRawsOf(record, node) {
     /** @type {{between?: string, after?: string, semicolon?: boolean, afterName?: string}} */ (
       node.raws
     );
-  if (record.between !== null && raws.between !== record.between) {
+  if (
+    record.between !== null &&
+    recordBetweenOf(record, node) !== record.between
+  ) {
     throw new Error(STALE);
   }
   if (
@@ -154,12 +195,14 @@ function checkRawsOf(record, node) {
  * @return {void}
  */
 function checkRuleSelectors(tokenLists, record, rule) {
-  const items = selectorItemsOf(cssnanoUtils.tokens(sourceSelector(rule)));
+  const written = sourceSelector(rule);
+  const head = written + escapedSpaceOf(written, rule.raws.between);
+  const items = selectorItemsOf(cssnanoUtils.tokens(head));
   const { selectorIds } = record;
   if (selectorIds.length !== items.length) throw new Error(OUT_OF_STEP);
   if (
     record.writtenList !== -1 &&
-    tokensText(tokenLists.get(record.writtenList)) !== sourceSelector(rule)
+    tokensText(tokenLists.get(record.writtenList)) !== head
   ) {
     throw new Error(OUT_OF_STEP);
   }

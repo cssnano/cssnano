@@ -1,14 +1,17 @@
 import { comma } from '../../values/punctuationTokens.js';
 import { renumber } from '../../values/renumber.js';
 import { nodeOf } from './nodeTable.js';
-import { sourceSelector } from '../../utils/sourceText.js';
+import { sourceParams, sourceSelector } from '../../utils/sourceText.js';
 import { tokensText } from '../../values/tokensText.js';
+import { escapedSpaceOf, trailingEscapedSpace } from './escapedSpace.js';
+import { RULE } from '../blockRecord.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
-/** @import {Rule} from 'postcss' */
+/** @import {AtRule, Rule} from 'postcss' */
 /** @import {RuleRecord} from '../ruleRecord.js' */
+/** @import {BlockRecord} from '../blockRecord.js' */
 /** @import {NodeTable} from './nodeTable.js' */
-/** @import {TokenLists} from '../tokenLists.js' */
+/** @import {TokenListId, TokenLists} from '../tokenLists.js' */
 
 /**
  * The tokens of a marked rule's selector as it is written: the lists of its
@@ -36,8 +39,8 @@ function joinedList(record, tokenLists) {
  * other raws the merged rule prints, so this is the one raw left to copy from a
  * node.
  *
- * @param {import('postcss').Rule} node the merged rule
- * @param {import('postcss').Rule} template the rule whose raw it prints
+ * @param {Rule} node the merged rule
+ * @param {Rule} template the rule whose raw it prints
  * @return {void}
  */
 function writeTemplateRaws(node, template) {
@@ -45,12 +48,74 @@ function writeTemplateRaws(node, template) {
 }
 
 /**
- * Writes the selector of a marked rule the root reaches: its written list when
- * it has one, otherwise the tokens of its ids joined as the rule is written. The
- * selector is assigned only when its text differs from the node's selector as
- * written, and then the raw is dropped, since it would restore comments the text
- * no longer has. A rule that no merge marked keeps its node's text, so it is
- * not written.
+ * Writes the head of a marked rule or at-rule block and its separator. The
+ * head is the selector or the prelude as its record spells it. A backslash
+ * before a space or tab that ends the marked head escapes it, so the character
+ * goes back to the front of the separator, where the parser puts it.
+ *
+ * An unmarked head keeps its node's text. Its character is read from the node's
+ * own separator, which the build left unchanged.
+ *
+ * @param {RuleRecord | BlockRecord} record
+ * @param {Rule | AtRule} node
+ * @param {TokenLists} tokenLists
+ * @return {void}
+ */
+export function writeHead(record, node, tokenLists) {
+  const rule = record.kind === RULE;
+  /** @type {string | null} the head to assign, or null to keep the node's */
+  let head = null;
+  let space = '';
+  if (record.marked) {
+    const text = rule
+      ? tokensText(
+          record.writtenList === -1
+            ? joinedList(/** @type {RuleRecord} */ (record), tokenLists)
+            : tokenLists.get(record.writtenList)
+        )
+      : tokensText(
+          tokenLists.get(
+            /** @type {TokenListId} */ (
+              /** @type {BlockRecord} */ (record).preludeId
+            )
+          )
+        );
+    // A null separator keeps the head whole, since the node has none to take the character.
+    if (record.between !== null) space = trailingEscapedSpace(text);
+    head = space === '' ? text : text.slice(0, text.length - space.length);
+  } else if (record.between !== null) {
+    space = rule
+      ? escapedSpaceOf(
+          sourceSelector(/** @type {Rule} */ (node)),
+          node.raws.between
+        )
+      : escapedSpaceOf(
+          sourceParams(/** @type {AtRule} */ (node)) ?? '',
+          node.raws.between
+        );
+  }
+  if (head !== null) {
+    if (rule) {
+      const selector = /** @type {Rule} */ (node);
+      if (sourceSelector(selector) !== head) {
+        selector.selector = head;
+        delete selector.raws.selector;
+      }
+    } else {
+      const atRule = /** @type {AtRule} */ (node);
+      atRule.params = head;
+      delete atRule.raws.params;
+    }
+  }
+  if (record.between !== null) {
+    node.raws.between = space === '' ? record.between : space + record.between;
+  }
+}
+
+/**
+ * Writes the selector and the separator of a rule the root reaches, then the
+ * template raw of a merged rule. A rule that no merge marked keeps its node's
+ * selector, as the head is written only when it differs from the node's.
  *
  * @param {RuleRecord} record
  * @param {NodeTable} nodes
@@ -58,21 +123,12 @@ function writeTemplateRaws(node, template) {
  * @return {void}
  */
 export function writeSelector(record, nodes, tokenLists) {
-  if (!record.marked) return;
   const node = /** @type {Rule} */ (nodeOf(nodes, record.index));
-  const list =
-    record.writtenList === -1
-      ? joinedList(record, tokenLists)
-      : tokenLists.get(record.writtenList);
-  const text = tokensText(list);
-  if (sourceSelector(node) !== text) {
-    node.selector = text;
-    delete node.raws.selector;
-  }
-  if (record.template !== -1) {
+  writeHead(record, node, tokenLists);
+  if (record.marked && record.template !== -1) {
     writeTemplateRaws(
       node,
-      /** @type {import('postcss').Rule} */ (nodeOf(nodes, record.template))
+      /** @type {Rule} */ (nodeOf(nodes, record.template))
     );
   }
 }

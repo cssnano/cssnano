@@ -61,7 +61,7 @@ export const mutations = [
   {
     name: 'keep the raw of a rewritten selector, which restores the comments the text dropped',
     target: irSource('tree/writeSelector.js'),
-    find: '    delete node.raws.selector;',
+    find: '        delete selector.raws.selector;',
     replace: '',
   },
   {
