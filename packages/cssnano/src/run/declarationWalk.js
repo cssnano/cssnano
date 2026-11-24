@@ -132,7 +132,11 @@ function removeImportantComments(records, index, comments) {
   const hasComment = tokenize({ css: cleaned }).some(
     ([type]) => type === TokenType.Comment
   );
-  writeImportantSpelling(records, index, hasComment ? cleaned : '!important');
+  // A newline before the flag may end an invalid escape, so it stays.
+  const bare = cssnanoUtils.isCSSNewline(spelling.charCodeAt(0))
+    ? '\n!important'
+    : '!important';
+  writeImportantSpelling(records, index, hasComment ? cleaned : bare);
 }
 
 /**
@@ -175,11 +179,12 @@ export function keepBlockEscape(records, run, index) {
 }
 
 /**
- * Keeps the newline that a comment held before its removal, when the comment
- * ends a block whose last declaration ends in a backslash. PostCSS keeps that
- * newline in the comment's raw before, so the removal would leave the escape to
- * take the `}`. The newline moves into the value and the rest of the whitespace
- * into the block's after raw, as `withBlockEscape` does for a declaration.
+ * Keeps the whitespace character that a comment held before its removal, when
+ * the comment follows a declaration that ends in a backslash. PostCSS keeps
+ * that character in the comment's raw before, so the removal would leave the
+ * escape to take the next comment or the `}`. The character moves into the
+ * value, and a last comment's remaining whitespace into the block's after raw,
+ * as `withBlockEscape` does for a declaration.
  *
  * @param {BlockRecords} records
  * @param {RunContext} run
@@ -187,10 +192,8 @@ export function keepBlockEscape(records, run, index) {
  */
 export function keepCommentNewlineEscape(records, run, index) {
   const { links } = records;
-  if (links.nextSibling(index) !== -1) return;
   const { before } = records.entry(index);
-  if (before === null || !cssnanoUtils.isCSSNewline(before.charCodeAt(0)))
-    return;
+  if (!before || !cssnanoUtils.isCSSWhitespace(before.charCodeAt(0))) return;
   const prev = links.prevSibling(index);
   if (prev === -1 || records.entry(prev).kind !== DECLARATION) return;
   const parent = /** @type {ArenaIndex} */ (links.parentOf(index));
@@ -200,7 +203,9 @@ export function keepCommentNewlineEscape(records, run, index) {
   if (important) return;
   const text = tokensText(run.tokenLists.get(valueList));
   if (!cssnanoUtils.endsWithEscapingBackslash(text)) return;
-  writeAfter(records, parent, before.slice(1) + (block.after ?? ''));
+  if (links.nextSibling(index) === -1) {
+    writeAfter(records, parent, before.slice(1) + (block.after ?? ''));
+  }
   writeValueList(
     records,
     run,

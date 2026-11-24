@@ -96,6 +96,7 @@ function normalizeValue(tokens, canRemove) {
       if (isNewlineAfterBackslash(lastRaw, raw)) {
         result += '\n';
         pendingSpace = false;
+        lastRaw = '\n';
       }
       continue;
     }

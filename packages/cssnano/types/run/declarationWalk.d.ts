@@ -70,11 +70,12 @@ export declare function declarationPlansOf(stages: readonly Stage[], normalizeWh
  */
 export declare function keepBlockEscape(records: BlockRecords, run: RunContext, index: ArenaIndex): void;
 /**
- * Keeps the newline that a comment held before its removal, when the comment
- * ends a block whose last declaration ends in a backslash. PostCSS keeps that
- * newline in the comment's raw before, so the removal would leave the escape to
- * take the `}`. The newline moves into the value and the rest of the whitespace
- * into the block's after raw, as `withBlockEscape` does for a declaration.
+ * Keeps the whitespace character that a comment held before its removal, when
+ * the comment follows a declaration that ends in a backslash. PostCSS keeps
+ * that character in the comment's raw before, so the removal would leave the
+ * escape to take the next comment or the `}`. The character moves into the
+ * value, and a last comment's remaining whitespace into the block's after raw,
+ * as `withBlockEscape` does for a declaration.
  *
  * @param {BlockRecords} records
  * @param {RunContext} run

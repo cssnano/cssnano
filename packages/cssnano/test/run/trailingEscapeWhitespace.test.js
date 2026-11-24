@@ -134,6 +134,13 @@ describe('replaceComments keeps the newline after a final backslash', () => {
   });
 });
 
+test('replaceComments keeps one newline when a removed comment sits between two newlines after a backslash', () => {
+  assert.equal(
+    replaceComments(tokenize({ css: 'a\\\n/**/\n/**/' }), removeAll),
+    'a\\\n'
+  );
+});
+
 for (const [name, preset] of [
   ['default', defaultPreset],
   ['lite', litePreset],
@@ -150,5 +157,38 @@ test('lite keeps the newline after a final backslash when a comment before a sem
   assert.equal(
     await minify('.a{color:a\\\n/**/;top:0}'),
     '.a{color:a\\\n;top:0}'
+  );
+});
+
+// A comment run after a final backslash holds the whitespace the backslash
+// needs in its first comment, which the removal must not drop.
+const commentRuns = [
+  ['two removed comments', 'a{b:c\\\n/*1*//*2*/}', 'a{b:c\\\n}'],
+  [
+    'a removed comment before a preserved one',
+    'a{b:c\\\n/* x *//*! y */}',
+    'a{b:c\\\n/*! y */}',
+  ],
+  ['a removed comment after an escaped space', 'a{b:c\\ /* x */}', 'a{b:c\\ }'],
+  ['a removed comment after an escaped tab', 'a{b:c\\\t/* x */}', 'a{b:c\\\t}'],
+];
+
+for (const [name, css, expected] of commentRuns) {
+  test(`the default preset keeps the escape's whitespace with ${name}`, async () => {
+    assert.equal(await minifyDefault(css), expected);
+  });
+}
+
+test('the default preset keeps a newline between a final backslash and !important, which the escape needs', async () => {
+  assert.equal(
+    await minifyDefault('a{b:c\\\n!important}'),
+    'a{b:c\\\n!important}'
+  );
+});
+
+test('the default preset keeps a newline between a final backslash and !important when a comment between them goes', async () => {
+  assert.equal(
+    await minifyDefault('a{b:c\\\n/*x*/!important}'),
+    'a{b:c\\\n!important}'
   );
 });
