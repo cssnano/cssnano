@@ -25,7 +25,7 @@ import {
   writtenValueListOf,
 } from '../valueList.js';
 import { tokenizeMode, tokenizeModeOfKeys } from '../../values/tokenizeMode.js';
-import { escapedSpaceOf } from './escapedSpace.js';
+import { escapedSpaceOf, separatorOf } from './escapedSpace.js';
 
 /** @import {SelectorIds} from '../selectorIds.js' */
 const { asciiLowerCase, isAnonymousLayer, sourceValue } = cssnanoUtils;
@@ -266,9 +266,7 @@ class RecordBuild {
     );
     record.writtenList = writtenList;
     holdContainerRaws(record, child);
-    if (space !== '') {
-      record.between = /** @type {string} */ (child.raws.between).slice(1);
-    }
+    record.between = separatorOf(child.raws.between, space) ?? null;
     this.place(container.index, record, child);
     if (child.nodes.some(isRuleOrAtRule)) {
       record.context = containerContext(
@@ -289,25 +287,10 @@ class RecordBuild {
    */
   #fillBlock(container, child) {
     const { context } = this;
-    const { tokenLists } = context;
-    const name = recordNameOf(child.name);
-    const category = atRuleKindOf(name);
     const space = escapedSpaceOf(sourceParams(child) ?? '', child.raws.between);
-    const preludeId = preludeIdOf(child, context, space);
-    const nested = new BlockRecord(
-      AT_RULE_BLOCK,
-      child.raws.before ?? null,
-      category,
-      name,
-      category === LAYER && isAnonymousLayer(tokenLists.get(preludeId)),
-      preludeId
-    );
-    nested.writtenList = writtenPreludeOf(child, context, space);
+    const nested = this.#atRuleRecord(BlockRecord, AT_RULE_BLOCK, child, space);
     holdContainerRaws(nested, child);
-    if (space !== '') {
-      nested.between = /** @type {string} */ (child.raws.between).slice(1);
-    }
-    nested.afterName = child.raws.afterName ?? null;
+    nested.between = separatorOf(child.raws.between, space) ?? null;
     this.place(container.index, nested, child);
     nested.context = containerContext(
       context.declarations,
@@ -318,6 +301,35 @@ class RecordBuild {
   }
 
   /**
+   * Builds the record of an at-rule with a block or a statement. Both take the
+   * same name, category, prelude, written prelude and afterName.
+   *
+   * @param {typeof BlockRecord | typeof NodeEntry} Record the class of the record
+   * @param {number} kind the kind of the record
+   * @param {AtRule} child
+   * @param {string} space the escaped space of the prelude, from escapedSpaceOf
+   * @return {BlockRecord | NodeEntry}
+   */
+  #atRuleRecord(Record, kind, child, space) {
+    const { context } = this;
+    const { tokenLists } = context;
+    const name = recordNameOf(child.name);
+    const category = atRuleKindOf(name);
+    const preludeId = preludeIdOf(child, context, space);
+    const record = new Record(
+      kind,
+      child.raws.before ?? null,
+      category,
+      name,
+      category === LAYER && isAnonymousLayer(tokenLists.get(preludeId)),
+      preludeId
+    );
+    record.writtenList = writtenPreludeOf(child, context, space);
+    record.afterName = child.raws.afterName ?? null;
+    return record;
+  }
+
+  /**
    * Places an at-rule statement, which has no children, in its container.
    *
    * @param {BlockRecord | RuleRecord} container
@@ -325,26 +337,14 @@ class RecordBuild {
    * @return {void}
    */
   #fillStatement(container, child) {
-    const { context } = this;
-    const { tokenLists } = context;
-    const name = recordNameOf(child.name);
-    const category = atRuleKindOf(name);
     const space = escapedSpaceOf(sourceParams(child) ?? '', child.raws.between);
-    const preludeId = preludeIdOf(child, context, space);
-    const entry = new NodeEntry(
+    const entry = this.#atRuleRecord(
+      NodeEntry,
       AT_RULE_STATEMENT,
-      child.raws.before ?? null,
-      category,
-      name,
-      category === LAYER && isAnonymousLayer(tokenLists.get(preludeId)),
-      preludeId
+      child,
+      space
     );
-    entry.writtenList = writtenPreludeOf(child, context, space);
-    entry.between = child.raws.between ?? null;
-    if (space !== '') {
-      entry.between = /** @type {string} */ (child.raws.between).slice(1);
-    }
-    entry.afterName = child.raws.afterName ?? null;
+    entry.between = separatorOf(child.raws.between, space) ?? null;
     this.place(container.index, entry, child);
   }
 

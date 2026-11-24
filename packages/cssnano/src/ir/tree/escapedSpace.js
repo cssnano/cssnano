@@ -34,3 +34,15 @@ export function trailingEscapedSpace(text) {
   if (code !== SPACE && code !== TAB) return '';
   return cssnanoUtils.endsWithEscapingBackslash(text, last) ? text[last] : '';
 }
+
+/**
+ * The separator that a record holds for its node: the node's own separator
+ * minus the escaped space that its head keeps, when there is one.
+ *
+ * @param {string | undefined} between the separator the node holds
+ * @param {string} space the escaped space of the head, from escapedSpaceOf
+ * @return {string | undefined}
+ */
+export function separatorOf(between, space) {
+  return space === '' ? between : between?.slice(1);
+}
