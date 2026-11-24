@@ -1,8 +1,6 @@
 import type { CSSToken } from '@csstools/css-tokenizer';
 import type { ValueComponent } from './componentRanges.js';
 export type ComponentClassifier = (text: string, tokens: readonly CSSToken[] | undefined, start: number, end: number) => boolean;
-/** @import {CSSToken} from '@csstools/css-tokenizer' */
-/** @import {ValueComponent} from './componentRanges.js' */
 /**
  * The classifiers take a component's text and, for a component with a `(`, the
  * tokens of its range in the list that spells the component.

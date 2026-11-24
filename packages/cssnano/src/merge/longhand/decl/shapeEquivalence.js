@@ -1,4 +1,5 @@
 import { withoutVendorPrefix } from '../../../ir/vendorPrefix.js';
+import { hasExponent } from '../lengthGrammar.js';
 import cssnanoUtils from '#utils';
 import knownPropertyNames from '../data/knownProperties.json' with { type: 'json' };
 import generatedNumericRanges from '../data/numericRanges.json' with { type: 'json' };
@@ -96,30 +97,6 @@ function piece(text) {
  */
 function allowsVaryingNumbers(functionName) {
   return functionName === undefined || transformFunctions.has(functionName);
-}
-
-/**
- * Follows the number grammar of CSS Syntax 3: sign, integer part, fraction,
- * then an exponent only where `e` is followed by a digit, so the `e` of a
- * unit such as `em` or `ex` is no exponent.
- *
- * @param {string} text - the source text of a numeric token
- * @return {boolean} whether the number is in scientific notation
- */
-function hasExponent(text) {
-  let index = text.charCodeAt(0) === 43 || text.charCodeAt(0) === 45 ? 1 : 0;
-  while (isAsciiDigit(text.charCodeAt(index))) index++;
-  if (text.charCodeAt(index) === 46) {
-    index++;
-    while (isAsciiDigit(text.charCodeAt(index))) index++;
-  }
-  const code = text.charCodeAt(index);
-  if (code !== 101 && code !== 69) return false;
-  const next = text.charCodeAt(index + 1);
-  return (
-    isAsciiDigit(next) ||
-    ((next === 43 || next === 45) && isAsciiDigit(text.charCodeAt(index + 2)))
-  );
 }
 
 /**
