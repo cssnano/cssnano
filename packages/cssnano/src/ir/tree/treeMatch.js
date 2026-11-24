@@ -16,7 +16,7 @@ import { differs } from './writeBack.js';
 import { sourceParams, sourceSelector } from '../../utils/sourceText.js';
 import { summariesHold } from '../selectorReads.js';
 import { holdsImportantComment } from '../holdsImportantComment.js';
-import { escapedSpaceOf } from './escapedSpace.js';
+import { escapedSpaceOf, separatorOf } from './escapedSpace.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {AtRule, ChildNode, Declaration, Root, Rule} from 'postcss' */
@@ -52,15 +52,16 @@ function blockSpaceOf(node) {
 function recordBetweenOf(record, node) {
   const raws = /** @type {{between?: string}} */ (node.raws);
   if (record.kind === RULE) {
-    const space = escapedSpaceOf(
-      sourceSelector(/** @type {Rule} */ (node)),
-      raws.between
+    return separatorOf(
+      raws.between,
+      escapedSpaceOf(sourceSelector(/** @type {Rule} */ (node)), raws.between)
     );
-    return space === '' ? raws.between : raws.between?.slice(1);
   }
   if (record.kind === AT_RULE_BLOCK || record.kind === AT_RULE_STATEMENT) {
-    const space = blockSpaceOf(/** @type {AtRule} */ (node));
-    return space === '' ? raws.between : raws.between?.slice(1);
+    return separatorOf(
+      raws.between,
+      blockSpaceOf(/** @type {AtRule} */ (node))
+    );
   }
   return raws.between;
 }
