@@ -30,14 +30,11 @@ export function stripStrayRawSemicolon(records, index) {
 }
 
 /**
- * The value of a declaration with the character after its last backslash. The
- * parser puts that character in the raw after the block when the value ends the
- * block's text, so the character moves out of that raw, with writeAfter, into
- * the value: a merge that moves the
- * declaration or appends one after it would otherwise let the backslash take
- * the `;` or `}`. An important flag follows its value, so the escape there
- * takes the flag's own whitespace. The value is the one the comment removal
- * left, so the character joins what the declaration keeps.
+ * The value of a declaration with the character after its last backslash. When
+ * the value ends the block's text, the parser leaves that character in the
+ * block's after raw. It moves into the value, so a merge that moves or appends
+ * a declaration cannot let the backslash take the `;` or `}`. The character
+ * stays out of an important declaration, whose flag follows its value.
  *
  * @param {BlockRecords} records
  * @param {RunContext} run

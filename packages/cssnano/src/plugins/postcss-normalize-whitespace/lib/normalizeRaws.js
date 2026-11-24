@@ -38,9 +38,13 @@ const { endsWithEscapingBackslash, isCSSNewline } = cssnanoUtils;
  */
 function importantSpelling(tokenLists, record) {
   if (!record.important) return undefined;
-  return endsWithEscapingBackslash(tokensText(tokenLists.get(record.valueList)))
-    ? ' !important'
-    : '!important';
+  if (!endsWithEscapingBackslash(tokensText(tokenLists.get(record.valueList))))
+    return '!important';
+  return (
+    (isCSSNewline((record.importantSpelling ?? '').charCodeAt(0))
+      ? '\n'
+      : ' ') + '!important'
+  );
 }
 
 /**
