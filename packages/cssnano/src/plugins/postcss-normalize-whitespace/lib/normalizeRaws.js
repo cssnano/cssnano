@@ -74,6 +74,21 @@ function normalizeDeclaration(records, tokenLists, index) {
 }
 
 /**
+ * The separator after a prelude that ends in an open escape. It keeps one space
+ * before the delimiter, or a newline when the source had one: a backslash
+ * before a newline is an invalid escape, but before a space it escapes the
+ * space. A source that starts with a slash keeps it, since `\/` escapes the
+ * slash and the gap is not a comment.
+ *
+ * @param {string} source the gap between the prelude and the block, as written
+ * @return {string}
+ */
+function separatorAfterEscape(source) {
+  if (source.startsWith('/')) return source;
+  return /^[\n\r\f]/v.test(source) ? '\n' : ' ';
+}
+
+/**
  * Trims the separators of one entry that is a rule, a block or a statement.
  *
  * @param {BlockRecords} records
@@ -89,10 +104,7 @@ function normalizeAtRuleOrRule(records, tokenLists, index) {
     record.kind !== RULE && named.afterName !== null
       ? normalizeAfterName(named.afterName)
       : undefined;
-  // A prelude that ends in an open escape keeps one space before the delimiter,
-  // or a newline when the source had one: a backslash before a newline is an
-  // invalid escape, but before a space it escapes the space.
-  const separator = /^[\n\r\f]/v.test(record.between ?? '') ? '\n' : ' ';
+  const separator = separatorAfterEscape(record.between ?? '');
   const between = endsWithEscapingBackslash(
     headText(
       tokenLists,
