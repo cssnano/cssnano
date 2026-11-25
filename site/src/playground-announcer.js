@@ -25,7 +25,8 @@ export class StatusAnnouncer {
     region,
     {
       schedule = (callback, delay) => setTimeout(callback, delay),
-      cancel = (handle) => clearTimeout(/** @type {any} */ (handle)),
+      cancel = (handle) =>
+        clearTimeout(/** @type {ReturnType<typeof setTimeout>} */ (handle)),
     } = {}
   ) {
     this.#region = region;

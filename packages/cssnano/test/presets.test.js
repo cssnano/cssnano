@@ -96,7 +96,7 @@ describe('preset errors', () => {
   });
 
   test('a built preset called with null throws a cssnano message, as cssnano(null) does', () => {
-    assert.throws(() => litePreset(/** @type {any} */ (null)), {
+    assert.throws(() => litePreset(/** @type {never} */ (null)), {
       name: 'TypeError',
       message: 'The preset options must be an object.',
     });

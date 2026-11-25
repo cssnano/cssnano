@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
+/** @import {Rule} from 'postcss' */
 import { createRunContext } from '../../../src/run/runContext.js';
 import MergeState from '../../../src/merge/rules/mergeState.js';
 import { declarationsOf } from '../../../src/ir/blockChildren.js';
@@ -15,7 +16,7 @@ function declarationsOfFirstRule(css) {
   const root = postcss.parse(css);
   const state = new MergeState(['chrome 120'], createRunContext(true));
   state.records = buildTestRecords(root, state, true);
-  const rule = ruleRecordOf(state.records, /** @type {any} */ (root.first));
+  const rule = ruleRecordOf(state.records, /** @type {Rule} */ (root.first));
   return declarationsOf(state.records, rule.index);
 }
 

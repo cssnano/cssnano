@@ -45,7 +45,10 @@ function setup(css) {
 
 test('buildRecords should link the rules of a block in document order', () => {
   const { root, state } = setup('@media print{a{color:red}b{width:1px}}');
-  const media = blockRecordOf(state.records, /** @type {any} */ (root.first));
+  const media = blockRecordOf(
+    state.records,
+    /** @type {Container} */ (root.first)
+  );
   const [a, b] = /** @type {Rule[]} */ (
     nodeOfEntry(state.records, media).nodes
   );
@@ -86,7 +89,7 @@ test('assertRecordsMatchTree should accept records built from a stylesheet', () 
 test('assertRecordsMatchTree should throw when the chain holds the rules in another order than the tree', () => {
   const { root, state } = setup('@media print{a{color:red}b{width:1px}}');
   const media = /** @type {BlockRecord} */ (
-    blockRecordOf(state.records, /** @type {any} */ (root.first))
+    blockRecordOf(state.records, /** @type {Container} */ (root.first))
   );
   const [a] = /** @type {Rule[]} */ (nodeOfEntry(state.records, media).nodes);
   moveRule(state.records, media.index, ruleRecordOf(state.records, a).index);
@@ -104,7 +107,7 @@ test('assertRecordsMatchTree should throw when the chain holds the rules in anot
 test('assertRecordsMatchTree should throw when a block chain lacks a child the tree holds', () => {
   const { root, state } = setup('@media print{a{color:red}}');
   const media = /** @type {BlockRecord} */ (
-    blockRecordOf(state.records, /** @type {any} */ (root.first))
+    blockRecordOf(state.records, /** @type {Container} */ (root.first))
   );
   state.records.detach(
     ruleRecordOf(
@@ -125,7 +128,10 @@ test('assertRecordsMatchTree should throw when a block chain lacks a child the t
 
 test('the tree check throws when a built entry has no node', () => {
   const { root, state } = setup('@media print{a{color:red}}');
-  const media = blockRecordOf(state.records, /** @type {any} */ (root.first));
+  const media = blockRecordOf(
+    state.records,
+    /** @type {Container} */ (root.first)
+  );
   const rule = ruleRecordOf(
     state.records,
     /** @type {Rule} */ (nodeOfEntry(state.records, media).first)
@@ -312,7 +318,7 @@ test('the chains should stay well formed after a removal of a block', () => {
 test('records.rule should throw under consistency checks for a rule inside a block that a removal dropped', () => {
   const { root, state } = setup('@media print{a{color:red}}b{width:1px}');
   const [media] = /** @type {Container} */ (root).nodes;
-  const rule = /** @type {Rule} */ (/** @type {any} */ (media).first);
+  const rule = /** @type {Rule} */ (/** @type {Container} */ (media).first);
   const { index } = ruleRecordOf(state.records, rule);
   remove(state.records, blockRecordOf(state.records, media).index);
   assert.throws(() => state.records.rule(index), /does not reach/v);
@@ -344,7 +350,7 @@ test('moveLast into a plain rule that is linked nowhere should throw under consi
 test('the chains should stay well formed after a rule moves to the end of a block', () => {
   const { root, state } = setup('@media print{a{color:red}}b{width:1px}');
   const [media] = /** @type {Container} */ (root).nodes;
-  const rule = /** @type {Rule} */ (/** @type {any} */ (media).first);
+  const rule = /** @type {Rule} */ (/** @type {Container} */ (media).first);
   moveRule(
     state.records,
     state.records.root.index,
@@ -355,7 +361,10 @@ test('the chains should stay well formed after a rule moves to the end of a bloc
 
 test('links.firstChild should give the entry after the first rule once that rule is unlinked', () => {
   const { root, state } = setup('@media print{a{color:red}b{width:1px}}');
-  const media = blockRecordOf(state.records, /** @type {any} */ (root.first));
+  const media = blockRecordOf(
+    state.records,
+    /** @type {Container} */ (root.first)
+  );
   const first = ruleRecordOf(
     state.records,
     /** @type {Rule} */ (nodeOfEntry(state.records, media).first)

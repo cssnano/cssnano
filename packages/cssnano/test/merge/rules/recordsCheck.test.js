@@ -29,7 +29,7 @@ import { moveRule } from '../../../src/ir/arenaEdits.js';
 
 /** @import {BlockRecord} from '../../../src/ir/blockRecord.js' */
 /** @import {BlockLinks} from '../../../src/ir/blockLinks.js' */
-/** @import {Root, Rule} from 'postcss' */
+/** @import {Container, Root, Rule} from 'postcss' */
 
 /**
  * @param {string} css
@@ -52,7 +52,7 @@ test('assertRecordsWellFormed should accept a block removed with its declaration
     '@font-face{font-family:x}@font-face{font-family:x}'
   );
   const earlier = /** @type {BlockRecord} */ (
-    blockRecordOf(state.records, /** @type {any} */ (root.first))
+    blockRecordOf(state.records, /** @type {Container} */ (root.first))
   );
   remove(state.records, earlier.index);
   assert.doesNotThrow(() => assertRecordsWellFormed(state));
@@ -95,7 +95,7 @@ test('moveLast should throw under checks when the root is moved into a chain', (
 test('assertRecordsWellFormed should throw when a block whose chain does not start at its first live child', () => {
   const { root, state } = setup('@media print{a{color:red}b{width:1px}}');
   const media = /** @type {BlockRecord} */ (
-    blockRecordOf(state.records, /** @type {any} */ (root.first))
+    blockRecordOf(state.records, /** @type {Container} */ (root.first))
   );
   const records = withCorruptedLinks(state.records, media.index, {
     firstChild: () => -1,
@@ -106,7 +106,7 @@ test('assertRecordsWellFormed should throw when a block whose chain does not sta
 test('assertRecordsWellFormed should throw when a block whose chain ends before its last live child', () => {
   const { root, state } = setup('@media print{a{color:red}b{width:1px}}');
   const media = /** @type {BlockRecord} */ (
-    blockRecordOf(state.records, /** @type {any} */ (root.first))
+    blockRecordOf(state.records, /** @type {Container} */ (root.first))
   );
   const records = withCorruptedLinks(state.records, media.index, {
     lastChild: (real, index) => real.firstChild(index),
@@ -178,8 +178,8 @@ test('every record header holds a template, -1 for a record that prints its own 
 
 test('assertTemplatesHaveNodes should accept a rule whose template has a node', () => {
   const { root, state } = setup('a{color:red}b{color:red}');
-  ruleRecordOf(state.records, /** @type {any} */ (root.last)).template =
-    ruleRecordOf(state.records, /** @type {any} */ (root.first)).index;
+  ruleRecordOf(state.records, /** @type {Rule} */ (root.last)).template =
+    ruleRecordOf(state.records, /** @type {Rule} */ (root.first)).index;
   assert.doesNotThrow(() =>
     assertTemplatesHaveNodes(state.records, nodesOf(state.records))
   );
@@ -187,8 +187,8 @@ test('assertTemplatesHaveNodes should accept a rule whose template has a node', 
 
 test('assertTemplatesHaveNodes should throw when a rule names a template that has no node', () => {
   const { root, state } = setup('a{color:red}b{color:red}');
-  ruleRecordOf(state.records, /** @type {any} */ (root.last)).template =
-    ruleRecordOf(state.records, /** @type {any} */ (root.first)).index;
+  ruleRecordOf(state.records, /** @type {Rule} */ (root.last)).template =
+    ruleRecordOf(state.records, /** @type {Rule} */ (root.first)).index;
   assert.throws(
     () => assertTemplatesHaveNodes(state.records, []),
     /template has no node/v
