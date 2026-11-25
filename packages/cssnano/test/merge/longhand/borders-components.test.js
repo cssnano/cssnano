@@ -258,6 +258,42 @@ test(
   passthroughCSS('h1{border-color:#ddd;border-color:rgba(0,0,0,.15)}')
 );
 
+/* A browser without rgba() keeps every side's #000. The merge combines the
+ * rgba() sides but keeps fallbacks as written, so the #000 sides stay apart. */
+test(
+  'keeps four side colours as the fallback for four rgba() side colours',
+  processCSS(
+    'h1{border-top-color:#000;border-right-color:#000;border-bottom-color:#000;border-left-color:#000;border-top-color:rgba(0,0,0,.5);border-right-color:rgba(0,0,0,.5);border-bottom-color:rgba(0,0,0,.5);border-left-color:rgba(0,0,0,.5)}',
+    'h1{border-top-color:#000;border-right-color:#000;border-bottom-color:#000;border-left-color:#000;border-color:rgba(0,0,0,.5)}'
+  )
+);
+
+test(
+  'keeps each side colour as the fallback for its own rgba() side colour',
+  processCSS(
+    'h1{border-top-color:#000;border-top-color:rgba(0,0,0,.5);border-right-color:#000;border-right-color:rgba(0,0,0,.5);border-bottom-color:#000;border-bottom-color:rgba(0,0,0,.5);border-left-color:#000;border-left-color:rgba(0,0,0,.5)}',
+    'h1{border-top-color:#000;border-right-color:#000;border-bottom-color:#000;border-left-color:#000;border-color:rgba(0,0,0,.5)}'
+  )
+);
+
+/* An author rarely writes a fallback for rgba() under another property, so a
+ * later longhand of a different property does not keep the earlier value. */
+test(
+  'drops longhands that a later border-top with an rgba() colour overrides, as a different property is no fallback',
+  processCSS(
+    'h1{border-top-width:1px;border-top-style:solid;border-top-color:#000;border-top:1px solid rgba(0,0,0,.5)}',
+    'h1{border-top:1px solid rgba(0,0,0,.5)}'
+  )
+);
+
+test(
+  'keeps the earlier side colour as the fallback for a later rgba() colour of the same property',
+  processCSS(
+    'h1{border-top-color:#000;border-right-color:#000;border-bottom-color:#000;border-left-color:#000;border-top-color:rgba(0,0,0,.5)}',
+    'h1{border-top-color:#000;border-color:rgba(0,0,0,.5) #000 #000}'
+  )
+);
+
 test(
   'should not merge fallback colours (uppercase)',
   passthroughCSS('h1{BORDER-COLOR:#DDD;BORDER-COLOR:RGBA(0,0,0,.15)}')
