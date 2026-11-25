@@ -166,7 +166,6 @@ function buildFoldedSelector(pool, candidate, occurrences, order, sort) {
     valid: true,
     hasPseudoElement: original.hasPseudoElement,
     active: true,
-    activeId: -1,
     order,
     memberships: [],
     trailing:
@@ -198,9 +197,9 @@ function canFoldSelectorList(selectors, arena) {
   return false;
 }
 
-/** @param {ActiveSelector[]} consumed @param {Set<FoldGroup>} touched @param {Map<number,ActiveSelector>} selectorsById @param {number | undefined} headId */
-function deactivateSelectors(consumed, touched, selectorsById, headId) {
-  let nextHeadId = headId;
+/** @param {ActiveSelector[]} consumed @param {Set<FoldGroup>} touched @param {ActiveSelector | undefined} head @return {ActiveSelector | undefined} */
+function deactivateSelectors(consumed, touched, head) {
+  let nextHead = head;
   for (const selector of consumed) {
     if (!selector.active) continue;
     selector.active = false;
@@ -208,19 +207,12 @@ function deactivateSelectors(consumed, touched, selectorsById, headId) {
       removeOccurrence(occurrence.group, occurrence);
       touched.add(occurrence.group);
     }
-    const previous =
-      selector.previousId === undefined
-        ? undefined
-        : selectorsById.get(selector.previousId);
-    const next =
-      selector.nextId === undefined
-        ? undefined
-        : selectorsById.get(selector.nextId);
-    if (previous) previous.nextId = selector.nextId;
-    else nextHeadId = selector.nextId;
-    if (next) next.previousId = selector.previousId;
+    const { previous, next } = selector;
+    if (previous) previous.next = next;
+    else nextHead = next;
+    if (next) next.previous = previous;
   }
-  return nextHeadId;
+  return nextHead;
 }
 
 /** @param {SelectorArena} arena @param {OutputPool} pool @param {Normalized[]} selectors @param {boolean} sort */
@@ -232,28 +224,23 @@ export function foldSelectors(arena, pool, selectors, sort) {
     new Map();
   const sequence = { value: 0 };
   const heap = new CandidateHeap(sort);
-  let nextActiveId = 1;
   /** @type {ActiveSelector[]} */ const active = selectors.map(
     (selector, order) => ({
       ...selector,
       active: true,
-      activeId: nextActiveId++,
       order,
       memberships: [],
     })
-  );
-  const selectorsById = new Map(
-    active.map((selector) => [selector.activeId, selector])
   );
   for (let index = 0; index < active.length; index++) {
     const selector = active[index];
     const previous = active[index - 1];
     const next = active[index + 1];
-    if (previous) selector.previousId = previous.activeId;
-    if (next) selector.nextId = next.activeId;
+    if (previous) selector.previous = previous;
+    if (next) selector.next = next;
   }
-  /** @type {number | undefined} */
-  let headId = active[0]?.activeId;
+  /** @type {ActiveSelector | undefined} */
+  let head = active[0];
   const touched = new Set();
   for (const selector of active)
     registerSelector(selector, arena, pool, cons, groups, sequence, touched);
@@ -275,32 +262,24 @@ export function foldSelectors(arena, pool, selectors, sort) {
       first.order,
       sort
     );
-    replacement.activeId = nextActiveId++;
-    replacement.previousId = first.previousId;
-    replacement.nextId = first.activeId;
-    selectorsById.set(replacement.activeId, replacement);
-    const previous =
-      first.previousId === undefined
-        ? undefined
-        : selectorsById.get(first.previousId);
-    if (previous) previous.nextId = replacement.activeId;
-    else headId = replacement.activeId;
-    first.previousId = replacement.activeId;
+    const previous = first.previous;
+    replacement.previous = previous;
+    replacement.next = first;
+    if (previous) previous.next = replacement;
+    else head = replacement;
+    first.previous = replacement;
 
     touched.clear();
-    headId = deactivateSelectors(consumed, touched, selectorsById, headId);
+    head = deactivateSelectors(consumed, touched, head);
     registerSelector(replacement, arena, pool, cons, groups, sequence, touched);
     enqueueGroups(heap, touched);
   }
 
   /** @type {Normalized[]} */ const result = [];
-  let selector = headId === undefined ? undefined : selectorsById.get(headId);
+  let selector = head;
   while (selector) {
     result.push(selector);
-    selector =
-      selector.nextId === undefined
-        ? undefined
-        : selectorsById.get(selector.nextId);
+    selector = selector.next;
   }
   return result;
 }
