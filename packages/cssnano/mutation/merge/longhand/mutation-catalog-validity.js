@@ -68,14 +68,14 @@ export const mutations = [
   {
     name: 'accept a one-argument round() of a non-number',
     target: mathType,
-    find: "return this.#count === 1 && type !== 'number' ? undefined : type;",
+    find: "return loneNumber && count === 1 && type !== 'number'\n          ? undefined\n          : type;",
     replace: 'return type;',
   },
   {
     name: 'accept a rounding strategy with no comma after it',
     target: mathType,
-    find: '      if (this.#peek() === TokenType.Comma) {\n        this.#advance();\n        return true;\n      }',
-    replace: '      return true;',
+    find: '      if (this.#peek() === TokenType.Comma) {\n        this.#advance();\n        return;\n      }',
+    replace: '      return;',
   },
   {
     name: 'accept a rounding keyword as a number anywhere in round()',

@@ -31,6 +31,18 @@ test('types a one-argument round() of a number as a number', () => {
   assert.equal(typeOf('round(2.5)'), 'number');
 });
 
+test('types round() with a rounding strategy and one number as a number', () => {
+  assert.equal(typeOf('round(up, 2.5)'), 'number');
+});
+
+test('rejects round() with a rounding strategy and one length, because only a number may omit its second argument', () => {
+  assert.equal(typeOf('round(up, 1px)'), undefined);
+});
+
+test('rejects round() whose rounding strategy has no comma after it', () => {
+  assert.equal(typeOf('round(up 2.5)'), undefined);
+});
+
 test('types sign() of a length as a number', () => {
   assert.equal(typeOf('sign(1px)'), 'number');
 });
@@ -77,6 +89,22 @@ test('rejects sqrt() of a length, because its argument must be a number', () => 
 
 test('leaves a trigonometric angle undecided, because angles are not typed', () => {
   assert.equal(typeOf('sin(1deg)'), undefined);
+});
+
+test('types round() of a calc() number as a number', () => {
+  assert.equal(typeOf('round(calc(1 + 2))'), 'number');
+});
+
+test('rejects a nested round() of a length, because the inner one has one length argument', () => {
+  assert.equal(typeOf('round(round(1px))'), undefined);
+});
+
+test('types round() of two numbers whose first is a one-number round() as a number', () => {
+  assert.equal(typeOf('round(round(1), 2)'), 'number');
+});
+
+test('rejects round() of a calc() length alone, because a lone argument must be a number', () => {
+  assert.equal(typeOf('round(calc(1px + 2px))'), undefined);
 });
 
 /**

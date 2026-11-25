@@ -1,4 +1,16 @@
 {
+  "abs": {
+    "and_chr": "138",
+    "and_ff": "118",
+    "android": "138",
+    "chrome": "138",
+    "edge": "138",
+    "firefox": "118",
+    "ios_saf": "15.4",
+    "opera": "122",
+    "safari": "15.4",
+    "samsung": "30.0"
+  },
   "calc": {
     "and_chr": "28",
     "and_ff": "16",
@@ -12,6 +24,71 @@
     "safari": "7",
     "samsung": "1.5"
   },
+  "clamp": {
+    "and_chr": "79",
+    "and_ff": "79",
+    "android": "79",
+    "chrome": "79",
+    "edge": "79",
+    "firefox": "75",
+    "ios_saf": "13.4",
+    "op_mob": "57",
+    "opera": "66",
+    "safari": "13.1",
+    "samsung": "12.0"
+  },
+  "function:exp": {
+    "and_chr": "120",
+    "and_ff": "118",
+    "android": "120",
+    "chrome": "120",
+    "edge": "120",
+    "firefox": "118",
+    "ios_saf": "15.4",
+    "op_mob": "80",
+    "opera": "106",
+    "safari": "15.4",
+    "samsung": "25.0"
+  },
+  "function:log": {
+    "and_chr": "120",
+    "and_ff": "118",
+    "android": "120",
+    "chrome": "120",
+    "edge": "120",
+    "firefox": "118",
+    "ios_saf": "15.4",
+    "op_mob": "80",
+    "opera": "106",
+    "safari": "15.4",
+    "samsung": "25.0"
+  },
+  "function:pow": {
+    "and_chr": "120",
+    "and_ff": "118",
+    "android": "120",
+    "chrome": "120",
+    "edge": "120",
+    "firefox": "118",
+    "ios_saf": "15.4",
+    "op_mob": "80",
+    "opera": "106",
+    "safari": "15.4",
+    "samsung": "25.0"
+  },
+  "function:sqrt": {
+    "and_chr": "120",
+    "and_ff": "118",
+    "android": "120",
+    "chrome": "120",
+    "edge": "120",
+    "firefox": "118",
+    "ios_saf": "15.4",
+    "op_mob": "80",
+    "opera": "106",
+    "safari": "15.4",
+    "samsung": "25.0"
+  },
   "hex-alpha": {
     "and_chr": "62",
     "and_ff": "49",
@@ -24,6 +101,19 @@
     "opera": "52",
     "safari": "10",
     "samsung": "8.0"
+  },
+  "hypot": {
+    "and_chr": "120",
+    "and_ff": "118",
+    "android": "120",
+    "chrome": "120",
+    "edge": "120",
+    "firefox": "118",
+    "ios_saf": "15.4",
+    "op_mob": "80",
+    "opera": "106",
+    "safari": "15.4",
+    "samsung": "25.0"
   },
   "keyword:e": {
     "and_chr": "110",
@@ -168,6 +258,80 @@
     "opera": "28",
     "safari": "9.1",
     "samsung": "4.0"
+  },
+  "max": {
+    "and_chr": "79",
+    "and_ff": "79",
+    "android": "79",
+    "chrome": "79",
+    "edge": "79",
+    "firefox": "75",
+    "ios_saf": "13.4",
+    "op_mob": "57",
+    "opera": "66",
+    "safari": "13.1",
+    "samsung": "12.0"
+  },
+  "min": {
+    "and_chr": "79",
+    "and_ff": "79",
+    "android": "79",
+    "chrome": "79",
+    "edge": "79",
+    "firefox": "75",
+    "ios_saf": "13.4",
+    "op_mob": "57",
+    "opera": "66",
+    "safari": "13.1",
+    "samsung": "12.0"
+  },
+  "mod": {
+    "and_chr": "125",
+    "and_ff": "118",
+    "android": "125",
+    "chrome": "125",
+    "edge": "125",
+    "firefox": "118",
+    "ios_saf": "17.2",
+    "opera": "111",
+    "safari": "17.2",
+    "samsung": "27.0"
+  },
+  "rem": {
+    "and_chr": "125",
+    "and_ff": "118",
+    "android": "125",
+    "chrome": "125",
+    "edge": "125",
+    "firefox": "118",
+    "ios_saf": "17.2",
+    "opera": "111",
+    "safari": "17.2",
+    "samsung": "27.0"
+  },
+  "round": {
+    "and_chr": "125",
+    "and_ff": "118",
+    "android": "125",
+    "chrome": "125",
+    "edge": "125",
+    "firefox": "118",
+    "ios_saf": "17.2",
+    "opera": "111",
+    "safari": "17.2",
+    "samsung": "27.0"
+  },
+  "sign": {
+    "and_chr": "138",
+    "and_ff": "118",
+    "android": "138",
+    "chrome": "138",
+    "edge": "138",
+    "firefox": "118",
+    "ios_saf": "15.4",
+    "opera": "122",
+    "safari": "15.4",
+    "samsung": "30.0"
   },
   "unit:cap": {
     "and_chr": "118",

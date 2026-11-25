@@ -1,7 +1,7 @@
 /**
  * Derives, from @mdn/browser-compat-data, the first version of each browser
  * that parses the newer syntax `isFallback` tracks: units, CSS-wide keywords,
- * math constants and alpha hex colours. When every browserslist target
+ * math constants, math functions and alpha hex colours. When every browserslist target
  * reaches that version, an earlier declaration is no fallback for the syntax.
  *
  * browserslist resolves targets with caniuse, which sometimes records support
@@ -13,6 +13,7 @@ import { compareVersions } from '../../../../src/utils/versions.js';
 import { longstandingFloor as floorByBrowserslistName } from '../../../../src/merge/longhand/targetSupport.js';
 import {
   browserslistNames,
+  isShippedRelease,
   lookup,
   plainVersion,
   standardSupportSince,
@@ -99,6 +100,25 @@ export const featureBcdPaths = new Map([
   ),
   ['keyword:nan', 'css.types.calc-keyword.NaN'],
   ['calc', 'css.types.calc'],
+  ...['min', 'max', 'clamp', 'abs', 'sign', 'hypot'].map(
+    (name) => /** @type {[string, string]} */ ([name, `css.types.${name}`])
+  ),
+  // Mixed types, such as `round(1px, 2%)`, are the newest parameters of these
+  // functions, and `requiredSupport` cannot tell them apart.
+  ...['round', 'mod', 'rem'].map(
+    (name) =>
+      /** @type {[string, string]} */ ([
+        name,
+        `css.types.${name}.mixed_type_parameters`,
+      ])
+  ),
+  ...['exp', 'sqrt', 'pow', 'log'].map(
+    (name) =>
+      /** @type {[string, string]} */ ([
+        `function:${name}`,
+        `css.types.${name}`,
+      ])
+  ),
   // A pair family reads this one: an engine without `outline-style: auto`
   // drops the whole outline shorthand that carries it.
   ['keyword:outline-style-auto', 'css.properties.outline-style.auto'],
@@ -127,6 +147,9 @@ export const featureBcdPaths = new Map([
  */
 export const caniuseFeatureIds = new Map([
   ['calc', 'calc'],
+  ['min', 'css-math-functions'],
+  ['max', 'css-math-functions'],
+  ['clamp', 'css-math-functions'],
   ['hex-alpha', 'css-rrggbbaa'],
   ['keyword:initial', 'css-initial-value'],
   ['keyword:unset', 'css-unset-value'],
@@ -271,7 +294,8 @@ export const longstandingFunctionBcdPaths = new Map([
 /**
  * @param {unknown} bcd
  * @return {Map<string, Map<string, string>>} feature → browserslist name →
- * minimum version; a browser BCD gives no standard support is left out
+ * minimum version; a browser BCD gives no standard support, or no shipped
+ * release reaches, is left out
  */
 export function buildFeatureSupport(bcd) {
   /** @type {Map<string, Map<string, string>>} */
@@ -283,7 +307,9 @@ export function buildFeatureSupport(bcd) {
     for (const [bcdName, browserslistName] of browserslistNames) {
       const statements = support?.[bcdName];
       const since = statements && standardSupportSince(statements);
-      if (since !== undefined) minimums.set(browserslistName, since);
+      if (since !== undefined && isShippedRelease(browserslistName, since)) {
+        minimums.set(browserslistName, since);
+      }
     }
     features.set(feature, minimums);
   }
