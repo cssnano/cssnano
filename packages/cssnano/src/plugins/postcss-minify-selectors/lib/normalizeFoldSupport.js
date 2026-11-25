@@ -1,8 +1,11 @@
 import { hasSemanticFact, semanticFacts } from './arena.js';
+import { outputText } from './normalizePool.js';
 
 /** @typedef {import('./arena.js').SelectorArena} SelectorArena */
 /** @typedef {import('./arena.js').Specificity} Specificity */
 /** @typedef {import('./normalizeOutput.js').Normalized} Normalized */
+/** @typedef {import('./normalizeOutput.js').Part} Part */
+/** @typedef {import('./normalizePool.js').OutputPool} OutputPool */
 /** @param {{pairs:Map<number,Map<number,number>>,next:number}} state @param {number} left @param {number} right */
 export function consId(state, left, right) {
   let rights = state.pairs.get(left);
@@ -16,6 +19,42 @@ export function consId(state, left, right) {
     rights.set(right, id);
   }
   return id;
+}
+
+/** @param {SelectorArena} arena @param {number} nodeIndex */
+function isValidIsPseudo(arena, nodeIndex) {
+  const node = arena.nodes[nodeIndex];
+  return (
+    node.kind === 'pseudo' &&
+    node.status === 'valid' &&
+    arena.payloads.pseudos[node.payload].name === 'is'
+  );
+}
+
+/** @param {SelectorArena} arena @param {number} nodeIndex */
+function isCompoundOfIsPseudo(arena, nodeIndex) {
+  const node = arena.nodes[nodeIndex];
+  if (node.kind !== 'compound') return false;
+  // The first child is the only child when it ends where the compound ends.
+  const child = nodeIndex + 1;
+  return (
+    child < node.subtreeEnd &&
+    arena.nodes[child].subtreeEnd === node.subtreeEnd &&
+    isValidIsPseudo(arena, child)
+  );
+}
+
+/**
+ * The key a part contributes to a fold's prefix and suffix. A folded `:is()`
+ * and a parsed `:is()` with the same spelling share a key. Other parts keep
+ * their identity, so only `:is()` parts serialize their text.
+ * @param {SelectorArena} arena @param {OutputPool} pool @param {Part} part
+ */
+export function foldPartKey(arena, pool, part) {
+  if ('kind' in part) return part.id;
+  if (part.node === -1 || isCompoundOfIsPseudo(arena, part.node))
+    return pool.text(outputText(pool, part)).id;
+  return part.id;
 }
 
 /** @typedef {{selector:ActiveSelector,position:number,middle:Normalized,group:FoldGroup,text:string}} FoldOccurrence */

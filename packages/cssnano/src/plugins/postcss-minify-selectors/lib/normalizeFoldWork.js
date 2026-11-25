@@ -6,6 +6,7 @@ import {
   consId,
   foldCandidate,
   foldGroup,
+  foldPartKey,
   CandidateHeap,
   occurrenceOrder,
   occurrenceText,
@@ -72,10 +73,14 @@ function registerSelector(
   if (!parts || !selectorCanFold(selector, arena)) return;
   const prefix = Array(parts.length + 1).fill(0);
   const suffix = Array(parts.length + 1).fill(0);
-  for (let index = 0; index < parts.length; index++)
-    prefix[index + 1] = consId(cons, prefix[index], parts[index].id);
+  // Key each part once; the suffix array holds the keys until the
+  // right-to-left pass replaces them with suffix ids.
+  for (let index = 0; index < parts.length; index++) {
+    suffix[index] = foldPartKey(arena, pool, parts[index]);
+    prefix[index + 1] = consId(cons, prefix[index], suffix[index]);
+  }
   for (let index = parts.length - 1; index >= 0; index--)
-    suffix[index] = consId(cons, parts[index].id, suffix[index + 1]);
+    suffix[index] = consId(cons, suffix[index], suffix[index + 1]);
   for (let position = 0; position < parts.length; position += 2) {
     const middle = parts[position];
     if (
@@ -134,13 +139,6 @@ function buildFoldedSelector(pool, candidate, occurrences, order, sort) {
     valid: true,
     hasPseudoElement: false,
   });
-  syntheticMiddle.id = pool.identity(
-    'pseudo',
-    pool.payload(
-      `valid;${candidate.group.specificityId};${semanticFacts.function};is`
-    ),
-    foldedMiddle.id
-  );
   /** @type {Part[]} */ const newParts = [];
   /** @type {Output[]} */ const output = [];
   for (let index = 0; index < parts.length; index++) {
@@ -171,11 +169,6 @@ function buildFoldedSelector(pool, candidate, occurrences, order, sort) {
     trailing:
       trailingComments.length > 0 ? pool.sequence(trailingComments) : undefined,
   });
-  replacement.id = pool.identity(
-    'complex',
-    pool.payload(`valid;-1;${semanticFacts.function};synthetic`),
-    replacement.id
-  );
   return replacement;
 }
 
