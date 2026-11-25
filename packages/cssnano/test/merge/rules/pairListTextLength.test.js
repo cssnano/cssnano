@@ -3,9 +3,7 @@ import assert from 'node:assert/strict';
 import {
   firstListedSet,
   pairListTextLength,
-  pairSelectorIds,
 } from '../../../src/merge/rules/sharedRuleGroup.js';
-import { listTextLength } from '../../../src/ir/selectorReads.js';
 
 // A selector's text length is its id, so any id list has a known length.
 const tokenLists = /** @type {any} */ ({
@@ -27,42 +25,28 @@ function lengthOf(first, second) {
   );
 }
 
-/**
- * @param {number[]} first
- * @param {number[]} second
- * @return {number}
- */
-function expectedOf(first, second) {
-  const firstRule = /** @type {any} */ ({ selectorIds: first });
-  const ids = pairSelectorIds(
-    firstRule,
-    /** @type {any} */ ({ selectorIds: second }),
-    firstListedSet(firstRule)
-  );
-  return listTextLength(tokenLists, ids);
-}
-
 const range = (/** @type {number} */ from, /** @type {number} */ count) =>
   Array.from({ length: count }, (_, i) => from + i);
 
+// Expected lengths are the ids summed plus one comma between selectors:
+// shared selector once is `3,4,5` (12 + 2 commas).
+
 test('pairListTextLength should count a selector both rules list once', () => {
-  assert.equal(lengthOf([3, 4], [4, 5]), expectedOf([3, 4], [4, 5]));
+  assert.equal(lengthOf([3, 4], [4, 5]), 14);
 });
 
 test('pairListTextLength should count disjoint rules in full', () => {
-  assert.equal(lengthOf([3], [4]), expectedOf([3], [4]));
+  assert.equal(lengthOf([3], [4]), 8);
 });
 
 test('pairListTextLength should keep a selector the second rule repeats when the first lacks it', () => {
-  assert.equal(lengthOf([3], [4, 4]), expectedOf([3], [4, 4]));
+  assert.equal(lengthOf([3], [4, 4]), 13);
 });
 
 test('pairListTextLength should drop every copy of a selector the first rule lists', () => {
-  assert.equal(lengthOf([3, 3], [3, 5]), expectedOf([3, 3], [3, 5]));
+  assert.equal(lengthOf([3, 3], [3, 5]), 13);
 });
 
 test('pairListTextLength should agree on long lists that overlap', () => {
-  const first = range(1, 200);
-  const second = range(150, 200);
-  assert.equal(lengthOf(first, second), expectedOf(first, second));
+  assert.equal(lengthOf(range(1, 200), range(150, 200)), 61423);
 });
