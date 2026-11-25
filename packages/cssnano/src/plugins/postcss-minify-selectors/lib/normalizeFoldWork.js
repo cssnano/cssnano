@@ -234,10 +234,8 @@ export function foldSelectors(arena, pool, selectors, sort) {
   );
   for (let index = 0; index < active.length; index++) {
     const selector = active[index];
-    const previous = active[index - 1];
-    const next = active[index + 1];
-    if (previous) selector.previous = previous;
-    if (next) selector.next = next;
+    selector.previous = active[index - 1];
+    selector.next = active[index + 1];
   }
   /** @type {ActiveSelector | undefined} */
   let head = active[0];
@@ -262,6 +260,9 @@ export function foldSelectors(arena, pool, selectors, sort) {
       first.order,
       sort
     );
+    // The replacement takes the place of the first consumed selector in list
+    // order. Link it in before the consumed selectors are unlinked, so each
+    // unlink sees its real neighbours.
     const previous = first.previous;
     replacement.previous = previous;
     replacement.next = first;

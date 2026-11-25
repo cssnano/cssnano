@@ -31,7 +31,15 @@ suite('fold with sort off keeps list order', () => {
   );
 
   test(
-    'sort off: a repeated selector is removed and the rest still fold',
+    'sort off: a repeated selector is removed, and the two left stay apart because a+:is(.y,.w) b is longer',
     processCSS('a+ .y b,a+ .w b,a+ .y b{color:red}', 'a+.y b,a+.w b{color:red}')
+  );
+
+  test(
+    'sort off: a selector consumed between two survivors unlinks without dropping either survivor',
+    processCSS(
+      'a+ .y b,a+ .w c,a+ .w b,a+ .x b{color:red}',
+      'a+:is(.y,.w,.x) b,a+.w c{color:red}'
+    )
   );
 });

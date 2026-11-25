@@ -31,11 +31,12 @@ test('re-folds a grid of shared-prefix selectors in linear time with sort off', 
       const selectors = [];
       for (let i = 0; i < rows; i++)
         for (let j = 0; j < 4; j++) selectors.push(`.a${i} .x${j}`);
+      const rowList = Array.from({ length: rows }, (_, i) => `.a${i}`).join(
+        ','
+      );
       return {
         input: selectors.join(','),
-        validate(output) {
-          assert.ok(output.startsWith(':is(.a0,'));
-        },
+        expected: `:is(${rowList}) :is(.x0,.x1),:is(${rowList}) :is(.x2,.x3)`,
         sort: false,
         convertToIs: true,
       };
