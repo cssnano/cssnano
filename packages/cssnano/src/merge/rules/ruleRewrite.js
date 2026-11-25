@@ -22,6 +22,10 @@ import { RuleRecord } from '../../ir/ruleRecord.js';
 /** @import DeclarationScan from './declarationScan.js' */
 /** @import MergeState from './mergeState.js' */
 
+// The code of '-', which starts a vendor prefix unless a second '-' makes the
+// name a custom property.
+const HYPHEN_MINUS = 45;
+
 /**
  * The rules a rule leaves in its place: the rule itself while it keeps a
  * child, and nothing once it holds no child, when it departs. A kept rule
@@ -83,7 +87,10 @@ export function buildMergedRule(
     const length = minifiedLength(tokenLists, declaration);
     sharedBytes += length;
     const { prop } = declaration;
-    if (prop.charCodeAt(0) === 45 && prop.charCodeAt(1) !== 45) {
+    if (
+      prop.charCodeAt(0) === HYPHEN_MINUS &&
+      prop.charCodeAt(1) !== HYPHEN_MINUS
+    ) {
       prefixed += length;
     }
   }
@@ -151,9 +158,7 @@ export function buildMergedRule(
   /** @type {Placement} */
   const placement = {
     first: firstLeftover,
-    second: [receiving, ...secondLeftover].filter((rule) =>
-      childCountOf(records, rule)
-    ),
+    second: [receiving, ...secondLeftover],
   };
   if (group) {
     placement.following = group.followers.map(({ rule, claimed }) => {

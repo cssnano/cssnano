@@ -1,9 +1,5 @@
 import type { ArenaIndex } from '../../ir/blockRecord.js';
 import type MergeState from './mergeState.js';
-/** @import {RuleRecord} from '../../ir/ruleRecord.js' */
-/** @import {BlockRecord} from '../../ir/blockRecord.js' */
-/** @import MergeState from './mergeState.js' */
-/** @import {Placement} from './ruleSequence.js' */
 /**
  * Orders pairs for merging. For equal selectors it is the number of
  * declarations in both rules, since the selector is written once. Otherwise

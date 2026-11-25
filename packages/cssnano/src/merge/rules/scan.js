@@ -12,6 +12,10 @@ import { declarationKeys } from '../../ir/declarationCache.js';
 import { hasSameSelectors } from '../../ir/selectorReads.js';
 
 /** @import {ArenaIndex} from '../../ir/blockRecord.js' */
+/** @import {RuleRecord} from '../../ir/ruleRecord.js' */
+/** @import {BlockRecord} from '../../ir/blockRecord.js' */
+/** @import MergeState from './mergeState.js' */
+/** @import {Placement} from './ruleSequence.js' */
 
 const NO_BENEFIT = -1;
 
@@ -73,11 +77,6 @@ function checkPlacedRules(sequence, rules, replacement, previous) {
   return last;
 }
 
-/** @import {RuleRecord} from '../../ir/ruleRecord.js' */
-/** @import {BlockRecord} from '../../ir/blockRecord.js' */
-/** @import MergeState from './mergeState.js' */
-/** @import {Placement} from './ruleSequence.js' */
-
 /**
  * Orders pairs for merging. For equal selectors it is the number of
  * declarations in both rules, since the selector is written once. Otherwise
@@ -95,11 +94,12 @@ export function mergeBenefit(mergeState, firstIndex, secondIndex) {
   const second = /** @type {RuleRecord} */ (records.rule(secondIndex));
   const a = declarationKeys(records, firstIndex);
   const b = declarationKeys(records, secondIndex);
-  if (hasSameSelectors(records, first.index, second.index)) {
+  if (hasSameSelectors(records, firstIndex, secondIndex)) {
     return a.kept.length + b.kept.length;
   }
-  const [smaller, larger] =
-    a.kept.length <= b.kept.length ? [a, b.keySet] : [b, a.keySet];
+  const aSmaller = a.kept.length <= b.kept.length;
+  const smaller = aSmaller ? a : b;
+  const larger = aSmaller ? b.keySet : a.keySet;
   let shared = 0;
   for (const key of smaller.keySet) {
     if (larger.has(key)) shared++;
