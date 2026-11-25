@@ -22,7 +22,7 @@ export const target = source('mergeState.js');
 // The summary guard runs with it, since it holds the summaries that the
 // merged rules of these writers must keep.
 export const test = new URL(
-  '../../../test/merge/{selectorWriters,rules/selectorSummaryGuard}.test.js',
+  '../../../test/merge/{selectorWriters,rules/selectorSummaryGuard,rules/parsedPrefix}.test.js',
   import.meta.url
 ).href;
 
@@ -67,14 +67,20 @@ export const mutations = [
   {
     name: 'a merged rule takes no combined summaries of the two lists it is built from',
     target: source('ruleRewrite.js'),
-    find: '  combineSummaries(receivingRecord, first, second);',
+    find: '  combineSummaries(receivingRecord, first, second, pairIds.length);',
     replace: '',
   },
   {
     name: 'a merged rule takes no summaries of the selectors a group adds to it',
     target: source('ruleRewrite.js'),
-    find: '  extendSummaries(\n    receivingRecord,\n    first.selectorIds.length + second.selectorIds.length,\n    tokenLists,\n    browsers\n  );',
+    find: '  extendSummaries(receivingRecord, pairIds.length, tokenLists, browsers);',
     replace: '',
+  },
+  {
+    name: 'a joined list whose parsed prefix is capped by a dropped selector keeps the second list prefix',
+    target: irSource('selectorList.js'),
+    find: '  return pairLength === length + second.selectorIds.length\n    ? length + second.parsedPrefix\n    : length;',
+    replace: '  return length + second.parsedPrefix;',
   },
   {
     name: 'an edit that adds selectors to a rule does not mark it, so write-back keeps its node text',

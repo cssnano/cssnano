@@ -1,4 +1,4 @@
-/** @import {TokenListId} from '../../ir/tokenLists.js' */
+/** @import {TokenListId, TokenLists} from '../../ir/tokenLists.js' */
 import {
   childCountOf,
   firstDeclaration,
@@ -27,6 +27,74 @@ export const SHARING_WINDOW = 10;
 // first rule stands: the pair's second rule and the whole window lie between.
 // `earliestPairReaching` walks this far to find every group a rewrite changes.
 const PAIR_REACH = SHARING_WINDOW + 1;
+
+/**
+ * The selector ids of a pair's shared rule: the first rule's, then those of
+ * the second that the first does not list. A selector both rules list is
+ * printed once.
+ *
+ * @param {RuleRecord} first
+ * @param {RuleRecord} second
+ * @param {Set<TokenListId> | null} listed the ids of `first`, from `firstListedSet`
+ * @return {TokenListId[]}
+ */
+export function pairSelectorIds(first, second, listed) {
+  const ids = [...first.selectorIds];
+  for (const id of second.selectorIds) {
+    if (!isListedIn(first.selectorIds, listed, id)) ids.push(id);
+  }
+  return ids;
+}
+
+// Above this many selectors in the first rule, finding the ones the second
+// repeats builds a set instead of scanning, which keeps long lists linear.
+const SCAN_LIMIT = 8;
+
+/**
+ * The set that the pair helpers test membership with, or null when a scan of
+ * `first`'s short list is cheaper. Build it once per pair and pass it on.
+ *
+ * @param {RuleRecord} first
+ * @return {Set<TokenListId> | null}
+ */
+export function firstListedSet(first) {
+  return first.selectorIds.length > SCAN_LIMIT
+    ? new Set(first.selectorIds)
+    : null;
+}
+
+/**
+ * Whether `id` is one of the first rule's selectors, by its set or by a scan.
+ *
+ * @param {readonly TokenListId[]} firstIds
+ * @param {Set<TokenListId> | null} listed
+ * @param {TokenListId} id
+ * @return {boolean}
+ */
+function isListedIn(firstIds, listed, id) {
+  return listed === null ? firstIds.includes(id) : listed.has(id);
+}
+
+/**
+ * The length of `pairSelectorIds(first, second, listed)` joined by bare commas,
+ * without building the list: a pair that does not shorten the output is
+ * rejected on this length alone.
+ *
+ * @param {TokenLists} tokenLists
+ * @param {RuleRecord} first
+ * @param {RuleRecord} second
+ * @param {Set<TokenListId> | null} listed the ids of `first`, from `firstListedSet`
+ * @return {number}
+ */
+export function pairListTextLength(tokenLists, first, second, listed) {
+  const firstIds = first.selectorIds;
+  let total = listTextLength(tokenLists, firstIds);
+  for (const id of second.selectorIds) {
+    if (isListedIn(firstIds, listed, id)) continue;
+    total += selectorTextLength(tokenLists, id) + 1;
+  }
+  return total;
+}
 
 /**
  * Whether a declaration of `rule`, other than the `claimed` ones, sets a

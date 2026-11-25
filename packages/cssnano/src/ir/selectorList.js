@@ -230,34 +230,44 @@ export function setParsedPrefix(list, count) {
 
 /**
  * The parsed prefix of the list of `first`'s ids followed by `second`'s: the
- * second list's prefix carries over only when the first list parses whole.
+ * second list's prefix carries over only when the first list parses whole and
+ * no selector of `second` is dropped, since a dropped one would shift the
+ * prefix off its selectors.
  *
  * @param {RuleRecord} first
  * @param {RuleRecord} second
+ * @param {number} [pairLength] the length of the joined list, when a selector both rules list is kept once
  * @return {number}
  */
-function joinedParsedPrefix(first, second) {
+function joinedParsedPrefix(
+  first,
+  second,
+  pairLength = first.selectorIds.length + second.selectorIds.length
+) {
   const length = first.selectorIds.length;
-  return first.parsedPrefix < length
-    ? first.parsedPrefix
-    : length + second.parsedPrefix;
+  if (first.parsedPrefix < length) return first.parsedPrefix;
+  return pairLength === length + second.selectorIds.length
+    ? length + second.parsedPrefix
+    : length;
 }
 
 /**
- * The summaries of a rule made from two rules' selectors, in order: the first
- * rule's ids, then the second's. `target` holds no id of the two yet, and it
- * must be given its ids, then `extendSummaries` for any ids after them.
+ * The summaries of a rule made from two rules' selectors: the first rule's
+ * ids, then those of the second that the first does not list. `target` holds
+ * no id of the two yet, and it must be given its ids, then `extendSummaries`
+ * for any ids after them.
  *
- * @param {RuleRecord} target a new rule, unplaced, whose ids are the two rules' ids
+ * @param {RuleRecord} target a new rule, unplaced, whose ids are `pairSelectorIds(first, second, listed)`
  * @param {RuleRecord} first
  * @param {RuleRecord} second
+ * @param {number} pairLength the length of the two rules' ids once a selector both rules list is kept once
  * @return {void}
  */
-export function combineSummaries(target, first, second) {
+export function combineSummaries(target, first, second, pairLength) {
   const own = writableIds(target);
   own.compatible = first.compatible && second.compatible;
   own.marked = true;
-  own.parsedPrefix = joinedParsedPrefix(first, second);
+  own.parsedPrefix = joinedParsedPrefix(first, second, pairLength);
   own.vendor = first.vendor.concat(second.vendor);
   // A copy, since both inputs stay alive as they are.
   const keys = first.elementKeys;

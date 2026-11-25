@@ -63,8 +63,30 @@ test('canMerge should refuse a rule that a merge already checked once combineSum
   // Each check leaves a parsed prefix: one selector for `first`, one for `second`.
   assert.equal(state.canMerge(first, other), false);
   assert.equal(state.canMerge(second, other), true);
-  writeSelectorIds(target, [...first.selectorIds, ...second.selectorIds]);
-  combineSummaries(target, first, second);
+  const ids = [...first.selectorIds, ...second.selectorIds];
+  writeSelectorIds(target, ids);
+  combineSummaries(target, first, second, ids.length);
+  assert.equal(state.canMerge(target, other), false);
+});
+
+test('canMerge should refuse a joined list whose second list parses only in part when a selector both lists keep is dropped', () => {
+  const state = createState();
+  const root = withRecords(
+    state,
+    postcss.parse(
+      'x{color:red}x,:nth-child(foo){color:red}y{color:red}z{color:red}'
+    )
+  );
+  const [first, second, other, target] = root.nodes.map((node) =>
+    ruleRecordOf(state.records, node)
+  );
+  // `first` parses whole, so the cap in the joined prefix is reached only when `first` is checked.
+  assert.equal(state.canMerge(first, other), true);
+  assert.equal(state.canMerge(second, other), false);
+  assert.equal(second.parsedPrefix, 1);
+  // The shared selector `x` is listed once: the joined list is `x, :nth-child(foo)`.
+  writeSelectorIds(target, [first.selectorIds[0], second.selectorIds[1]]);
+  combineSummaries(target, first, second, 2);
   assert.equal(state.canMerge(target, other), false);
 });
 

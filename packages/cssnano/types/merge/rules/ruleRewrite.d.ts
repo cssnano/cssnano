@@ -18,7 +18,7 @@ import type DeclarationScan from './declarationScan.js';
  *
  * @param {ArenaIndex} firstIndex the index of the earlier rule of the pair
  * @param {ArenaIndex} secondIndex the index of the later rule
- * @param {DeclarationRecord[]} shared the shared declarations, in their order in `first`
+ * @param {DeclarationRecord[]} shared the shared declarations, non-empty, in their order in `first`
  * @param {Set<ArenaIndex>} claimedIndices the arena indices of the declarations of `second` that repeat `shared`
  * @param {import('./mergeState.js').default} mergeState
  * @param {ArenaIndex} secondLink the index of `second` in the sweep
