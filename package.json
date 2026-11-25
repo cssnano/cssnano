@@ -18,8 +18,8 @@
   "devDependencies": {
     "@types/node": "^26.6.6",
     "knip": "^6.48.0",
-    "oxfmt": "^0.79.0",
-    "oxlint": "^1.94.0",
+    "oxfmt": "^0.80.0",
+    "oxlint": "^1.95.0",
     "postcss": "catalog:",
     "typescript": "~7.0.2"
   },
