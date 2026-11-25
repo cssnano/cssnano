@@ -10,6 +10,7 @@ import { test } from 'node:test';
 import postcss from 'postcss';
 import preset from '../../../src/presets/default.js';
 import { executionCount } from '../../../../../util/mutation-testing/fragmentReach.js';
+import { callCount } from '../../../../../util/coverageCounts.js';
 import { testTargets } from '../../../../../util/testHelpers.js';
 
 const session = new Session();
@@ -62,13 +63,8 @@ const BOUND = 2.1;
  */
 function analysisCalls(coverage) {
   let calls = 0;
-  for (const script of coverage) {
-    for (const [module, functionName] of ANALYSES) {
-      if (!script.url.endsWith(module)) continue;
-      for (const fn of script.functions) {
-        if (fn.functionName === functionName) calls += fn.ranges[0].count;
-      }
-    }
+  for (const [module, functionName] of ANALYSES) {
+    calls += callCount(coverage, module, functionName);
   }
   return calls;
 }
