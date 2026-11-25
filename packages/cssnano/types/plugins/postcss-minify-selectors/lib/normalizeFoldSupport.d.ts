@@ -42,11 +42,10 @@ export type FoldCandidate = {
 };
 export type ActiveSelector = Normalized & {
     active: boolean;
-    activeId: number;
     order: number;
     memberships: FoldOccurrence[];
-    previousId?: number;
-    nextId?: number;
+    previous?: ActiveSelector;
+    next?: ActiveSelector;
 };
 /** @param {Normalized} selector @param {SelectorArena} arena */
 export declare function selectorCanFold(selector: Normalized, arena: SelectorArena): boolean;

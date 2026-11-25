@@ -21,7 +21,7 @@ export function consId(state, left, right) {
 /** @typedef {{selector:ActiveSelector,position:number,middle:Normalized,group:FoldGroup,text:string}} FoldOccurrence */
 /** @typedef {{activeOccurrences:Set<FoldOccurrence>,orderHeap:FoldOccurrence[],lexHeap:FoldOccurrence[],middleCounts:Map<number,{count:number,middle:Normalized}>,specificity:Specificity,specificityId:number,activeCount:number,selectorLength:number,middleLength:number,version:number,sequence:number}} FoldGroup */
 /** @typedef {{group:FoldGroup,version:number,savings:number,count:number,first:FoldOccurrence,lex:string}} FoldCandidate */
-/** @typedef {Normalized & {active:boolean,activeId:number,order:number,memberships:FoldOccurrence[],previousId?:number,nextId?:number}} ActiveSelector */
+/** @typedef {Normalized & {active:boolean,order:number,memberships:FoldOccurrence[],previous?:ActiveSelector,next?:ActiveSelector}} ActiveSelector */
 
 /** @param {Normalized} selector @param {SelectorArena} arena */
 function arenaUnsafeForFold(selector, arena) {
