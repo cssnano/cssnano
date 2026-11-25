@@ -184,8 +184,8 @@ settings:
 catalogs:
   default:
     '@colordx/core':
-      specifier: ^7.3.0
-      version: 7.3.0
+      specifier: ^7.5.0
+      version: 7.5.0
     '@csstools/css-tokenizer':
       specifier: ^4.0.3
       version: 4.0.3
@@ -238,7 +238,7 @@ importers:
     dependencies:
       '@colordx/core':
         specifier: 'catalog:'
-        version: 7.3.0
+        version: 7.5.0
       '@csstools/css-tokenizer':
         specifier: 'catalog:'
         version: 4.0.3
@@ -304,8 +304,9 @@ importers:
 
 packages:
 
-  '@colordx/core@7.3.0':
-    resolution: {integrity: sha512-LVzTTPhX7wpy7TkGjouA9zbbCBIw92RGm7ZQqSKFE0oYE3sMx2FGXz90eVpgw7k/+wrrY+qJ86nHXifZWMS5jA==}
+  '@colordx/core@7.5.0':
+    resolution: {integrity: sha512-RikRlLV2j5QR6Jj5NrJn/CxqZzuWgfya/OuDLng7ZG/ZYQ73drvDGjE0ad8oNk/02/E3W8kQv0hL5LjIK2H0/g==}
+    engines: {node: '>=18'}
 
   '@csstools/css-tokenizer@4.0.3':
     resolution: {integrity: sha512-gdkFe/Z4KU1q8Y5S3GYScXGcOnO56dgWwIs5+97Ij1VIKISItOIUlCXUq4VLbdnRclF+SSQ49sLsn3KeV111AA==}
@@ -1355,7 +1356,7 @@ packages:
 
 snapshots:
 
-  '@colordx/core@7.3.0': {}
+  '@colordx/core@7.5.0': {}
 
   '@csstools/css-tokenizer@4.0.3': {}
 
