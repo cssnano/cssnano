@@ -3,6 +3,7 @@
  * support records and the rule for what counts as standard, unprefixed,
  * unflagged support.
  */
+import browserslist from 'browserslist';
 import { compareVersions } from '../../../../src/utils/versions.js';
 
 /**
@@ -35,6 +36,23 @@ export const browserslistNames = new Map([
 ]);
 
 export const plainVersion = /^\d+(?:\.\d+)*$/v;
+
+/**
+ * browserslist resolves only shipped releases, so a minimum no release of its
+ * browser reaches names no target. Such a minimum is left out, which leaves
+ * the feature unsupported for every target of that browser, as it is anyway.
+ *
+ * @param {string} name - browserslist name
+ * @param {string} version - minimum version
+ * @return {boolean} whether a shipped release is at or after the version
+ */
+export function isShippedRelease(name, version) {
+  return (
+    browserslist.data[name]?.released.some(
+      (release) => compareVersions(release.split('-')[0], version) >= 0
+    ) ?? false
+  );
+}
 
 /**
  * The per-browser support statements of a BCD entry.

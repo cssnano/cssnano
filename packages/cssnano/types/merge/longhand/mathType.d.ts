@@ -20,6 +20,8 @@ export type MathFunction = {
      */
     strategy?: boolean;
 };
+/** The math function names this module types, in lowercase. */
+export declare const mathFunctionNames: Set<string>;
 /**
  * @param {readonly CSSToken[]} tokens
  * @param {number} start the index of the first token of the expression

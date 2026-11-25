@@ -148,3 +148,39 @@ describe('round() and mod() support', () => {
     assert.equal(await run(css, 'chrome 120'), css);
   });
 });
+
+describe('math function support by target', () => {
+  test('merges round() nested in calc() for Chrome 125, which parses it', async () => {
+    assert.equal(
+      await run(`a{${marginSides('calc(round(up, 1px, 2px))')}}`, 'chrome 125'),
+      'a{margin:calc(round(up, 1px, 2px)) 1px 1px}'
+    );
+  });
+
+  test('merges a bare mod() for Chrome 125, which parses it', async () => {
+    assert.equal(
+      await run(`a{${marginSides('mod(5px, 2px)')}}`, 'chrome 125'),
+      'a{margin:mod(5px, 2px) 1px 1px}'
+    );
+  });
+
+  test('merges clamp() when every target parses it', async () => {
+    assert.equal(
+      await run(
+        `a{${marginSides('clamp(1px, 2px, 3px)')}}`,
+        'chrome 120, firefox 120, safari 17'
+      ),
+      'a{margin:clamp(1px, 2px, 3px) 1px 1px}'
+    );
+  });
+
+  test('keeps clamp() unmerged for Opera Mini, which BCD does not list', async () => {
+    const css = `a{${marginSides('clamp(1px, 2px, 3px)')}}`;
+    assert.equal(await run(css, 'op_mini all'), css);
+  });
+
+  test('keeps round(1px, 2px) unmerged for Safari 17.0, since every round() waits for mixed-type support', async () => {
+    const css = `a{${marginSides('round(1px, 2px)')}}`;
+    assert.equal(await run(css, 'chrome 140, firefox 120, safari 17.0'), css);
+  });
+});

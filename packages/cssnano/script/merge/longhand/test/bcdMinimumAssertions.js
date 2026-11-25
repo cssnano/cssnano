@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import browserslist from 'browserslist';
-import { compareVersions } from '../../../../src/utils/versions.js';
+import { isShippedRelease } from '../lib/bcdSupport.js';
 
 /**
  * Invariants of committed minimum browser versions. Each takes a list of
@@ -50,11 +50,7 @@ export function assertPlainVersions(records) {
 export function assertShippedReleases(records) {
   for (const minimums of records) {
     for (const [name, version] of Object.entries(minimums)) {
-      const released = browserslist.data[name].released;
-      assert.ok(
-        released.some((r) => compareVersions(r.split('-')[0], version) >= 0),
-        name
-      );
+      assert.ok(isShippedRelease(name, version), name);
     }
   }
 }

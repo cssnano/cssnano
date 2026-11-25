@@ -50,6 +50,9 @@ const functions = new Map(
   ])
 );
 
+/** The math function names this module types, in lowercase. */
+export const mathFunctionNames = new Set(functions.keys());
+
 /**
  * @param {MathType | undefined} left
  * @param {MathType | undefined} right
@@ -99,8 +102,6 @@ class MathParser {
   #index;
   /** @type {number} the index just past the expression */
   #end;
-  /** @type {number} the argument count of the last #arguments call */
-  #count = 0;
 
   /**
    * @param {readonly CSSToken[]} tokens
@@ -238,10 +239,11 @@ class MathParser {
   /**
    * @param {number} least
    * @param {number} most
+   * @param {boolean} [loneNumber] whether a lone argument must be a number
    * @return {MathType | undefined} the common type of the comma-separated
    * arguments, up to the closing parenthesis
    */
-  #arguments(least, most) {
+  #arguments(least, most, loneNumber = false) {
     let count = 0;
     /** @type {MathType | undefined} */
     let type;
@@ -255,8 +257,10 @@ class MathParser {
       const closing = this.#peek();
       this.#advance();
       if (closing === TokenType.CloseParen) {
-        this.#count = count;
-        return count >= least ? type : undefined;
+        if (count < least) return undefined;
+        return loneNumber && count === 1 && type !== 'number'
+          ? undefined
+          : type;
       }
       if (closing !== TokenType.Comma) return undefined;
     }
@@ -265,8 +269,6 @@ class MathParser {
   /**
    * Consumes a rounding strategy and its comma when they lead the arguments.
    * Otherwise the index is unchanged.
-   *
-   * @return {boolean} whether a strategy was consumed
    */
   #takeStrategy() {
     const start = this.#index;
@@ -279,23 +281,22 @@ class MathParser {
       this.#skipSpace();
       if (this.#peek() === TokenType.Comma) {
         this.#advance();
-        return true;
+        return;
       }
     }
     this.#index = start;
-    return false;
   }
 
   /**
-   * A leading strategy adds no argument: two arguments of one type follow it.
-   * Without one, a single argument must be a number, so `round(1px)` fails.
+   * A leading strategy adds no argument, so one or two arguments follow it or
+   * not. A lone argument must be a number, so `round(1px)` and
+   * `round(up, 1px)` fail.
    *
    * @return {MathType | undefined} the type of round()
    */
   #round() {
-    if (this.#takeStrategy()) return this.#arguments(2, 2);
-    const type = this.#arguments(1, 2);
-    return this.#count === 1 && type !== 'number' ? undefined : type;
+    this.#takeStrategy();
+    return this.#arguments(1, 2, true);
   }
 }
 

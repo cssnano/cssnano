@@ -5,6 +5,9 @@ import { describe, test } from 'node:test';
 import bcdData from '@mdn/browser-compat-data' with { type: 'json' };
 import committed from '../../../../src/merge/longhand/data/featureSupport.json' with { type: 'json' };
 import cssnanoUtils from '#utils';
+import { requiredSupport } from '../../../../src/merge/longhand/isFallback.js';
+import { mathFunctionNames } from '../../../../src/merge/longhand/mathType.js';
+import { itemOf } from '../../../../test/merge/longhand/helpers/declarationItems.js';
 import {
   buildFeatureSupport,
   caniuseFeatureIds,
@@ -147,11 +150,17 @@ describe('committed feature support data', () => {
     );
   });
 
-  test('maps only newer units, keywords, alpha hex and calc(), which Opera Mini lacks', () => {
+  test('maps only newer units, keywords, alpha hex, calc() and math functions, which Opera Mini lacks', () => {
+    const mathFeatures = new Set(
+      [...mathFunctionNames].flatMap((name) => [
+        ...requiredSupport(itemOf(`width: ${name}(1px)`)),
+      ])
+    );
     for (const feature of featureBcdPaths.keys()) {
-      assert.match(
-        feature,
-        /^(?:unit:[a-z]+|keyword:[a-z\-]+|hex-alpha|calc)$/v
+      assert.ok(
+        /^(?:unit:[a-z]+|keyword:[a-z\-]+|hex-alpha|calc)$/v.test(feature) ||
+          mathFeatures.has(feature),
+        feature
       );
     }
   });
@@ -168,7 +177,7 @@ describe('committed feature support data', () => {
     assertShippedReleases(Object.values(committed));
   });
 
-  test('matches the pinned browser compatibility data, so a bump needs a regenerate', () => {
+  test('matches the pinned browser compatibility data and the browserslist releases, so a bump needs a regenerate', () => {
     assert.deepEqual(
       JSON.parse(
         serializeFeatureSupport(
