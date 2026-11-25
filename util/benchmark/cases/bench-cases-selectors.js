@@ -17,6 +17,27 @@ export const selectorCases = {
         `.scope-${index} :is(.item-${index}, .item-${index}):not(.disabled) > .child-${index}{color:red}`
     ).join('')
   ),
+  'selector-fold': pluginCase(
+    'postcss-minify-selectors',
+    Array.from({ length: 1000 }, (_, rule) => {
+      const selectors = [];
+      for (let a = 0; a < 6; a++)
+        for (let b = 0; b < 6; b++)
+          selectors.push(`.pre-${rule}-${a} .mid-${b} .suf-${rule}`);
+      return `${selectors.join(',')}{color:red}`;
+    }).join('')
+  ),
+  'selector-fold-unsorted': pluginCase(
+    'postcss-minify-selectors',
+    Array.from({ length: 1000 }, (_, rule) => {
+      const selectors = [];
+      for (let a = 0; a < 6; a++)
+        for (let b = 0; b < 6; b++)
+          selectors.push(`.pre-${rule}-${a} .mid-${b} .suf-${rule}`);
+      return `${selectors.join(',')}{color:red}`;
+    }).join(''),
+    { sort: false }
+  ),
   'single-item-keyframe-selectors': pluginCase(
     'postcss-minify-selectors',
     Array.from(
