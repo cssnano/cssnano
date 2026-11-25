@@ -124,10 +124,33 @@ describe('resolveTargets arguments', () => {
 });
 
 describe('resolveTargets default targets', () => {
-  test('resolves Baseline widely available with downstream browsers when there is no override and no project config', () => {
+  test('resolves Baseline widely available on a stated date with downstream browsers when there is no override and no project config', () => {
     const { browserslist, calls } = recordingBrowserslist();
     resolveTargets({}, resultWith(), browserslist);
-    assert.equal(calls[0].query, 'baseline widely available with downstream');
+    assert.match(
+      String(calls[0].query),
+      /^baseline widely available on \d{4}-\d{2}-\d{2} with downstream$/v
+    );
+  });
+
+  test('resolves the same default browsers years later, so output does not depend on the date of the run', (t) => {
+    // Browserslist would return its cached list without reading the clock,
+    // and would warn that its data looks years old.
+    const names = [
+      'BROWSERSLIST_DISABLE_CACHE',
+      'BROWSERSLIST_IGNORE_OLD_DATA',
+    ];
+    const previous = names.map((name) => process.env[name]);
+    for (const name of names) process.env[name] = '1';
+    t.after(() => {
+      for (const [index, name] of names.entries()) {
+        if (previous[index] === undefined) delete process.env[name];
+        else process.env[name] = previous[index];
+      }
+    });
+    const today = realBrowserslist(defaultTargetsQuery);
+    t.mock.timers.enable({ apis: ['Date'], now: Date.parse('2031-06-01') });
+    assert.deepEqual(realBrowserslist(defaultTargetsQuery), today);
   });
 
   test('resolves the project config query instead of the default when the project has one', () => {

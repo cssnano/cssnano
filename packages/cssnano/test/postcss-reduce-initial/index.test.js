@@ -11,6 +11,7 @@ import fromInitial from '../../src/plugins/postcss-reduce-initial/data/fromIniti
 import toInitial from '../../src/plugins/postcss-reduce-initial/data/toInitial.json' with { type: 'json' };
 import ignoreProps from '../../src/plugins/postcss-reduce-initial/lib/ignoreProps.js';
 import reduceInitial from '../../src/plugins/postcss-reduce-initial/index.js';
+import { defaultTargetsQuery } from '../../src/utils/browserTargets.js';
 
 const plugin = oneStagePlugin(reduceInitial);
 
@@ -20,7 +21,7 @@ const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
 // The repo's own browserslist config targets IE 11, which lacks the initial
 // keyword, so the conversions below pin the default targets explicitly.
-const defaultTargets = withTargets('baseline widely available with downstream');
+const defaultTargets = withTargets(defaultTargetsQuery);
 
 function convertInitial(property, value) {
   return processCSS(

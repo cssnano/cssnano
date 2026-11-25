@@ -59,7 +59,7 @@ query that matches no browser keeps them too.
 The targets come from the cssnano `browserslist` options `query`, `stats` and
 `env`, shared by every plugin. The PostCSS `from` option sets where the project
 config is looked up. Without them or a project config, cssnano targets
-`baseline widely available with downstream`.
+Baseline widely available on the release date, with downstream browsers.
 
 Values that a target may not parse, such as `safe`, `unsafe`, `last baseline`,
 `left`, `right`, `legacy`, `anchor-center` and `safe normal`, merge only with a

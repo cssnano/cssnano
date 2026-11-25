@@ -42,10 +42,11 @@ export type Browserslist = ((query: SharedTargets['query'], options: Omit<Shared
  */
 /**
  * The targets when the user states no preference: browsers that support
- * every Baseline widely available feature, plus the browsers built on their
- * engines.
+ * every feature Baseline widely available on the release date, plus the
+ * browsers built on their engines. The fixed date keeps a release's output
+ * the same whenever it runs; each release moves it on deliberately.
  */
-export declare const defaultTargetsQuery = "baseline widely available with downstream";
+export declare const defaultTargetsQuery = "baseline widely available on 2026-11-30 with downstream";
 /**
  * How many distinct target lists keep a shared copy. A build uses one or a
  * few; the bound keeps a long-running process that receives many queries

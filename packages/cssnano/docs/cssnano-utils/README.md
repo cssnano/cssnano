@@ -44,7 +44,7 @@ themselves.
 | Export | Description |
 | --- | --- |
 | `#utils/browser-targets` `resolveTargets` | Resolves a plugin's browserslist targets once per file. |
-| `#utils/browser-targets` `defaultTargetsQuery` | The query used when the user states no preference: `baseline widely available with downstream`. It is counted back from the current date, so the targets it resolves move forward over time. |
+| `#utils/browser-targets` `defaultTargetsQuery` | The query used when the user states no preference: Baseline widely available on the release date, with downstream browsers. The date is fixed per release, so a release resolves the same oldest versions whenever it runs. |
 | `#utils/browser-support` `supportsAll(targets, feature)` | Whether every target supports a caniuse feature. |
 | `#utils/browser-bugs` `anyAffected(targets, bug)` | Whether at least one target has a browser bug listed in `bugs.json`. |
 | `#utils/versions` `compareVersions(left, right)` | Orders dotted release numbers numerically per component, so `10.1` follows `9.3`. |
