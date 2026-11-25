@@ -130,3 +130,15 @@ test(
     '.a,.abcdefgh,.b{color:red}.x{height:1px}.abcdefgh{top:0}.b{left:0}'
   )
 );
+
+// The join checks only the GROUP_REACH nearest groups that share a first
+// declaration, so a join stays constant-time. The two groups between `s3_2`
+// and `s0_7` fill a reach of 2: `s3_2`'s group is farther, so `s0_7` does not
+// join it. Changing GROUP_REACH changes this fixture too.
+test(
+  'should not join a rule into a group farther back than the reach',
+  processCSS(
+    's3_2{color:red;color:blue}s2_3{color:red;left:0}s0_5{color:red;height:2px}s0_6{color:red;height:2px}s0_7{color:red;color:blue}',
+    's3_2{color:red;color:blue}s2_3{color:red;left:0}s0_5,s0_6{color:red;height:2px}s0_7{color:red;color:blue}'
+  )
+);

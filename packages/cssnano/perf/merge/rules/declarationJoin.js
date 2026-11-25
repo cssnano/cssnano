@@ -27,6 +27,17 @@ function joinableRuleGroups(count) {
 }
 
 /**
+ * @param {number} count
+ * @return {string} rules that share their first declaration and match disjoint elements, so no group is joined
+ */
+function disjointElementRules(count) {
+  return Array.from(
+    { length: count },
+    (_, i) => `long-selector-name-${i}{color:red;width:${i}px}`
+  ).join('');
+}
+
+/**
  * @param {string} css
  * @return {number} one run of the whole plugin in milliseconds
  */
@@ -42,4 +53,10 @@ test('should join many alternating rules in linear time', () => {
 // the group sets. The group gains a selector on every join.
 test('should join many rules into one growing group in linear time', () => {
   assertLinearTime((size) => timePlugin(joinableRuleGroups(size)), 400);
+});
+
+// Each rule shares its first declaration with every earlier rule but joins none,
+// since they style disjoint elements. The walk back over the groups must stop at a bound.
+test('should walk the groups of disjoint elements in linear time', () => {
+  assertLinearTime((size) => timePlugin(disjointElementRules(size)), 1000);
 });
