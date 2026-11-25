@@ -18,6 +18,8 @@ itself. Use the scripts below to investigate, not to verify.
 | `valueValidity.js` | check with Chromium that no stage makes an ignored declaration valid | no |
 | `pluginTiming.js` | show where time goes per preset entry | no |
 | `tokenizerCalls.js` | count `tokenize` calls per preset entry | no |
+| `uncoveredBranches.js` | list the 0-hit branches of a package or plugin under coverage | no |
+| `packaging.e2e.js` | check the packed packages install and run | no |
 
 Per-plugin fuzzers live in `packages/cssnano/script/<plugin>/fuzz.js`; run them
 through `fuzzAgainstRevision.js` to test them against a revision.
@@ -25,7 +27,7 @@ through `fuzzAgainstRevision.js` to test them against a revision.
 Benchmarks and mutation testing have their own runners: see
 `benchmark/README.md` and `pnpm mutation`.
 
-Everything else (`fuzzCheck.js`, `fuzzRunner.js`, `fuzzRng.js`,
+Everything else (`fuzzCheck.js`, `fuzzRunner.js`, `fuzzRng.js`, `valueValidityCorpus.js`, `webref/`,
 `countTokenize.js`, `selectorRanges.js`, `labelPlugins.js`, `chromium.js`,
 `testHelpers.js`, `testArguments.js`, `integrationTestHelpers.js`) is imported
 by tests or by the scripts above and is not run directly.
