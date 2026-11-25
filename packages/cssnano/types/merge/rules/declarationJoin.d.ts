@@ -28,6 +28,7 @@ export declare const isDeclarationRule: (records: BlockRecords, record: RuleReco
  * @return {Set<ArenaIndex> | null} the arena indices of the later declarations
  */
 export declare function claimRepeats(declarations: DeclarationRecord[], later: DeclarationRecord[]): Set<ArenaIndex> | null;
+export declare const GROUP_REACH = 2;
 export type Group = {
     rule: RuleRecord;
     /**

@@ -66,6 +66,13 @@ function listLength(tokenLists, ids) {
   return listTextLength(tokenLists, ids) + 1;
 }
 
+// How many groups that share a first declaration a join checks, nearest
+// first. A constant bound keeps each join constant-time, so joining stays
+// linear in the rules, at the cost of joins with farther groups. A group that
+// fails the subset check counts too: otherwise a run of such groups would make
+// the walk quadratic.
+export const GROUP_REACH = 2;
+
 /**
  * @typedef {object} Group
  * @property {RuleRecord} rule
@@ -226,7 +233,11 @@ class DeclarationJoin {
     let best = null;
     for (const id of laterSet) {
       const candidates = groups.get(id) ?? [];
-      for (let i = candidates.length - 1; i >= 0; i--) {
+      for (
+        let i = candidates.length - 1, reached = 0;
+        i >= 0 && reached < GROUP_REACH;
+        i--, reached++
+      ) {
         const group = candidates[i];
         // A write since a group to the property of its first declaration
         // rules out that group and every earlier one, which only cross more.
