@@ -1,4 +1,4 @@
-import type { TokenListId } from '../../ir/tokenLists.js';
+import type { TokenListId, TokenLists } from '../../ir/tokenLists.js';
 import type { DeclarationRecord } from '../../ir/declarationRecord.js';
 import type { RuleRecord } from '../../ir/ruleRecord.js';
 import type { ArenaIndex } from '../../ir/blockRecord.js';
@@ -11,6 +11,37 @@ import type DeclarationScan from './declarationScan.js';
 /** @import RuleSequence, {Placement} from './ruleSequence.js' */
 /** @import DeclarationScan from './declarationScan.js' */
 export declare const SHARING_WINDOW = 10;
+/**
+ * The selector ids of a pair's shared rule: the first rule's, then those of
+ * the second that the first does not list. A selector both rules list is
+ * printed once.
+ *
+ * @param {RuleRecord} first
+ * @param {RuleRecord} second
+ * @param {Set<TokenListId> | null} listed the ids of `first`, from `firstListedSet`
+ * @return {TokenListId[]}
+ */
+export declare function pairSelectorIds(first: RuleRecord, second: RuleRecord, listed: Set<TokenListId> | null): TokenListId[];
+/**
+ * The set that the pair helpers test membership with, or null when a scan of
+ * `first`'s short list is cheaper. Build it once per pair and pass it on.
+ *
+ * @param {RuleRecord} first
+ * @return {Set<TokenListId> | null}
+ */
+export declare function firstListedSet(first: RuleRecord): Set<TokenListId> | null;
+/**
+ * The length of `pairSelectorIds(first, second, listed)` joined by bare commas,
+ * without building the list: a pair that does not shorten the output is
+ * rejected on this length alone.
+ *
+ * @param {TokenLists} tokenLists
+ * @param {RuleRecord} first
+ * @param {RuleRecord} second
+ * @param {Set<TokenListId> | null} listed the ids of `first`, from `firstListedSet`
+ * @return {number}
+ */
+export declare function pairListTextLength(tokenLists: TokenLists, first: RuleRecord, second: RuleRecord, listed: Set<TokenListId> | null): number;
 export type Follower = {
     /**
      * the index of the rule, which the rewrite edits before it reads the rule again

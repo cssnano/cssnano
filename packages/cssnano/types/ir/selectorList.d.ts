@@ -86,14 +86,16 @@ export declare function absorbEarlier(records: BlockRecords, laterIndex: number,
  */
 export declare function setParsedPrefix(list: RuleRecord, count: number): void;
 /**
- * The summaries of a rule made from two rules' selectors, in order: the first
- * rule's ids, then the second's. `target` holds no id of the two yet, and it
- * must be given its ids, then `extendSummaries` for any ids after them.
+ * The summaries of a rule made from two rules' selectors: the first rule's
+ * ids, then those of the second that the first does not list. `target` holds
+ * no id of the two yet, and it must be given its ids, then `extendSummaries`
+ * for any ids after them.
  *
- * @param {RuleRecord} target a new rule, unplaced, whose ids are the two rules' ids
+ * @param {RuleRecord} target a new rule, unplaced, whose ids are `pairSelectorIds(first, second, listed)`
  * @param {RuleRecord} first
  * @param {RuleRecord} second
+ * @param {number} pairLength the length of the two rules' ids once a selector both rules list is kept once
  * @return {void}
  */
-export declare function combineSummaries(target: RuleRecord, first: RuleRecord, second: RuleRecord): void;
+export declare function combineSummaries(target: RuleRecord, first: RuleRecord, second: RuleRecord, pairLength: number): void;
 //# sourceMappingURL=selectorList.d.ts.map

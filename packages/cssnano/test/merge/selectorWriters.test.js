@@ -329,7 +329,7 @@ test('a rule merged again prints the raws of the rule its first merge took them 
     .sync();
   assert.equal(
     root.toString(),
-    'c{width:1px;\nwidth:1px\n}\nc,b,c /*k*/ {\ncolor:red}\nb,c,c /*k*/ {\ntop:0}'
+    'c{width:1px;\nwidth:1px\n}\nc,b /*k*/ {\ncolor:red}\nb,c,c /*k*/ {\ntop:0}'
   );
 });
 

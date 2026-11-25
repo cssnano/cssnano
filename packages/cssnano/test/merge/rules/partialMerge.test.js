@@ -206,3 +206,27 @@ test(
   'should not hoist declarations across a case-differing all shorthand',
   passthroughCSS('.a{color:red}.b{color:red;ALL:initial}')
 );
+
+test(
+  'should list a selector that both rules share once in the shared rule',
+  processCSS(
+    '.aaaa,.b{color:red;background:blue;margin:0}.aaaa,.c{color:red;background:blue;padding:0}',
+    '.aaaa,.b{margin:0}.aaaa,.b,.c{color:red;background:blue}.aaaa,.c{padding:0}'
+  )
+);
+
+test(
+  'should count a shared selector once when it decides whether a partial merge pays',
+  processCSS(
+    '.aaaaaaaaaaaaaaaaaaaa,.b{color:red;background:blue;top:0;left:0;margin:0}.aaaaaaaaaaaaaaaaaaaa,.c{color:red;background:blue;top:0;left:0;padding:0}',
+    '.aaaaaaaaaaaaaaaaaaaa,.b{margin:0}.aaaaaaaaaaaaaaaaaaaa,.b,.c{color:red;background:blue;top:0;left:0}.aaaaaaaaaaaaaaaaaaaa,.c{padding:0}'
+  )
+);
+
+test(
+  'should join a later rule to a shared rule whose selectors were deduplicated',
+  processCSS(
+    '.a,.b{color:red;margin:0}.a,.c{color:red;padding:0}.d{color:red;top:0}',
+    '.a,.b{margin:0}.a,.b,.c,.d{color:red}.a,.c{padding:0}.d{top:0}'
+  )
+);

@@ -1,7 +1,12 @@
 /** @import {BlockRecords} from '../../ir/blockRecords.js' */
 import { childCountOf } from '../../ir/blockChildren.js';
 import { minifiedLength } from './minifiedLength.js';
-import { findGroup } from './sharedRuleGroup.js';
+import {
+  findGroup,
+  firstListedSet,
+  pairListTextLength,
+  pairSelectorIds,
+} from './sharedRuleGroup.js';
 import { combineSummaries, extendSummaries } from '../../ir/selectorList.js';
 import { listTextLength } from '../../ir/selectorReads.js';
 import {
@@ -48,7 +53,7 @@ function leftoverOf(records, rule) {
  *
  * @param {ArenaIndex} firstIndex the index of the earlier rule of the pair
  * @param {ArenaIndex} secondIndex the index of the later rule
- * @param {DeclarationRecord[]} shared the shared declarations, in their order in `first`
+ * @param {DeclarationRecord[]} shared the shared declarations, non-empty, in their order in `first`
  * @param {Set<ArenaIndex>} claimedIndices the arena indices of the declarations of `second` that repeat `shared`
  * @param {import('./mergeState.js').default} mergeState
  * @param {ArenaIndex} secondLink the index of `second` in the sweep
@@ -82,12 +87,11 @@ export function buildMergedRule(
       prefixed += length;
     }
   }
-  // The shared rule repeats both selector lists; a rule left empty is dropped.
+  // The shared rule lists each selector of the pair once; a rule left empty is
+  // dropped.
+  const listed = firstListedSet(first);
   let delta =
-    listTextLength(tokenLists, first.selectorIds) +
-    listTextLength(tokenLists, second.selectorIds) +
-    2 -
-    sharedBytes;
+    pairListTextLength(tokenLists, first, second, listed) + 1 - sharedBytes;
   if (childCountOf(records, firstIndex) === shared.length) {
     delta -= listTextLength(tokenLists, first.selectorIds) + 1;
   }
@@ -113,24 +117,18 @@ export function buildMergedRule(
         );
   if (delta >= 0 && !group) return null;
 
-  const selectorIds = [
-    ...first.selectorIds,
-    ...second.selectorIds,
-    ...(group?.addedIds ?? []),
-  ];
+  // The pair's ids are kept apart from the group's, whose length the summary
+  // calls below must not count.
+  const pairIds = pairSelectorIds(first, second, listed);
+  const selectorIds = group ? pairIds.concat(group.addedIds) : pairIds;
   // The merged rule prints the raws of the rule it was merged from, or of
   // the template that rule printed, when it was merged too.
   const template = second.template === -1 ? secondIndex : second.template;
   const receivingRecord = new RuleRecord(second.before, selectorIds);
   // The summaries of the two rules' selectors are combined, and the group's
   // added selectors are folded after them.
-  combineSummaries(receivingRecord, first, second);
-  extendSummaries(
-    receivingRecord,
-    first.selectorIds.length + second.selectorIds.length,
-    tokenLists,
-    browsers
-  );
+  combineSummaries(receivingRecord, first, second, pairIds.length);
+  extendSummaries(receivingRecord, pairIds.length, tokenLists, browsers);
   receivingRecord.template = template;
   // The merged rule prints the space and the semicolon of its template.
   // The template can be a rule an earlier merge detached, so the read does not
