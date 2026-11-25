@@ -15,11 +15,6 @@ const { default: normalizeString } =
 const { default: calc } =
   await import('../../src/plugins/postcss-calc/index.js');
 
-/** @returns {number} tokenize calls made so far */
-function tokenizeTotal() {
-  return [...counter.calls.values()].reduce((sum, n) => sum + n, 0);
-}
-
 /**
  * Wraps a stage's selector reducer so that `calls` gets the tokenize calls
  * each run of the reducer makes. The walk's own tokenization is not counted.
@@ -34,9 +29,9 @@ function probed(stage, calls) {
   );
   return {
     selector(buffer, context) {
-      const before = tokenizeTotal();
+      const before = counter.totalCalls();
       reduce(buffer, context);
-      calls.push(tokenizeTotal() - before);
+      calls.push(counter.totalCalls() - before);
     },
   };
 }

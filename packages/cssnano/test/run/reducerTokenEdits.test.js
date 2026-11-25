@@ -18,6 +18,22 @@ import { ident } from '../../src/values/tokenConstructors.js';
 import { whitespace } from '../../src/values/punctuationTokens.js';
 import orderedValues from '../../src/plugins/postcss-ordered-values/index.js';
 
+/**
+ * Asserts that the buffer tokens spell its text as a fresh tokenize does, on
+ * each token's type and text.
+ *
+ * @param {ValueBuffer} buffer
+ * @param {Record<string, unknown>} [tokenizeOptions] options for the fresh tokenize, beyond the text
+ */
+function assertTokensMatchText(buffer, tokenizeOptions = {}) {
+  assert.deepEqual(
+    buffer.tokens().map((token) => [token[0], token[1]]),
+    tokenize({ css: buffer.text(), ...tokenizeOptions })
+      .slice(0, -1)
+      .map((token) => [token[0], token[1]])
+  );
+}
+
 /** A buffer whose text() throws once armed, so a reducer that reads the text fails. */
 class TextGuardBuffer extends ValueBuffer {
   armed = false;
@@ -67,12 +83,7 @@ describe('Value reducers edit the buffer tokens in place', () => {
     reduce(buffer, 0);
     assert.equal(buffer.text(), '1px solid red');
     assert.equal(buffer.tokens()[0], kept);
-    assert.deepEqual(
-      buffer.tokens().map((token) => [token[0], token[1]]),
-      tokenize({ css: buffer.text() })
-        .slice(0, -1)
-        .map((token) => [token[0], token[1]])
-    );
+    assertTokensMatchText(buffer);
   });
 
   test('ordered-values reads no text of an edited buffer before it rewrites the tokens', () => {
@@ -94,12 +105,7 @@ describe('colormin edits the value buffer tokens in place', () => {
     reduce(buffer, 0);
     assert.equal(buffer.text(), '1px red');
     assert.equal(buffer.tokens()[0], kept);
-    assert.deepEqual(
-      buffer.tokens().map((token) => [token[0], token[1]]),
-      tokenize({ css: buffer.text() })
-        .slice(0, -1)
-        .map((token) => [token[0], token[1]])
-    );
+    assertTokensMatchText(buffer);
   });
 });
 
@@ -150,12 +156,7 @@ describe('normalize-url edits the value buffer tokens in place', () => {
     assert.equal(buffer.isEdited(), true);
     assert.equal(buffer.text(), 'a b url(x.png)');
     assert.equal(buffer.tokens()[0], kept);
-    assert.deepEqual(
-      buffer.tokens().map((token) => [token[0], token[1]]),
-      tokenize({ css: buffer.text() })
-        .slice(0, -1)
-        .map((token) => [token[0], token[1]])
-    );
+    assertTokensMatchText(buffer);
   });
 
   test('normalize-url leaves the buffer unedited when the URL is already normal', () => {
@@ -179,12 +180,7 @@ describe('reduce-transforms edits the value buffer tokens in place', () => {
     assert.equal(buffer.isEdited(), true);
     assert.equal(buffer.text(), 'rotate(45deg) translate(0)');
     assert.equal(buffer.tokens()[0], kept);
-    assert.deepEqual(
-      buffer.tokens().map((token) => [token[0], token[1]]),
-      tokenize({ css: buffer.text() })
-        .slice(0, -1)
-        .map((token) => [token[0], token[1]])
-    );
+    assertTokensMatchText(buffer);
   });
 
   test('reduce-transforms keeps the text after a reduced function whose argument also reduces', () => {
@@ -256,12 +252,7 @@ describe('normalize-unicode edits the value buffer tokens in place', () => {
     buffer.armed = false;
     assert.equal(buffer.isEdited(), true);
     assert.equal(buffer.text(), 'u+??');
-    assert.deepEqual(
-      buffer.tokens().map((token) => [token[0], token[1]]),
-      tokenize({ css: buffer.text(), unicodeRangesAllowed: true })
-        .slice(0, -1)
-        .map((token) => [token[0], token[1]])
-    );
+    assertTokensMatchText(buffer, { unicodeRangesAllowed: true });
   });
 
   test('normalize-unicode keeps a canonical range token when a comment stops the canonical rewrite', () => {

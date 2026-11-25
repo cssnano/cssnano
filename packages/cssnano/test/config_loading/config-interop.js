@@ -1,32 +1,19 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import process from 'node:process';
-import { afterEach, beforeEach, describe, test } from 'node:test';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
 import litePreset from '#presets/lite';
 import defaultPreset from '#presets/default';
 import cssnano from '../../src/index.js';
 import { presetRequire } from './presetSpecifiers.js';
+import { temporaryProject } from './temporaryProject.js';
 
 describe('cssnano configuration file interop', () => {
-  let temporaryDirectory;
-  let previousWorkingDirectory;
-
-  beforeEach(() => {
-    temporaryDirectory = mkdtempSync(`${tmpdir()}/cssnano-config-interop-`);
-    previousWorkingDirectory = process.cwd();
-    process.chdir(temporaryDirectory);
-  });
-
-  afterEach(() => {
-    process.chdir(previousWorkingDirectory);
-    rmSync(temporaryDirectory, { recursive: true, force: true });
-  });
+  const temporaryDirectory = temporaryProject('cssnano-config-interop-');
 
   test('unwraps the default export of a CommonJS module that Babel or TypeScript compiled from ES modules', () => {
     writeFileSync(
-      `${temporaryDirectory}/config.cjs`,
+      `${temporaryDirectory()}/config.cjs`,
       `const lite = require(${presetRequire('lite')});\nObject.defineProperty(exports, '__esModule', { value: true });\nexports.default = { preset: lite };\n`
     );
     assert.strictEqual(
@@ -37,12 +24,15 @@ describe('cssnano configuration file interop', () => {
 
   test('an inline browserslist.env replaces the query of the configuration file, because browserslist reads env only without a query', async () => {
     writeFileSync(
-      `${temporaryDirectory}/cssnano.config.js`,
+      `${temporaryDirectory()}/cssnano.config.js`,
       'export default { browserslist: { query: "chrome 120" } };'
     );
-    writeFileSync(`${temporaryDirectory}/.browserslistrc`, '[legacy]\nie 11\n');
+    writeFileSync(
+      `${temporaryDirectory()}/.browserslistrc`,
+      '[legacy]\nie 11\n'
+    );
     const input = 'a{align-items:center;justify-items:start}';
-    const from = `${temporaryDirectory}/app.css`;
+    const from = `${temporaryDirectory()}/app.css`;
     const css = async (processor) =>
       (await processor.process(input, { from })).css;
     const chrome = await css(
@@ -61,7 +51,7 @@ describe('cssnano configuration file interop', () => {
 
   test('an inline browserslist.config replaces the query of the configuration file, because browserslist reads a config only without a query', () => {
     writeFileSync(
-      `${temporaryDirectory}/cssnano.config.js`,
+      `${temporaryDirectory()}/cssnano.config.js`,
       'export default { browserslist: { query: "chrome 120" } };'
     );
     const processor = postcss([
@@ -74,11 +64,11 @@ describe('cssnano configuration file interop', () => {
 
   test('an inline browserslist.path replaces the query of the configuration file, because browserslist searches a path only without a query', async () => {
     writeFileSync(
-      `${temporaryDirectory}/cssnano.config.js`,
+      `${temporaryDirectory()}/cssnano.config.js`,
       'export default { browserslist: { query: "chrome 120" } };'
     );
-    mkdirSync(`${temporaryDirectory}/legacy`);
-    writeFileSync(`${temporaryDirectory}/legacy/.browserslistrc`, 'ie 11\n');
+    mkdirSync(`${temporaryDirectory()}/legacy`);
+    writeFileSync(`${temporaryDirectory()}/legacy/.browserslistrc`, 'ie 11\n');
     const input = 'a{align-items:center;justify-items:start}';
     const css = async (processor) =>
       (await processor.process(input, { from: undefined })).css;
@@ -89,7 +79,7 @@ describe('cssnano configuration file interop', () => {
       await css(
         postcss([
           cssnano({
-            browserslist: { path: `${temporaryDirectory}/legacy` },
+            browserslist: { path: `${temporaryDirectory()}/legacy` },
           }),
         ])
       ),

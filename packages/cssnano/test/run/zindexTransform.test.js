@@ -1,18 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import postcss from 'postcss';
 import advancedPreset from '../../src/presets/advanced.js';
-
-/**
- * @param {string} css
- * @param {Record<string, unknown>} [options]
- */
-async function minify(css, options) {
-  const result = await postcss(advancedPreset(options)).process(css, {
-    from: undefined,
-  });
-  return result.css;
-}
+import { minify } from './advancedMinify.js';
 
 test('the advanced preset runs zindex in its host plugin, not as a plugin of its own', () => {
   const names = advancedPreset().map((plugin) => plugin.postcssPlugin);

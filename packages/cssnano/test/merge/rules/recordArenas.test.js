@@ -3,20 +3,18 @@ import { SelectorIds } from '../../../src/ir/selectorIds.js';
 import { containers } from '../../../src/ir/blockChildren.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import postcss from 'postcss';
-import { createRunContext } from '../../../src/run/runContext.js';
 import {
   AT_RULE_BLOCK,
   RULE,
   STYLESHEET,
 } from '../../../src/ir/blockRecord.js';
-import MergeState from '../../../src/merge/rules/mergeState.js';
+/** @import MergeState from '../../../src/merge/rules/mergeState.js' */
 import {
   ruleRecordOf,
-  buildTestRecords,
   withCorruptedLinks,
   placeUnlinked,
   nodeOfEntry,
+  recordsOf,
 } from './liveRecords.js';
 import { RuleRecord } from '../../../src/ir/ruleRecord.js';
 import { assertOwnershipIsTree } from '../../../src/ir/tree/recordsCheck.js';
@@ -35,10 +33,7 @@ const tokenLists = new TokenLists();
  * @return {{root: Root, state: MergeState}}
  */
 function setup(css) {
-  const root = postcss.parse(css);
-  const context = createRunContext(true);
-  const state = new MergeState(['chrome 120'], context);
-  state.records = buildTestRecords(root, state, true);
+  const { root, state } = recordsOf(css, true);
   return { root, state };
 }
 

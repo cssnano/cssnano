@@ -40,11 +40,6 @@ const { parseRadiusShorthand } =
 const { pairFamilies } =
   await import('../../src/merge/longhand/decl/pairForms.js');
 
-/** @returns {number} tokenize calls made so far */
-function tokenizeTotal() {
-  return [...counter.calls.values()].reduce((sum, n) => sum + n, 0);
-}
-
 /**
  * Parses the stylesheet, the input of the build.
  *
@@ -71,35 +66,35 @@ suite(
     test("splitValue reads the declaration's tokens without tokenizing", () => {
       const { root } = walkedStylesheet('a{transition:opacity 0s ease}');
       const list = blockOf(root);
-      const before = tokenizeTotal();
+      const before = counter.totalCalls();
       foldShorthandDeclaration(list, 0, 'transition');
-      assert.equal(tokenizeTotal() - before, 0);
+      assert.equal(counter.totalCalls() - before, 0);
     });
 
     test('validateBox types each function component without tokenizing', () => {
       const { root } = walkedStylesheet('a{margin:calc(1px + 2px) 0}');
       const decl = root.first.first;
       const list = tokens(decl.value);
-      const before = tokenizeTotal();
+      const before = counter.totalCalls();
       boxBrowserKeeps('margin', decl.value, list);
-      assert.equal(tokenizeTotal() - before, 0);
+      assert.equal(counter.totalCalls() - before, 0);
     });
 
     test("unresolved reads a component's range without tokenizing", () => {
       const { root } = walkedStylesheet('a{border:calc(1px) solid red}');
       const list = tokens(root.first.first.value);
       const [start, end] = componentRanges(list);
-      const before = tokenizeTotal();
+      const before = counter.totalCalls();
       assert.equal(isUnresolved(list, start, end), true);
-      assert.equal(tokenizeTotal() - before, 0);
+      assert.equal(counter.totalCalls() - before, 0);
     });
 
     test('isCustomProp reads the value without tokenizing', () => {
       const { root } = walkedStylesheet('a{margin:var(--x) 1px}');
       const item = blockOf(root).at(0);
-      const before = tokenizeTotal();
+      const before = counter.totalCalls();
       assert.equal(isCustomProp(item), true);
-      assert.equal(tokenizeTotal() - before, 0);
+      assert.equal(counter.totalCalls() - before, 0);
     });
 
     test("isColor reads the color component's range without tokenizing", () => {
@@ -111,88 +106,88 @@ suite(
         tokenStart(list[ranges[last]]),
         tokenEnd(list[ranges[last + 1] - 1])
       );
-      const before = tokenizeTotal();
+      const before = counter.totalCalls();
       assert.equal(isColor(text, list, ranges[last], ranges[last + 1]), true);
-      assert.equal(tokenizeTotal() - before, 0);
+      assert.equal(counter.totalCalls() - before, 0);
     });
 
     test("isValidWidthStyleColor reads the parser's slots, without tokenizing", () => {
       const parsed = parseWidthStyleColor('1px solid rgb(0 0 0)');
-      const before = tokenizeTotal();
+      const before = counter.totalCalls();
       isValidWidthStyleColor(parsed);
-      assert.equal(tokenizeTotal() - before, 0);
+      assert.equal(counter.totalCalls() - before, 0);
     });
 
     test('shapeEquivalence reads the declaration without tokenizing', () => {
       const { root } = walkedStylesheet('a{margin:0 1px;margin:0 2px}');
       const list = blockOf(root);
-      const before = tokenizeTotal();
+      const before = counter.totalCalls();
       discardOverriddenDeclarations(list, longstandingFeatures);
-      assert.equal(tokenizeTotal() - before, 0);
+      assert.equal(counter.totalCalls() - before, 0);
     });
 
     test('requiredSupport reads the list stored for the node, without tokenizing', () => {
       const { root } = walkedStylesheet('a{width:7dvh}');
       const item = blockOf(root).at(0);
-      const before = tokenizeTotal();
+      const before = counter.totalCalls();
       requiredSupport(item);
-      assert.equal(tokenizeTotal() - before, 0);
+      assert.equal(counter.totalCalls() - before, 0);
     });
 
     test('isValidColumns reads the list stored for the node, without tokenizing', () => {
       const { root } = walkedStylesheet('a{columns:2 100px}');
       const item = blockOf(root).at(0);
-      const before = tokenizeTotal();
+      const before = counter.totalCalls();
       assert.equal(isValidColumns(item), true);
-      assert.equal(tokenizeTotal() - before, 0);
+      assert.equal(counter.totalCalls() - before, 0);
     });
 
     test('alignmentForms reads the list stored for the node, without tokenizing', () => {
       const { root } = walkedStylesheet('a{align-content:safe center}');
       const item = blockOf(root).at(0);
       const family = alignmentProperties.get('align-content');
-      const before = tokenizeTotal();
+      const before = counter.totalCalls();
       parseAlignmentDeclaration(family, item);
-      assert.equal(tokenizeTotal() - before, 0);
+      assert.equal(counter.totalCalls() - before, 0);
     });
 
     test('the block build tokenizes decl.value once when PostCSS stripped a comment, and the selector once', () => {
       const { root } = walkedStylesheet('a{align-content:safe /* x */ center}');
-      const before = tokenizeTotal();
+      const before = counter.totalCalls();
       blockOf(root);
       // The selector `a`, tokenized once as written and shared by its only
       // item; the value PostCSS cleaned; the value as written, which the build
       // interns in the property's mode; and the check for an important comment.
-      assert.equal(tokenizeTotal() - before, 4);
+      assert.equal(counter.totalCalls() - before, 4);
     });
 
     test('one build of the records tokenizes a value repeated on another rule once, since the run interns the text', () => {
       const root = postcss.parse('a{margin:0 1px}b{margin:0 1px}');
       const run = createRunContext();
-      const before = tokenizeTotal();
+      const before = counter.totalCalls();
       const { records, nodes } = buildRecords(root, run);
       declarationsFromRecords(records, run, nodes.indexOf(root.first));
       declarationsFromRecords(records, run, nodes.indexOf(root.last));
       // Two lone selectors, each tokenized once as written, and one value.
-      assert.equal(tokenizeTotal() - before, 3);
+      assert.equal(counter.totalCalls() - before, 3);
     });
 
     test('parseRadiusShorthand reads the list stored for the node, without tokenizing', () => {
       const { root } = walkedStylesheet('a{border-radius:1px 2px}');
       const decl = root.first.first;
       const list = tokens(decl.value);
-      const before = tokenizeTotal();
+      const before = counter.totalCalls();
       assert.notEqual(parseRadiusShorthand(decl.value, list), null);
-      assert.equal(tokenizeTotal() - before, 0);
+      assert.equal(counter.totalCalls() - before, 0);
     });
 
     test('a pair family parser reads the list stored for the node, without tokenizing', () => {
       const { root } = walkedStylesheet('a{row-gap:1px}');
       const item = blockOf(root).at(0);
       const gap = pairFamilies.find((family) => family.shorthand === 'gap');
-      const before = tokenizeTotal();
+      const before = counter.totalCalls();
       assert.equal(gap.parseValue[0](item), '1px');
-      assert.equal(tokenizeTotal() - before, 0);
+      assert.equal(counter.totalCalls() - before, 0);
     });
   }
 );

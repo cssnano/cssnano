@@ -9,11 +9,6 @@ const { buildRecords } = await import('../../src/ir/tree/buildRecords.js');
 const { writeSelectorList } = await import('../../src/ir/selectorEdits.js');
 const { tokens } = await import('../../src/utils/value.js');
 
-/** @returns {number} tokenize calls made so far */
-function tokenizeTotal() {
-  return [...counter.calls.values()].reduce((sum, n) => sum + n, 0);
-}
-
 /**
  * Writes the list `text` as the selector of a rule and reports the tokenize
  * calls the write made and the spelled text of each item id.
@@ -25,9 +20,9 @@ function writeOf(text) {
   const { records } = buildRecords(postcss.parse('a{}'), run);
   const record = records.rule(1);
   const list = run.tokenLists.push(tokens(text));
-  const before = tokenizeTotal();
+  const before = counter.totalCalls();
   writeSelectorList(record, run, list);
-  const calls = tokenizeTotal() - before;
+  const calls = counter.totalCalls() - before;
   const spelled = record.selectorIds.map((id) =>
     run.tokenLists
       .get(id)

@@ -1,16 +1,13 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import postcss from 'postcss';
 // The counter must hook the tokenizer before any module below loads it.
-const { counter } = await import('../../../../../util/countTokenize.js');
-const { createRunContext } = await import('../../../src/run/runContext.js');
+const { tokenizedBy } = await import('../../../../../util/countTokenize.js');
 const { declarationsOf } = await import('../../../src/ir/blockChildren.js');
 const { commitDeclarations } = await import('../../../src/ir/arenaEdits.js');
 const { declarationsFromRecords } =
   await import('../../../src/merge/longhand/recordDeclarations.js');
-const { default: MergeState } =
-  await import('../../../src/merge/rules/mergeState.js');
-const { buildTestRecords, ruleRecordOf } = await import('./liveRecords.js');
+/** @import MergeState from '../../../src/merge/rules/mergeState.js' */
+const { recordsOf, ruleRecordOf } = await import('./liveRecords.js');
 
 /** @import {Container, Root} from 'postcss' */
 /** @import {ArenaIndex} from '../../../src/ir/blockRecord.js' */
@@ -22,10 +19,7 @@ const { buildTestRecords, ruleRecordOf } = await import('./liveRecords.js');
  * @return {{root: Root, state: MergeState, records: import('../../../src/ir/blockRecords.js').BlockRecords}}
  */
 function setup(css) {
-  const root = postcss.parse(css);
-  const context = createRunContext(true);
-  const state = new MergeState(['chrome 120'], context);
-  state.records = buildTestRecords(root, state, true);
+  const { root, state } = recordsOf(css, true);
   return { root, state, records: state.records };
 }
 
@@ -39,27 +33,6 @@ function setup(css) {
  */
 function containerOf(root, records, n) {
   return ruleRecordOf(records, /** @type {Container} */ (root.nodes[n])).index;
-}
-
-/**
- * Runs `commit` and returns the text of each tokenize call it made.
- *
- * @param {() => void} commit
- * @return {string[]}
- */
-function tokenizedBy(commit) {
-  const texts = [];
-  const record = counter.record;
-  counter.record = (input) => {
-    texts.push(input.css);
-    record.call(counter, input);
-  };
-  try {
-    commit();
-  } finally {
-    counter.record = record;
-  }
-  return texts;
 }
 
 test('a commit whose rewrites all equal their items moves no declaration stamp and marks no record', () => {

@@ -1,8 +1,6 @@
 import { blocks } from '../../src/ir/blockChildren.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import postcss from 'postcss';
-import { createRunContext } from '../../src/run/runContext.js';
 import {
   AT_RULE_BLOCK,
   AT_RULE_STATEMENT,
@@ -10,11 +8,11 @@ import {
   DECLARATION,
   STYLESHEET,
 } from '../../src/ir/blockRecord.js';
-import MergeState from '../../src/merge/rules/mergeState.js';
+/** @import MergeState from '../../src/merge/rules/mergeState.js' */
 import {
   blockRecordOf,
-  buildTestRecords,
   nodeOfEntry,
+  recordsOf,
 } from '../merge/rules/liveRecords.js';
 
 /** @import {Container} from 'postcss' */
@@ -24,9 +22,7 @@ import {
  * @return {{root: import('postcss').Root, state: MergeState}}
  */
 function setup(css) {
-  const root = postcss.parse(css);
-  const state = new MergeState(['chrome 120'], createRunContext());
-  state.records = buildTestRecords(root, state);
+  const { root, state } = recordsOf(css, false);
   return { root, state };
 }
 

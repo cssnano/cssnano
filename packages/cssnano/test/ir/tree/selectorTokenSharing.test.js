@@ -7,11 +7,6 @@ const postcss = (await import('postcss')).default;
 const { createRunContext } = await import('../../../src/run/runContext.js');
 const { buildRecords } = await import('../../../src/ir/tree/buildRecords.js');
 
-/** @returns {number} tokenize calls made so far */
-function tokenizeTotal() {
-  return [...counter.calls.values()].reduce((sum, n) => sum + n, 0);
-}
-
 /**
  * The text each token list id spells, so a test reads the ids' contents.
  *
@@ -36,9 +31,9 @@ function spelledIds(run, ids) {
  */
 function buildOf(root) {
   const run = createRunContext();
-  const before = tokenizeTotal();
+  const before = counter.totalCalls();
   const { records, nodes } = buildRecords(root, run);
-  const calls = tokenizeTotal() - before;
+  const calls = counter.totalCalls() - before;
   const rules = [];
   for (const node of root.nodes) {
     if (node.type === 'rule') {

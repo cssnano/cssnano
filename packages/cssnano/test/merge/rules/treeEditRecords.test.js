@@ -7,8 +7,7 @@ import { tokensText } from '../../../src/values/tokensText.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import { createRunContext } from '../../../src/run/runContext.js';
-import MergeState from '../../../src/merge/rules/mergeState.js';
+/** @import MergeState from '../../../src/merge/rules/mergeState.js' */
 import {
   appendToDeclarations,
   removeRules,
@@ -17,10 +16,10 @@ import {
 import {
   blockRecordOf,
   ruleRecordOf,
-  buildTestRecords,
   claimAt,
   declarationIds,
   placeUnlinked,
+  recordsOf,
 } from './liveRecords.js';
 import { removeDeclarations } from '../../../src/ir/arenaEdits.js';
 import {
@@ -40,10 +39,7 @@ import { recordDeclaration } from '../../../src/ir/tree/buildRecords.js';
  * @return {{root: import('postcss').Root, state: MergeState}}
  */
 function setup(css) {
-  const root = postcss.parse(css);
-  const context = createRunContext(true);
-  const state = new MergeState(['chrome 120'], context);
-  state.records = buildTestRecords(root, state, true);
+  const { root, state } = recordsOf(css, true);
   return { root, state };
 }
 

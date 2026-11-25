@@ -16,11 +16,6 @@ const { readBlock } =
 const { reduceBlock, itemTokensSpellText } =
   await import('../merge/longhand/helpers/declarationItems.js');
 
-/** @returns {number} tokenize calls made so far */
-function tokenizeTotal() {
-  return [...counter.calls.values()].reduce((sum, n) => sum + n, 0);
-}
-
 /**
  * The normal and important lanes of the positions of a block.
  *
@@ -47,9 +42,9 @@ suite(
         longstandingFeatures
       );
       assert.equal(block.list.at(0).value, '1px');
-      const before = tokenizeTotal();
+      const before = counter.totalCalls();
       partitionLanes(block.list, [positions, []]);
-      assert.equal(tokenizeTotal() - before, 0);
+      assert.equal(counter.totalCalls() - before, 0);
     });
 
     test("borderRadiusReducer's edited tokens spell text()", () => {

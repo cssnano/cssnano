@@ -17,20 +17,7 @@ import {
 } from '../../../src/merge/rules/sharedRuleGroup.js';
 import { longSelector, sharedBackground } from './sharedRuleGroupFixtures.js';
 import { declarationKeys } from '../../../src/ir/declarationCache.js';
-
-// Park-Miller generator: products stay below 2 ** 53, and the repository
-// forbids bitwise operators.
-/** @param {number} seed @return {() => number} */
-function random(seed) {
-  let state = seed * 7919 + 1;
-  const next = () => {
-    state = (state * 48271) % 2147483647;
-    return state / 2147483647;
-  };
-  // Small seeds start correlated, so the first draws are dropped.
-  for (let i = 0; i < 8; i++) next();
-  return next;
-}
+import { random } from '../../../../../util/fuzzRng.js';
 
 /** @param {string[]} rules */
 const mediaBlock = (rules) => `@media (min-width:1px){${rules.join('')}}`;
@@ -41,19 +28,20 @@ const mediaBlock = (rules) => `@media (min-width:1px){${rules.join('')}}`;
 // rule unable to follow a pair, though it can still be the pair's second
 // rule; equal blocks let a pair span two parents.
 function stylesheet(seed, { comments = false, blocks = false } = {}) {
-  const next = random(seed);
-  const count = 4 + Math.floor(next() * 30);
+  // The first draw of a small seed is near 0, so the seed is spread first.
+  const rng = random(seed * 7919 + 1);
+  const count = 4 + rng.int(30);
   const rules = [];
   for (let i = 0; i < count; i++) {
-    const roll = next();
+    const roll = rng.int(100);
     let body = `height:${i + 1}vw`;
-    if (roll < 0.8) body = `${sharedBackground};${body}`;
-    else if (roll < 0.9) body = `${sharedBackground};background-size:cover`;
-    const comment = comments && next() < 0.2 ? '/*!k*/' : '';
+    if (roll < 80) body = `${sharedBackground};${body}`;
+    else if (roll < 90) body = `${sharedBackground};background-size:cover`;
+    const comment = comments && rng.chance(0.2) ? '/*!k*/' : '';
     rules.push(`${longSelector(i)}{${comment}${body}}`);
   }
   if (!blocks) return rules.join('');
-  const split = 1 + Math.floor(next() * (count - 1));
+  const split = 1 + rng.int(count - 1);
   return mediaBlock(rules.slice(0, split)) + mediaBlock(rules.slice(split));
 }
 

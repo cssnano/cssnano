@@ -6,15 +6,14 @@ import { test } from 'node:test';
 import postcss from 'postcss';
 import { RuleRecord } from '../../../src/ir/ruleRecord.js';
 
-import MergeState from '../../../src/merge/rules/mergeState.js';
-import { createRunContext } from '../../../src/run/runContext.js';
+/** @import MergeState from '../../../src/merge/rules/mergeState.js' */
 import { nodeOf } from '../../../src/ir/tree/nodeTable.js';
 import {
-  buildTestRecords,
   declarationIds,
   ruleRecordOf,
   placeUnlinked,
   nodesOf,
+  recordsOf,
 } from './liveRecords.js';
 import { appendChild } from '../../../src/ir/arenaEdits.js';
 import { declarationKeys } from '../../../src/ir/declarationCache.js';
@@ -45,13 +44,7 @@ const ruleOf = (selectors) =>
  * @return {{state: MergeState, records: BlockRecords, record: RuleRecord}}
  */
 const arenaOf = (css, consistencyChecks = false) => {
-  const root = postcss.parse(css);
-  const state = new MergeState(
-    ['chrome 120'],
-    createRunContext(consistencyChecks)
-  );
-  state.records = buildTestRecords(root, state, consistencyChecks);
-  const { records } = state;
+  const { root, state, records } = recordsOf(css, consistencyChecks);
   return { state, records, record: ruleRecordOf(records, root.first) };
 };
 

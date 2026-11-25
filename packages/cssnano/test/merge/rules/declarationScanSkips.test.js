@@ -7,15 +7,13 @@ import {
 } from '../../../src/ir/blockRecord.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import postcss from 'postcss';
-import { createRunContext } from '../../../src/run/runContext.js';
-import MergeState from '../../../src/merge/rules/mergeState.js';
+/** @import MergeState from '../../../src/merge/rules/mergeState.js' */
 import RuleSequence from '../../../src/merge/rules/ruleSequence.js';
 import {
   blockRecordOf,
   ruleRecordOf,
-  buildTestRecords,
   placeUnlinked,
+  recordsOf,
 } from './liveRecords.js';
 
 /** @import {Root} from 'postcss' */
@@ -25,9 +23,7 @@ import {
  * @return {{root: Root, state: MergeState}}
  */
 function setup(css) {
-  const root = postcss.parse(css);
-  const state = new MergeState(['chrome 120'], createRunContext(true));
-  state.records = buildTestRecords(root, state, true);
+  const { root, state } = recordsOf(css, true);
   return { root, state };
 }
 

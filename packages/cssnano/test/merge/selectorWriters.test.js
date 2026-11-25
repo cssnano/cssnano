@@ -36,11 +36,6 @@ function distinctSelectorsOf(root) {
   return selectors.size;
 }
 
-/** @returns {number} tokenize calls made so far */
-function tokenizeTotal() {
-  return [...counter.calls.values()].reduce((sum, n) => sum + n, 0);
-}
-
 /**
  * Parses the stylesheet, the input of the merge pass.
  *
@@ -76,9 +71,9 @@ suite(
         })
         .sync();
       const joined = ruleWith(root, 'a,b');
-      const before = tokenizeTotal();
+      const before = counter.totalCalls();
       assert.equal(joined.selector, 'a,b');
-      assert.equal(tokenizeTotal() - before, 0);
+      assert.equal(counter.totalCalls() - before, 0);
     });
 
     test('a shared rule that merge builds from two selector lists reads its list without tokenizing', () => {
@@ -91,9 +86,9 @@ suite(
         })
         .sync();
       const shared = ruleWith(root, 'a,c,b');
-      const before = tokenizeTotal();
+      const before = counter.totalCalls();
       assert.equal(shared.selector, 'a,c,b');
-      assert.equal(tokenizeTotal() - before, 0);
+      assert.equal(counter.totalCalls() - before, 0);
     });
 
     test('a rule that merge clones with its selector list keeps the separator of the source, and merge reads its list without tokenizing', () => {
@@ -101,7 +96,7 @@ suite(
         'a, c {color:red;margin:0} b {color:red;padding:0}'
       );
       const selectors = distinctSelectorsOf(root);
-      const before = tokenizeTotal();
+      const before = counter.totalCalls();
       postcss([onlyTransform(MERGE_TRANSFORMS)({})])
         .process(root, {
           from: undefined,
@@ -109,7 +104,7 @@ suite(
         .sync();
       ruleWith(root, 'a, c');
       assert.equal(
-        tokenizeTotal() - before,
+        counter.totalCalls() - before,
         distinctValuesOf(root) + selectors
       );
     });
@@ -124,9 +119,9 @@ suite(
         })
         .sync();
       const group = ruleWith(root, 'a,b');
-      const before = tokenizeTotal();
+      const before = counter.totalCalls();
       assert.equal(group.selector, 'a,b');
-      assert.equal(tokenizeTotal() - before, 0);
+      assert.equal(counter.totalCalls() - before, 0);
     });
 
     test('elementKeys reads the selector merge.js wrote, without tokenizing', () => {
@@ -134,14 +129,14 @@ suite(
         'div > a {color:red} div > b {color:red} p {margin:0} div > c {color:red}'
       );
       const selectors = distinctSelectorsOf(root);
-      const before = tokenizeTotal();
+      const before = counter.totalCalls();
       postcss([onlyTransform(MERGE_TRANSFORMS)({})])
         .process(root, {
           from: undefined,
         })
         .sync();
       assert.equal(
-        tokenizeTotal() - before,
+        counter.totalCalls() - before,
         distinctValuesOf(root) + selectors
       );
     });
@@ -151,14 +146,14 @@ suite(
         'div > a {color:red} p {margin:0} div > b {color:red}'
       );
       const selectors = distinctSelectorsOf(root);
-      const before = tokenizeTotal();
+      const before = counter.totalCalls();
       postcss([onlyTransform(MERGE_TRANSFORMS)({})])
         .process(root, {
           from: undefined,
         })
         .sync();
       assert.equal(
-        tokenizeTotal() - before,
+        counter.totalCalls() - before,
         distinctValuesOf(root) + selectors
       );
     });
@@ -168,14 +163,14 @@ suite(
         'div > a, div > c {color:red;margin:0} div > b {color:red;padding:0} div > d {color:red}'
       );
       const selectors = distinctSelectorsOf(root);
-      const before = tokenizeTotal();
+      const before = counter.totalCalls();
       postcss([onlyTransform(MERGE_TRANSFORMS)({})])
         .process(root, {
           from: undefined,
         })
         .sync();
       assert.equal(
-        tokenizeTotal() - before,
+        counter.totalCalls() - before,
         distinctValuesOf(root) + selectors
       );
     });
