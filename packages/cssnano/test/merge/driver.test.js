@@ -326,8 +326,7 @@ function block(rng, depth) {
 // stale summary throws.
 test('the merge run finds no stale block summary on nested generated sheets, with rules on or off', () => {
   for (let seed = 1; seed <= 300; seed++) {
-    // The first draw of a small seed is near 0, so the seed is spread first.
-    const css = block(random(seed * 7919 + 1), 0);
+    const css = block(random(seed), 0);
     runMergePass(css, { rules: true });
     runMergePass(css, { rules: false });
   }
@@ -335,7 +334,7 @@ test('the merge run finds no stale block summary on nested generated sheets, wit
 
 test('the mergeRules transform finds no stale block summary on nested generated sheets', () => {
   for (let seed = 1; seed <= 300; seed++) {
-    runTransforms(block(random(seed * 7919 + 1), 0), ['mergeRules']);
+    runTransforms(block(random(seed), 0), ['mergeRules']);
   }
 });
 

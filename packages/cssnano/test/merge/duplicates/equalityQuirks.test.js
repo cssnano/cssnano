@@ -20,6 +20,11 @@ test(
 );
 
 test(
+  'should keep at-rules whose children differ only by the text of an important comment',
+  passthroughCSS('@foo x{.a{x:1}/*!a*/}@foo x{.a{x:1}/*!b*/}')
+);
+
+test(
   'should compare comment-only at-rules without the text of their comments',
   processCSS('@foo x{/*a*/}@foo x{/*b*/}', '@foo x{/*b*/}')
 );
