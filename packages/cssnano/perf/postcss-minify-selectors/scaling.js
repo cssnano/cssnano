@@ -24,6 +24,26 @@ test('folds many independent eligible positions without pairwise scans', () => {
   );
 });
 
+test('re-folds a grid of shared-prefix selectors in linear time with sort off', () => {
+  assertScaling(
+    [1_000, 2_000, 4_000, 8_000],
+    (rows) => {
+      const selectors = [];
+      for (let i = 0; i < rows; i++)
+        for (let j = 0; j < 4; j++) selectors.push(`.a${i} .x${j}`);
+      return {
+        input: selectors.join(','),
+        validate(output) {
+          assert.ok(output.startsWith(':is(.a0,'));
+        },
+        sort: false,
+        convertToIs: true,
+      };
+    },
+    { label: 'fold-grid' }
+  );
+});
+
 test('mostly-unique widths have bounded doubling ratios', () => {
   assertScaling(
     [2_000, 4_000, 8_000, 16_000],
