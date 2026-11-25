@@ -281,14 +281,13 @@ export default class LastWriteIndex {
       if (entry.kind === RULE) {
         // `record` only reads the keys, so the record's own list is passed as is.
         const keys = elementKeysOf(records, entry.index);
-        const own = keys?.length ? keys : null;
         if (entry.context === -1) {
           for (
             let declaration = firstDeclaration(records, entry.index);
             declaration !== undefined;
             declaration = nextDeclaration(records, declaration)
           ) {
-            this.record(declaration.keys, position, own);
+            this.record(declaration.keys, position, keys);
           }
           continue;
         }
@@ -299,7 +298,7 @@ export default class LastWriteIndex {
         ) {
           const declaration = records.entry(item);
           if (declaration.kind === DECLARATION) {
-            this.record(declaration.keys, position, own);
+            this.record(declaration.keys, position, keys);
           }
         }
       } else {

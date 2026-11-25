@@ -97,6 +97,21 @@ export function pairListTextLength(tokenLists, first, second, listed) {
 }
 
 /**
+ * The writes of the shared declarations, which `overridesShared` checks each
+ * later rule against.
+ *
+ * @param {DeclarationRecord[]} shared
+ * @return {PropertyWrites}
+ */
+function sharedWritesOf(shared) {
+  const sharedWrites = new PropertyWrites();
+  for (const declaration of shared) {
+    sharedWrites.record(declaration.keys, 0);
+  }
+  return sharedWrites;
+}
+
+/**
  * Whether a declaration of `rule`, other than the `claimed` ones, sets a
  * property of `shared`. Standing after the shared rule, it blocks every later
  * rule from handing over the shared declarations.
@@ -104,14 +119,10 @@ export function pairListTextLength(tokenLists, first, second, listed) {
  * @param {BlockRecords} records the arena that holds the rule's children
  * @param {RuleRecord} rule
  * @param {Set<ArenaIndex> | null | undefined} claimed the arena indices of the declarations of `rule` that repeat `shared`
- * @param {DeclarationRecord[]} shared
+ * @param {PropertyWrites} sharedWrites the writes of the shared declarations, from `sharedWritesOf`
  * @return {boolean}
  */
-function overridesShared(records, rule, claimed, shared) {
-  const sharedWrites = new PropertyWrites();
-  for (const declaration of shared) {
-    sharedWrites.record(declaration.keys, 0);
-  }
+function overridesShared(records, rule, claimed, sharedWrites) {
   for (
     let declaration = firstDeclaration(records, rule.index);
     declaration !== undefined;
@@ -218,7 +229,9 @@ export function findGroup(
   const parent = records.links.parentOf(secondRule.index);
   if (!repeatsShared(sequence.nextOf(second), parent, shared, records))
     return null;
-  if (overridesShared(records, secondRule, claimedIndices, shared)) return null;
+  const sharedWrites = sharedWritesOf(shared);
+  if (overridesShared(records, secondRule, claimedIndices, sharedWrites))
+    return null;
 
   const listed = new Set(first.selectorIds);
   for (const id of secondRule.selectorIds) listed.add(id);
@@ -277,7 +290,7 @@ export function findGroup(
       }
       followers.push({ rule: later.index, claimed });
       members.push(later.index);
-      blocked = overridesShared(records, later, claimed, shared);
+      blocked = overridesShared(records, later, claimed, sharedWrites);
     }
     if (followers.length < candidates.length) break;
     best = running;
@@ -360,8 +373,9 @@ export function earliestPairReaching(
     if (depth === 1) {
       // Seed from the smaller key list, which bounds the first intersection.
       const own = declarationKeys(records, linked.index);
-      const [from, to] =
-        own.kept.length <= other.kept.length ? [own, other] : [other, own];
+      const ownSmaller = own.kept.length <= other.kept.length;
+      const from = ownSmaller ? own : other;
+      const to = ownSmaller ? other : own;
       scratch.length = 0;
       for (const index of from.kept) {
         const key = /** @type {DeclarationRecord} */ (records.entry(index)).id;
