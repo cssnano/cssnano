@@ -62,6 +62,13 @@ const ALT = Object.freeze({
 // body differs from its twin by its selector alone.
 const SELECTORS_ALT = Object.freeze({ ...BASE, selectors: ALT.selectors });
 
+// The base comments with their texts swapped, so a twin differs only in the
+// text of a comment: kept apart when the comment is important, equal otherwise.
+const COMMENTS_ALT = Object.freeze({
+  ...BASE,
+  comments: ['/*! other */', '/*! note */', '/* more */', '/* plain */'],
+});
+
 const WRAPPERS = Object.freeze({
   base: [
     '@media print',
@@ -145,8 +152,8 @@ function item(rnd, depth, pieces) {
 
 /**
  * Two sibling blocks drawn from the same random stream, so their bodies have
- * the same shape. The second body takes its pieces from `BASE`, `ALT` or the
- * selectors of `ALT`, and its wrapper may differ from the first in its
+ * the same shape. The second body takes its pieces from `BASE`, `ALT`, the
+ * selectors of `ALT` or the swapped comments, and its wrapper may differ from the first in its
  * prelude, its name or the whitespace before it.
  *
  * @param {ReturnType<typeof random>} rnd
@@ -154,7 +161,7 @@ function item(rnd, depth, pieces) {
  */
 function siblingPair(rnd) {
   const seed = rnd.int(0x7fffffff) + 1;
-  const secondPieces = rnd.pick([BASE, BASE, ALT, SELECTORS_ALT]);
+  const secondPieces = rnd.pick([BASE, BASE, ALT, SELECTORS_ALT, COMMENTS_ALT]);
   const first = rnd.pick(WRAPPERS.base);
   const second = rnd.chance(0.5)
     ? first

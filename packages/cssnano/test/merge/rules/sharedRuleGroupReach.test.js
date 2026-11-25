@@ -28,8 +28,7 @@ const mediaBlock = (rules) => `@media (min-width:1px){${rules.join('')}}`;
 // rule unable to follow a pair, though it can still be the pair's second
 // rule; equal blocks let a pair span two parents.
 function stylesheet(seed, { comments = false, blocks = false } = {}) {
-  // The first draw of a small seed is near 0, so the seed is spread first.
-  const rng = random(seed * 7919 + 1);
+  const rng = random(seed);
   const count = 4 + rng.int(30);
   const rules = [];
   for (let i = 0; i < count; i++) {

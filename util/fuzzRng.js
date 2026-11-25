@@ -15,6 +15,9 @@ export function random(seed) {
     state = (state * 48271) % modulus;
     return (state - 1) / (modulus - 1);
   };
+  // A small seed's state wraps the modulus only on the second step, so
+  // the first draw is discarded rather than returned near 0.
+  next();
 
   return {
     int: (bound) => Math.floor(next() * bound),

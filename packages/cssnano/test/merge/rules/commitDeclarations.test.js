@@ -291,8 +291,7 @@ const source = 'a{a:0;b:1; c:2;&{x:y}d:3;/* e */f:4;@media print{g:5}h:6}';
  * @return {[string, string]} the committed and the PostCSS serializations
  */
 function runEditSequence(seed) {
-  // The first draw of a small seed is near 0, so the seed is spread first.
-  const rng = random(seed * 7919 + 1);
+  const rng = random(seed);
   const expected = postcss.parse(source);
   const expectedRule = /** @type {import('postcss').Rule} */ (expected.first);
   const actualSetup = setup(source);
