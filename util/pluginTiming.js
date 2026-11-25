@@ -100,7 +100,11 @@ function timedEntry(entry, name) {
         if (!wrappers.has(reducer)) {
           wrappers.set(
             reducer,
-            addingTimeTo(stageTotals, name, /** @type {any} */ (reducer))
+            addingTimeTo(
+              stageTotals,
+              name,
+              /** @type {(...args: unknown[]) => unknown} */ (reducer)
+            )
           );
         }
         return wrappers.get(reducer);

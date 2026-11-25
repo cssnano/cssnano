@@ -82,8 +82,11 @@ test('unlink should change no stamp when the entry is linked nowhere', () => {
 
 test('moveLast should stamp a block the way it stamps a rule', () => {
   const { root, records } = setup('@media print{c{top:0}}d{width:1px}');
-  const [media, d] = /** @type {import('postcss').Rule[]} */ (root.nodes);
-  const block = blockRecordOf(records, /** @type {any} */ (media)).index;
+  const [media, d] =
+    /** @type {[import('postcss').AtRule, import('postcss').Rule]} */ (
+      root.nodes
+    );
+  const block = blockRecordOf(records, media).index;
   const rule = ruleRecordOf(records, d).index;
   records.detach(rule);
   const before = stampsOf(records);

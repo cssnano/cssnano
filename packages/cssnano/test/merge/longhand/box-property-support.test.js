@@ -4,6 +4,7 @@ import boxSupportData from '../../../src/merge/longhand/data/boxPropertySupport.
 import { compareVersions } from '../../../src/utils/versions.js';
 import { boxProperties } from '../../../src/merge/longhand/decl/boxGroups.js';
 import { BoxSupport } from '../../../src/merge/longhand/targetSupport.js';
+/** @import {BoxProperty} from '../../../src/merge/longhand/decl/boxGroups.js' */
 
 /**
  * @param {string} name
@@ -313,7 +314,7 @@ describe('a property absent from the box data', () => {
   });
 
   test('does not cover an earlier property the data lacks', () => {
-    const fake = /** @type {any} */ ({ name: 'not-a-box-property' });
+    const fake = /** @type {BoxProperty} */ ({ name: 'not-a-box-property' });
     assert.equal(
       new BoxSupport(['chrome 120']).understandsWherever(
         fake,

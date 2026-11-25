@@ -26,7 +26,7 @@ test('minimize marks syntax errors as input errors', async () => {
 test('minimize does not mark an unknown preset as an input error', async () => {
   const reply = await minimize(
     'a { color: red; }',
-    /** @type {any} */ ('invalid')
+    /** @type {never} */ ('invalid')
   );
   assert.strictEqual(reply.ok, false);
   assert.strictEqual(reply.error.input, false);
