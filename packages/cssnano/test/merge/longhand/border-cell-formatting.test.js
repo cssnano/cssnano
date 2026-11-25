@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { suite, test } from 'node:test';
 
 // The counter must hook the tokenizer before any module below loads it.
-const { counter } = await import('../../../../../util/countTokenize.js');
+const { tokenizedBy } = await import('../../../../../util/countTokenize.js');
 const { longstandingFeatures } =
   await import('../../../src/run/syntaxFeatures.js');
 const { createRunContext } = await import('../../../src/run/runContext.js');
@@ -20,7 +20,7 @@ const { wholeText } =
   await import('../../../src/merge/longhand/componentRanges.js');
 
 /**
- * Runs `reduce` and returns the text of each tokenize call it made, in order.
+ * Runs `reduce` and returns the text of each tokenize call it made, sorted.
  * The counter records every call, so a text tokenized twice appears twice,
  * whatever earlier tests in the process tokenized.
  *
@@ -28,18 +28,7 @@ const { wholeText } =
  * @return {string[]} the texts `reduce` tokenized, sorted
  */
 function tokenizedByReduce(reduce) {
-  const texts = [];
-  const record = counter.record;
-  counter.record = (input) => {
-    texts.push(input.css);
-    record.call(counter, input);
-  };
-  try {
-    reduce();
-  } finally {
-    counter.record = record;
-  }
-  return texts.toSorted();
+  return tokenizedBy(reduce).toSorted();
 }
 
 /**

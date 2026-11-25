@@ -4,14 +4,12 @@ import { childEntriesOf } from '../../../src/ir/blockChildren.js';
 import { childNodesOf } from '../../../src/ir/tree/writeBack.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import postcss from 'postcss';
-import { createRunContext } from '../../../src/run/runContext.js';
 import {
   AT_RULE_BLOCK,
   RULE,
   STYLESHEET,
 } from '../../../src/ir/blockRecord.js';
-import MergeState from '../../../src/merge/rules/mergeState.js';
+/** @import MergeState from '../../../src/merge/rules/mergeState.js' */
 import { RuleRecord } from '../../../src/ir/ruleRecord.js';
 import {
   appendToDeclarations,
@@ -22,10 +20,10 @@ import {
 import {
   blockRecordOf,
   ruleRecordOf,
-  buildTestRecords,
   placeUnlinked,
   nodeOfEntry,
   nodesOf,
+  recordsOf,
 } from './liveRecords.js';
 import { adopt, moveRule, substitute } from '../../../src/ir/arenaEdits.js';
 import { tokensText } from '../../../src/values/tokensText.js';
@@ -37,9 +35,7 @@ import { tokensText } from '../../../src/values/tokensText.js';
  * @return {{root: Root, state: MergeState}}
  */
 function setup(css) {
-  const root = postcss.parse(css);
-  const state = new MergeState(['chrome 120'], createRunContext(true));
-  state.records = buildTestRecords(root, state, true);
+  const { root, state } = recordsOf(css, true);
   return { root, state };
 }
 

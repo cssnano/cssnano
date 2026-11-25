@@ -11,6 +11,7 @@ import { createRunContext } from '../../src/run/runContext.js';
 import { runDriver } from '../../src/run/runDriver.js';
 import { resolveTargets } from '../../src/utils/browserTargets.js';
 import { testTargets } from '../../../../util/testHelpers.js';
+import { random } from '../../../../util/fuzzRng.js';
 
 const targets = resolveTargets({ query: testTargets }, undefined);
 
@@ -279,19 +280,6 @@ test('the merge run joins an at-rule into an earlier one, then reads the earlier
   );
 });
 
-// Park-Miller generator: products stay below 2 ** 53, and the repository
-// forbids bitwise operators.
-/** @param {number} seed @return {() => number} */
-function random(seed) {
-  let state = seed * 7919 + 1;
-  const next = () => {
-    state = (state * 48271) % 2147483647;
-    return state / 2147483647;
-  };
-  for (let i = 0; i < 8; i++) next();
-  return next;
-}
-
 const DECLARATIONS = [
   'color:red',
   'color:blue',
@@ -307,27 +295,27 @@ const DECLARATIONS = [
  * A nested stylesheet whose blocks repeat declarations, so every join and
  * move has something to act on, at any depth.
  *
- * @param {() => number} next
+ * @param {ReturnType<typeof random>} rng
  * @param {number} depth
  * @return {string}
  */
-function block(next, depth) {
-  const items = 1 + Math.floor(next() * 5);
+function block(rng, depth) {
+  const items = 1 + rng.int(5);
   let css = '';
   for (let i = 0; i < items; i++) {
-    const roll = next();
-    if (depth < 3 && roll < 0.4) {
-      const query = next() < 0.5 ? '(x)' : '(y)';
-      css += `@media ${query}{${block(next, depth + 1)}}`;
-    } else if (depth < 3 && roll < 0.45) {
-      css += `@layer q{${block(next, depth + 1)}}`;
+    const roll = rng.int(100);
+    if (depth < 3 && roll < 40) {
+      const query = rng.chance(0.5) ? '(x)' : '(y)';
+      css += `@media ${query}{${block(rng, depth + 1)}}`;
+    } else if (depth < 3 && roll < 45) {
+      css += `@layer q{${block(rng, depth + 1)}}`;
     } else {
-      const picks = 1 + Math.floor(next() * 3);
+      const picks = 1 + rng.int(3);
       const decls = [];
       for (let j = 0; j < picks; j++) {
-        decls.push(DECLARATIONS[Math.floor(next() * DECLARATIONS.length)]);
+        decls.push(rng.pick(DECLARATIONS));
       }
-      const selector = next() < 0.5 ? 'a' : 'b';
+      const selector = rng.chance(0.5) ? 'a' : 'b';
       css += `${selector}{${decls.join(';')}}`;
     }
   }
@@ -338,7 +326,8 @@ function block(next, depth) {
 // stale summary throws.
 test('the merge run finds no stale block summary on nested generated sheets, with rules on or off', () => {
   for (let seed = 1; seed <= 300; seed++) {
-    const css = block(random(seed), 0);
+    // The first draw of a small seed is near 0, so the seed is spread first.
+    const css = block(random(seed * 7919 + 1), 0);
     runMergePass(css, { rules: true });
     runMergePass(css, { rules: false });
   }
@@ -346,7 +335,7 @@ test('the merge run finds no stale block summary on nested generated sheets, wit
 
 test('the mergeRules transform finds no stale block summary on nested generated sheets', () => {
   for (let seed = 1; seed <= 300; seed++) {
-    runTransforms(block(random(seed), 0), ['mergeRules']);
+    runTransforms(block(random(seed * 7919 + 1), 0), ['mergeRules']);
   }
 });
 

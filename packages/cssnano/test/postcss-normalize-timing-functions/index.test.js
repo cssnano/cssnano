@@ -7,36 +7,14 @@ import {
   processCSSFactory,
 } from '../../../../util/testHelpers.js';
 import timing from '../../src/plugins/postcss-normalize-timing-functions/index.js';
+import { testPassthrough } from './timingProperties.js';
 
 const plugin = oneStagePlugin(timing);
 
 const { processCSS, passthroughCSS, processor } = processCSSFactory(plugin);
 
-const properties = [
-  ['animation', (v) => `animation:fade 3s ${v}`],
-  ['-webkit-animation', (v) => `-webkit-animation:fade 3s ${v}`],
-  ['animation-timing-function', (v) => `animation-timing-function:${v}`],
-  [
-    '-webkit-animation-timing-function',
-    (v) => `-webkit-animation-timing-function:${v}`,
-  ],
-  ['transition', (v) => `transition:color 3s ${v}`],
-  ['-webkit-transition', (v) => `-webkit-transition:color 3s ${v}`],
-  ['transition-timing-function', (v) => `transition-timing-function:${v}`],
-  [
-    '-webkit-transition-timing-function',
-    (v) => `-webkit-transition-timing-function:${v}`,
-  ],
-];
-
-function testPassthrough(fixture) {
-  for (const [prop, template] of properties) {
-    test(`${prop}: ${fixture}`, passthroughCSS(template(fixture)));
-  }
-}
-
-testPassthrough('var(--anim1)');
-testPassthrough('VAR(--anim1)');
+testPassthrough(passthroughCSS, 'var(--anim1)');
+testPassthrough(passthroughCSS, 'VAR(--anim1)');
 
 test('should pass through broken syntax', passthroughCSS('h1{animation:}'));
 

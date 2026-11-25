@@ -19,11 +19,6 @@ const { visitEntriesInOrder } = await import('../../src/ir/visitEntries.js');
 const { createRecordSymbolLists, recordSymbolVisit } =
   await import('../../src/run/symbolLists.js');
 
-/** @returns {number} tokenize calls made so far */
-function tokenizeTotal() {
-  return [...counter.calls.values()].reduce((sum, n) => sum + n, 0);
-}
-
 // Only the counter reducer, so no other reducer reads or stores the lists.
 const counterOnly = {
   counterStyle: false,
@@ -80,9 +75,9 @@ suite('the symbol transforms read the text the host walk stored', () => {
   test("reduce-idents' at-rule symbols read the list stored for the at-rule, without tokenizing", () => {
     const { records, context } = buildRecords('@keyframes foo { from {} }');
     const lists = symbolListsOf(records, context);
-    const before = tokenizeTotal();
+    const before = counter.totalCalls();
     reduceIdentsSymbols(lists, createReducers({}), () => {}, records, context);
-    assert.equal(tokenizeTotal() - before, 0);
+    assert.equal(counter.totalCalls() - before, 0);
   });
 
   test("reduce-idents' at-rule symbols' edited value list spells the renamed value", () => {
@@ -127,7 +122,7 @@ suite('the symbol transforms read the text the host walk stored', () => {
       'a { counter-reset: x } b { content: counter(x) }'
     );
     const lists = symbolListsOf(records, context);
-    const before = tokenizeTotal();
+    const before = counter.totalCalls();
     reduceIdentsSymbols(
       lists,
       createReducers(counterOnly),
@@ -135,7 +130,7 @@ suite('the symbol transforms read the text the host walk stored', () => {
       records,
       context
     );
-    assert.equal(tokenizeTotal() - before, 0);
+    assert.equal(counter.totalCalls() - before, 0);
   });
 
   test("reduce-idents' counter symbols' edited use value list spells the renamed counter", () => {
@@ -181,7 +176,7 @@ suite('the symbol transforms read the text the host walk stored', () => {
       'a { grid-template-areas: "a b" } b { grid-area: a }'
     );
     const lists = symbolListsOf(records, context);
-    const before = tokenizeTotal();
+    const before = counter.totalCalls();
     reduceIdentsSymbols(
       lists,
       createReducers(gridOnly),
@@ -189,7 +184,7 @@ suite('the symbol transforms read the text the host walk stored', () => {
       records,
       context
     );
-    assert.equal(tokenizeTotal() - before, 0);
+    assert.equal(counter.totalCalls() - before, 0);
   });
 
   test("reduce-idents' grid-template symbols' edited use value list spells the renamed area", () => {
@@ -279,16 +274,16 @@ suite('the symbol transforms read the text the host walk stored', () => {
   test("merge-idents' at-rule symbols read the list stored for the at-rule, without tokenizing", () => {
     const { records, context } = buildRecords('@keyframes foo {}');
     const lists = symbolListsOf(records, context);
-    const before = tokenizeTotal();
+    const before = counter.totalCalls();
     mergeIdentsSymbols(lists, {}, () => {}, records, context);
-    assert.equal(tokenizeTotal() - before, 0);
+    assert.equal(counter.totalCalls() - before, 0);
   });
 
   test("merge-idents' references read the list stored for the declaration, without tokenizing", () => {
     const { records, context, lists } = mergeableKeyframes();
-    const before = tokenizeTotal();
+    const before = counter.totalCalls();
     mergeIdentsSymbols(lists, {}, () => {}, records, context);
-    assert.equal(tokenizeTotal() - before, 0);
+    assert.equal(counter.totalCalls() - before, 0);
   });
 
   test("merge-idents' edited references' value list spells the rewritten value", () => {
@@ -323,9 +318,9 @@ suite('the symbol transforms read the text the host walk stored', () => {
   test('`preludeListOf` reads the list stored for an at-rule with a trailing comment, without tokenizing', () => {
     const { records, context } = buildRecords('@keyframes foo /*x*/ {}');
     const index = records.links.firstChild(records.root.index);
-    const before = tokenizeTotal();
+    const before = counter.totalCalls();
     preludeListOf(context.tokenLists, records.entry(index));
-    assert.equal(tokenizeTotal() - before, 0);
+    assert.equal(counter.totalCalls() - before, 0);
   });
 
   test('`preludeListOf` gives the prelude text of an at-rule statement whose backslash escapes a space', () => {
@@ -340,9 +335,9 @@ suite('the symbol transforms read the text the host walk stored', () => {
   test('`preludeListOf` reads the list stored for an at-rule statement whose backslash escapes a space, without tokenizing', () => {
     const { records, context } = buildRecords('@layer a\\ ;');
     const index = records.links.firstChild(records.root.index);
-    const before = tokenizeTotal();
+    const before = counter.totalCalls();
     preludeListOf(context.tokenLists, records.entry(index));
-    assert.equal(tokenizeTotal() - before, 0);
+    assert.equal(counter.totalCalls() - before, 0);
   });
 
   test('`preludeListOf` gives the prelude text of an at-rule block whose backslash escapes a space', () => {
@@ -357,16 +352,16 @@ suite('the symbol transforms read the text the host walk stored', () => {
   test('`preludeListOf` reads the list stored for an at-rule whose backslash precedes a newline, without tokenizing', () => {
     const { records, context } = buildRecords('@keyframes a\\\n{}');
     const index = records.links.firstChild(records.root.index);
-    const before = tokenizeTotal();
+    const before = counter.totalCalls();
     preludeListOf(context.tokenLists, records.entry(index));
-    assert.equal(tokenizeTotal() - before, 0);
+    assert.equal(counter.totalCalls() - before, 0);
   });
 
   test('`preludeListOf` reads the list stored for an at-rule whose backslashes are an even run, without tokenizing', () => {
     const { records, context } = buildRecords('@keyframes a\\\\ {}');
     const index = records.links.firstChild(records.root.index);
-    const before = tokenizeTotal();
+    const before = counter.totalCalls();
     preludeListOf(context.tokenLists, records.entry(index));
-    assert.equal(tokenizeTotal() - before, 0);
+    assert.equal(counter.totalCalls() - before, 0);
   });
 });

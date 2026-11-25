@@ -12,6 +12,9 @@ import {
 } from '../../../src/ir/blockRecord.js';
 import { buildRecords } from '../../../src/ir/tree/buildRecords.js';
 import { declarationKeys } from '../../../src/ir/declarationCache.js';
+import postcss from 'postcss';
+import MergeState from '../../../src/merge/rules/mergeState.js';
+import { createRunContext } from '../../../src/run/runContext.js';
 
 /** @import {ChildNode, Container, Rule} from 'postcss' */
 /** @import {BlockRecords} from '../../../src/ir/blockRecords.js' */
@@ -134,6 +137,24 @@ export function buildTestRecords(root, state, consistencyChecks = false) {
   nodeTables.set(records, nodes);
   tokenListTables.set(records, tokenLists);
   return records;
+}
+
+/**
+ * A stylesheet parsed and built into records under a run context whose checks
+ * are `consistencyChecks`, for the browsers every merge test targets.
+ *
+ * @param {string} css
+ * @param {boolean} consistencyChecks
+ * @return {{root: import('postcss').Root, state: MergeState, records: BlockRecords}}
+ */
+export function recordsOf(css, consistencyChecks) {
+  const root = postcss.parse(css);
+  const state = new MergeState(
+    ['chrome 120'],
+    createRunContext(consistencyChecks)
+  );
+  state.records = buildTestRecords(root, state, consistencyChecks);
+  return { root, state, records: state.records };
 }
 
 /** @type {WeakMap<BlockRecords, NodeTable>} the node table of each records object a test built */

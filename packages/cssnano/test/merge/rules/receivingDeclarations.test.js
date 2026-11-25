@@ -2,19 +2,14 @@ import { declarationsOf } from '../../../src/ir/blockChildren.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import MergeState from '../../../src/merge/rules/mergeState.js';
-import { createRunContext } from '../../../src/run/runContext.js';
+/** @import MergeState from '../../../src/merge/rules/mergeState.js' */
 import { PropertyWrites } from '../../../src/ir/propertyWrites.js';
 import { appendChild } from '../../../src/ir/arenaEdits.js';
 import {
   declarationKeys,
   receivingDeclarations,
 } from '../../../src/ir/declarationCache.js';
-import {
-  buildTestRecords,
-  ruleRecordOf,
-  placeUnlinked,
-} from './liveRecords.js';
+import { ruleRecordOf, placeUnlinked, recordsOf } from './liveRecords.js';
 import { recordDeclaration } from '../../../src/ir/tree/buildRecords.js';
 
 /** @import {BlockRecords} from '../../../src/ir/blockRecords.js' */
@@ -28,13 +23,7 @@ import { recordDeclaration } from '../../../src/ir/tree/buildRecords.js';
  * @return {{state: MergeState, records: BlockRecords, record: RuleRecord}}
  */
 const arenaOf = (css, consistencyChecks = false) => {
-  const root = postcss.parse(css);
-  const state = new MergeState(
-    ['chrome 120'],
-    createRunContext(consistencyChecks)
-  );
-  state.records = buildTestRecords(root, state, consistencyChecks);
-  const { records } = state;
+  const { root, state, records } = recordsOf(css, consistencyChecks);
   return { state, records, record: ruleRecordOf(records, root.first) };
 };
 

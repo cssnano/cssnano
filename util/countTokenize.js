@@ -33,6 +33,10 @@ export const counter = {
   frames: new Map(),
   checkRoundTrip: false,
   roundTrip: { checked: 0, mismatches: 0, first: /** @type {string[]} */ ([]) },
+  /** @returns {number} tokenize calls made so far, across every entry */
+  totalCalls() {
+    return [...this.calls.values()].reduce((sum, n) => sum + n, 0);
+  },
   beginStylesheet() {
     this.seen.clear();
   },
@@ -91,6 +95,28 @@ export const counter = {
 
 // The value buffer and its readers, which sit between a reducer and tokenize.
 const plumbing = /\/(?:utils\/value|values\/valueBuffer)\.js$/v;
+
+/**
+ * Runs `run` and returns the `css` of each `tokenize` call it made, in order.
+ * `counter.record` is restored afterwards, even when `run` throws.
+ *
+ * @param {() => void} run
+ * @return {string[]}
+ */
+export function tokenizedBy(run) {
+  const texts = [];
+  const record = counter.record;
+  counter.record = (input) => {
+    texts.push(input.css);
+    record.call(counter, input);
+  };
+  try {
+    run();
+  } finally {
+    counter.record = record;
+  }
+  return texts;
+}
 
 /**
  * The first cssnano source frame on the stack outside the value buffer, as

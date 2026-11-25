@@ -1,31 +1,23 @@
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import process from 'node:process';
-import { afterEach, beforeEach, describe, test } from 'node:test';
+import { beforeEach, describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
 import defaultPreset from '#presets/default';
 import litePreset from '#presets/lite';
 import cssnano from '../../src/index.js';
 import { presetImport } from './presetSpecifiers.js';
+import { temporaryProject } from './temporaryProject.js';
 
 describe('cssnano config file with a reported top-level key', () => {
-  let temporaryDirectory;
-  let previousWorkingDirectory;
+  const temporaryDirectory = temporaryProject('cssnano-config-');
 
   beforeEach(() => {
-    temporaryDirectory = mkdtempSync(`${tmpdir()}/cssnano-config-`);
     writeFileSync(
-      `${temporaryDirectory}/cssnano.config.js`,
+      `${temporaryDirectory()}/cssnano.config.js`,
       `import lite from ${presetImport('lite')};\nexport default { preset: lite };\n`
     );
-    previousWorkingDirectory = process.cwd();
-    process.chdir(temporaryDirectory);
-  });
-
-  afterEach(() => {
-    process.chdir(previousWorkingDirectory);
-    rmSync(temporaryDirectory, { recursive: true, force: true });
   });
 
   test('a misspelled top-level key throws, and the configuration file is not rescued', () => {
@@ -86,7 +78,7 @@ describe('cssnano config file with a reported top-level key', () => {
 
   test('an inline plugin option whose value is null sets nothing, so it may come with configFile', () => {
     writeFileSync(
-      `${temporaryDirectory}/custom.js`,
+      `${temporaryDirectory()}/custom.js`,
       `import lite from ${presetImport('lite')};\nexport default { preset: lite };\n`
     );
     assert.strictEqual(
@@ -113,7 +105,7 @@ describe('cssnano config file with a reported top-level key', () => {
 
   test('inline browserslist alone skips the disable list of the configuration file', async () => {
     writeFileSync(
-      `${temporaryDirectory}/cssnano.config.js`,
+      `${temporaryDirectory()}/cssnano.config.js`,
       `import lite from ${presetImport('lite')};\nexport default { preset: lite, disable: ['discardComments'] };\n`
     );
     const result = await postcss([
@@ -124,7 +116,7 @@ describe('cssnano config file with a reported top-level key', () => {
 
   test('keeps the TypeError of an invalid option in a configuration file, and names the file', () => {
     writeFileSync(
-      `${temporaryDirectory}/cssnano.config.js`,
+      `${temporaryDirectory()}/cssnano.config.js`,
       `import lite from ${presetImport('lite')};\nexport default { preset: lite, disable: 5 };\n`
     );
     assert.throws(() => cssnano(), TypeError);
@@ -142,7 +134,7 @@ describe('cssnano config file with a reported top-level key', () => {
   });
 
   test('an options key set to null is unset, so it needs no preset and the default preset runs', async () => {
-    rmSync(`${temporaryDirectory}/cssnano.config.js`);
+    rmSync(`${temporaryDirectory()}/cssnano.config.js`);
     const result = await postcss([cssnano({ options: null })]).process(
       'h1{color:#ffffff}',
       { from: undefined }
@@ -155,7 +147,7 @@ describe('cssnano config file with a reported top-level key', () => {
   });
 
   test('a disable key set to null is unset, so it needs no preset either', async () => {
-    rmSync(`${temporaryDirectory}/cssnano.config.js`);
+    rmSync(`${temporaryDirectory()}/cssnano.config.js`);
     const result = await postcss([cssnano({ disable: null })]).process(
       'h1{color:#ffffff}',
       { from: undefined }
@@ -189,7 +181,7 @@ describe('cssnano config file with a reported top-level key', () => {
   });
 
   test('inline browserslist without a preset is accepted, and runs the default preset with those targets', async () => {
-    rmSync(`${temporaryDirectory}/cssnano.config.js`);
+    rmSync(`${temporaryDirectory()}/cssnano.config.js`);
     const result = await postcss([
       cssnano({ browserslist: { query: 'defaults' } }),
     ]).process('h1{color:#ffffff}', { from: undefined });
@@ -201,7 +193,7 @@ describe('cssnano config file with a reported top-level key', () => {
 
   test('a configuration file with disable and no preset is checked against the default preset, and names the file', () => {
     writeFileSync(
-      `${temporaryDirectory}/cssnano.config.js`,
+      `${temporaryDirectory()}/cssnano.config.js`,
       'export default { disable: ["zindex"] };'
     );
     assert.throws(() => cssnano(), {

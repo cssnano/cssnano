@@ -1,8 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import { createRunContext } from '../../../src/run/runContext.js';
-import MergeState from '../../../src/merge/rules/mergeState.js';
+/** @import MergeState from '../../../src/merge/rules/mergeState.js' */
 import {
   assertSweepLowers,
   sweepPotential,
@@ -12,11 +11,7 @@ import {
   assertNoOverDuplication,
   tallyDeclarations,
 } from '../../../src/merge/rules/overDuplication.js';
-import {
-  buildTestRecords,
-  placeUnlinked,
-  ruleRecordOf,
-} from './liveRecords.js';
+import { placeUnlinked, ruleRecordOf, recordsOf } from './liveRecords.js';
 import { recordDeclaration } from '../../../src/ir/tree/buildRecords.js';
 import { appendChild } from '../../../src/ir/arenaEdits.js';
 
@@ -27,10 +22,7 @@ import { appendChild } from '../../../src/ir/arenaEdits.js';
  * @return {{root: Root, state: MergeState}}
  */
 function setup(css) {
-  const root = postcss.parse(css);
-  const context = createRunContext(true);
-  const state = new MergeState(['chrome 120'], context);
-  state.records = buildTestRecords(root, state, true);
+  const { root, state } = recordsOf(css, true);
   return { root, state };
 }
 

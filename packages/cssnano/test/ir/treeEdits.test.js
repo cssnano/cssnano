@@ -6,9 +6,7 @@ import {
 } from '../../src/ir/tree/writeBack.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import postcss from 'postcss';
-import { createRunContext } from '../../src/run/runContext.js';
-import MergeState from '../../src/merge/rules/mergeState.js';
+/** @import MergeState from '../../src/merge/rules/mergeState.js' */
 import {
   appendToDeclarations,
   remove,
@@ -18,9 +16,9 @@ import {
 import {
   ruleRecordOf,
   blockRecordOf,
-  buildTestRecords,
   claimAt,
   nodesOf,
+  recordsOf,
 } from '../merge/rules/liveRecords.js';
 import { adopt, removeDeclarations } from '../../src/ir/arenaEdits.js';
 
@@ -36,9 +34,7 @@ import { adopt, removeDeclarations } from '../../src/ir/arenaEdits.js';
  * @return {{root: import('postcss').Root, state: MergeState}}
  */
 function setup(css) {
-  const root = postcss.parse(css);
-  const state = new MergeState(['chrome 120'], createRunContext(true));
-  state.records = buildTestRecords(root, state, true);
+  const { root, state } = recordsOf(css, true);
   return { root, state };
 }
 

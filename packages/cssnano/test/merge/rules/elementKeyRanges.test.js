@@ -6,11 +6,6 @@ const { counter } = await import('../../../../../util/countTokenize.js');
 const { tokens: tokenize } = await import('../../../src/utils/value.js');
 const { elementKeyOf } = await import('../../../src/ir/elementKeys.js');
 
-/** @returns {number} tokenize calls made so far */
-function tokenizeTotal() {
-  return [...counter.calls.values()].reduce((sum, n) => sum + n, 0);
-}
-
 // The selectors of the element key cases in elementKeys.test.js.
 const selectors = [
   'H1',
@@ -40,8 +35,8 @@ suite('elementKeyOf reads a selector from its token list', () => {
 
   test("elementKeyOf reads a selector's token list without tokenizing", () => {
     const lists = selectors.map((selector) => tokenize(selector));
-    const before = tokenizeTotal();
+    const before = counter.totalCalls();
     for (const list of lists) elementKeyOf(list);
-    assert.equal(tokenizeTotal() - before, 0);
+    assert.equal(counter.totalCalls() - before, 0);
   });
 });

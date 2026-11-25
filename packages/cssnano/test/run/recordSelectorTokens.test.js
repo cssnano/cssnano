@@ -13,11 +13,6 @@ const { commentStateOf } =
 const { ident } = await import('../../src/values/tokenConstructors.js');
 const { tokensText } = await import('../../src/values/tokensText.js');
 
-/** @returns {number} tokenize calls made so far */
-function tokenizeTotal() {
-  return [...counter.calls.values()].reduce((sum, n) => sum + n, 0);
-}
-
 /**
  * The records of a stylesheet after the build and the record walk with
  * `stages`, with the run that holds their token lists.
@@ -46,9 +41,9 @@ suite(
       };
       const { records, context } = recordsAfterWalk('a, b {}', [stage]);
       const record = records.rule(records.links.firstChild(records.root.index));
-      const before = tokenizeTotal();
+      const before = counter.totalCalls();
       const list = context.tokenLists.get(record.writtenList);
-      assert.equal(tokenizeTotal() - before, 0);
+      assert.equal(counter.totalCalls() - before, 0);
       assert.equal(tokensText(list), 'z, b');
     });
 
@@ -56,9 +51,9 @@ suite(
       const stage = { selector: (buffer) => buffer.tokens() };
       const { records, context } = recordsAfterWalk('a, b {}', [stage]);
       const record = records.rule(records.links.firstChild(records.root.index));
-      const before = tokenizeTotal();
+      const before = counter.totalCalls();
       assert.equal(context.tokenLists.get(record.writtenList).length, 4);
-      assert.equal(tokenizeTotal() - before, 0);
+      assert.equal(counter.totalCalls() - before, 0);
     });
 
     test('a selector a fold table served to a second rule reads without tokenizing', () => {
@@ -69,12 +64,12 @@ suite(
       const second = records.links.nextSibling(
         records.links.firstChild(records.root.index)
       );
-      const before = tokenizeTotal();
+      const before = counter.totalCalls();
       assert.equal(
         tokensText(context.tokenLists.get(records.rule(second).writtenList)),
         'z, b'
       );
-      assert.equal(tokenizeTotal() - before, 0);
+      assert.equal(counter.totalCalls() - before, 0);
     });
   }
 );

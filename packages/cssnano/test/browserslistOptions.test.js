@@ -1,12 +1,6 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
-import defaultPreset from '#presets/default';
-import { presetEntriesKey } from '../src/presets/presetEntries.js';
-import { validateOptions } from '../src/options.js';
-
-/** @param {Record<string, unknown>} input */
-const validate = (input) =>
-  validateOptions(input, 'inline', defaultPreset[presetEntriesKey]);
+import { validate } from './validateOptions.js';
 
 describe('browserslist options', () => {
   test('throws for a browserslist key that is not an option, because ignoring it would change the targets', () => {

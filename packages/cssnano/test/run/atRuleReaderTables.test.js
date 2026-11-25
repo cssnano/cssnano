@@ -21,11 +21,6 @@ const { default: normalizeUrl } =
 const { default: isAnonymousLayer } =
   await import('../../src/utils/isAnonymousLayer.js');
 
-/** @returns {number} tokenize calls made so far */
-function tokenizeTotal() {
-  return [...counter.calls.values()].reduce((sum, n) => sum + n, 0);
-}
-
 const helpers = { result: { warn() {}, messages: [] } };
 
 /**
@@ -37,14 +32,14 @@ const helpers = { result: { warn() {}, messages: [] } };
 function afterWalk(root, plan) {
   const context = createRunContext(undefined);
   const state = runDriver.build(root, context);
-  const before = tokenizeTotal();
+  const before = counter.totalCalls();
   walkUp(state, plan);
   runDriver.end(state, {
     browsers: [],
     folded: false,
     result: helpers.result,
   });
-  return tokenizeTotal() - before;
+  return counter.totalCalls() - before;
 }
 
 suite('the record walk folds the at-rule preludes it reads', () => {
@@ -54,9 +49,9 @@ suite('the record walk folds the at-rule preludes it reads', () => {
     const walkCalls = (css) => {
       const context = createRunContext(undefined);
       const { records } = buildRecords(postcss.parse(css), context);
-      const before = tokenizeTotal();
+      const before = counter.totalCalls();
       walkDown(records, context, declarationPlansOf([stage], false, null));
-      return tokenizeTotal() - before;
+      return counter.totalCalls() - before;
     };
     assert.equal(
       walkCalls('@media (min-width:1px){a{}} @media (min-width:1px){a{}}'),
@@ -83,9 +78,9 @@ suite(
         context
       );
       const stage = normalizeUrl.create({});
-      const before = tokenizeTotal();
+      const before = counter.totalCalls();
       walkDown(records, context, declarationPlansOf([stage], false, null));
-      assert.equal(tokenizeTotal() - before, 0);
+      assert.equal(counter.totalCalls() - before, 0);
     });
 
     test('discard-empty reads the @layer list the build made for the at-rule, without tokenizing', () => {

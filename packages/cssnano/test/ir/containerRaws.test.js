@@ -2,12 +2,10 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import { AT_RULE_STATEMENT } from '../../src/ir/blockRecord.js';
-import { createRunContext } from '../../src/run/runContext.js';
-import MergeState from '../../src/merge/rules/mergeState.js';
 import {
   blockRecordOf,
-  buildTestRecords,
   ruleRecordOf,
+  recordsOf,
 } from '../merge/rules/liveRecords.js';
 import { onlyTransform } from '../merge/onlyTransform.js';
 
@@ -16,9 +14,7 @@ import { onlyTransform } from '../merge/onlyTransform.js';
  * @return {{root: import('postcss').Root, records: import('../../src/ir/blockRecords.js').BlockRecords}}
  */
 function build(css) {
-  const root = postcss.parse(css);
-  const state = new MergeState(['chrome 120'], createRunContext(true));
-  const records = buildTestRecords(root, state, true);
+  const { root, records } = recordsOf(css, true);
   return { root, records };
 }
 

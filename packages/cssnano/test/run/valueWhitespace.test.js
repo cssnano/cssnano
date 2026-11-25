@@ -12,7 +12,7 @@ const { normalizeWhitespacePlugins } =
 async function tokenizeCalls(css) {
   counter.calls.clear();
   await postcss(normalizeWhitespacePlugins()).process(css, { from: undefined });
-  return [...counter.calls.values()].reduce((sum, n) => sum + n, 0);
+  return counter.totalCalls();
 }
 
 suite('the whitespace of a declaration value', () => {

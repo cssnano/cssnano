@@ -9,11 +9,6 @@ const { LayerRegistry } =
 const { createRunContext } = await import('../../src/run/runContext.js');
 const { runDriver } = await import('../../src/run/runDriver.js');
 
-/** @returns {number} tokenize calls made so far */
-function tokenizeTotal() {
-  return [...counter.calls.values()].reduce((sum, n) => sum + n, 0);
-}
-
 /**
  * The records of a stylesheet, and a registry over them.
  *
@@ -43,7 +38,7 @@ test('should read the name of a layer block with an escaped space without tokeni
   const { records, registry } = recordsOf('@layer a\\  {x{}y{}z{}}');
   const { links } = records;
   const layer = links.firstChild(records.root.index);
-  const before = tokenizeTotal();
+  const before = counter.totalCalls();
   for (
     let rule = links.firstChild(layer);
     rule !== -1;
@@ -52,5 +47,5 @@ test('should read the name of a layer block with an escaped space without tokeni
     registry.getPriority(rule);
   }
   // The escaped space already sits in the prelude, so nothing re-reads it.
-  assert.equal(tokenizeTotal() - before, 0);
+  assert.equal(counter.totalCalls() - before, 0);
 });

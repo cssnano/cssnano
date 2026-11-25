@@ -1,13 +1,12 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import process from 'node:process';
-import { afterEach, beforeEach, describe, test } from 'node:test';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { beforeEach, describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
 import litePreset from '#presets/lite';
 import defaultPreset from '#presets/default';
 import cssnano from '../../src/index.js';
 import { presetImport, presetRequire } from './presetSpecifiers.js';
+import { temporaryProject } from './temporaryProject.js';
 
 /**
  * @param {string} options a JavaScript expression that uses the variable lite
@@ -24,26 +23,17 @@ const cjsConfig = (options) =>
   `const lite = require(${presetRequire('lite')});\nmodule.exports = ${options};\n`;
 
 describe('cssnano config loading', () => {
-  let temporaryDirectory;
-  let previousWorkingDirectory;
+  const temporaryDirectory = temporaryProject('cssnano-config-');
 
   function writePackageType(type) {
     writeFileSync(
-      `${temporaryDirectory}/package.json`,
+      `${temporaryDirectory()}/package.json`,
       JSON.stringify({ type })
     );
   }
 
   beforeEach(() => {
-    temporaryDirectory = mkdtempSync(`${tmpdir()}/cssnano-config-`);
     writePackageType('module');
-    previousWorkingDirectory = process.cwd();
-    process.chdir(temporaryDirectory);
-  });
-
-  afterEach(() => {
-    process.chdir(previousWorkingDirectory);
-    rmSync(temporaryDirectory, { recursive: true, force: true });
   });
 
   test('uses the default preset when no local configuration exists', () => {
@@ -55,7 +45,7 @@ describe('cssnano config loading', () => {
 
   test('ignores package.json, which holds no cssnano configuration', () => {
     writeFileSync(
-      `${temporaryDirectory}/package.json`,
+      `${temporaryDirectory()}/package.json`,
       '{"cssnano":{"preset":"lite"}}'
     );
     assert.strictEqual(
@@ -66,23 +56,23 @@ describe('cssnano config loading', () => {
 
   test('does not discover a configuration file that is not cssnano.config.js in the working directory', () => {
     writeFileSync(
-      `${temporaryDirectory}/.cssnanorc`,
+      `${temporaryDirectory()}/.cssnanorc`,
       esmConfig('{ preset: lite }')
     );
     writeFileSync(
-      `${temporaryDirectory}/.cssnanorc.js`,
+      `${temporaryDirectory()}/.cssnanorc.js`,
       esmConfig('{ preset: lite }')
     );
     writeFileSync(
-      `${temporaryDirectory}/cssnano.config.mjs`,
+      `${temporaryDirectory()}/cssnano.config.mjs`,
       esmConfig('{ preset: lite }')
     );
     writeFileSync(
-      `${temporaryDirectory}/cssnano.config.mts`,
+      `${temporaryDirectory()}/cssnano.config.mts`,
       esmConfig('{ preset: lite }')
     );
-    mkdirSync(`${temporaryDirectory}/child`);
-    process.chdir(`${temporaryDirectory}/child`);
+    mkdirSync(`${temporaryDirectory()}/child`);
+    process.chdir(`${temporaryDirectory()}/child`);
     assert.strictEqual(
       postcss([cssnano]).plugins.length,
       defaultPreset().length
@@ -90,7 +80,10 @@ describe('cssnano config loading', () => {
   });
 
   test('throws for a retired JSON configuration file, because its options would be ignored and the default preset would run', () => {
-    writeFileSync(`${temporaryDirectory}/.cssnanorc.json`, '{"preset":"lite"}');
+    writeFileSync(
+      `${temporaryDirectory()}/.cssnanorc.json`,
+      '{"preset":"lite"}'
+    );
     assert.throws(() => cssnano(), {
       message:
         /^"\.cssnanorc\.json" is not read; move its options to cssnano\.config\.js/v,
@@ -98,9 +91,12 @@ describe('cssnano config loading', () => {
   });
 
   test('reads an explicit configFile without reporting a retired JSON file that it does not name', () => {
-    writeFileSync(`${temporaryDirectory}/.cssnanorc.json`, '{"preset":"lite"}');
     writeFileSync(
-      `${temporaryDirectory}/custom.js`,
+      `${temporaryDirectory()}/.cssnanorc.json`,
+      '{"preset":"lite"}'
+    );
+    writeFileSync(
+      `${temporaryDirectory()}/custom.js`,
       esmConfig('{ preset: lite }')
     );
     assert.strictEqual(
@@ -112,7 +108,7 @@ describe('cssnano config loading', () => {
   test('loads an explicit ESM or TypeScript configuration file', () => {
     for (const extension of ['mjs', 'ts', 'mts']) {
       writeFileSync(
-        `${temporaryDirectory}/config.${extension}`,
+        `${temporaryDirectory()}/config.${extension}`,
         esmConfig('{ preset: lite }')
       );
       assert.strictEqual(
@@ -126,11 +122,11 @@ describe('cssnano config loading', () => {
   test('loads a CommonJS TypeScript configuration file and an ESM .mts file', () => {
     writePackageType('commonjs');
     writeFileSync(
-      `${temporaryDirectory}/config.ts`,
+      `${temporaryDirectory()}/config.ts`,
       cjsConfig('{ preset: lite }')
     );
     writeFileSync(
-      `${temporaryDirectory}/config.mts`,
+      `${temporaryDirectory()}/config.mts`,
       esmConfig('{ preset: lite }')
     );
     for (const extension of ['ts', 'mts']) {
@@ -157,7 +153,7 @@ describe('cssnano config loading', () => {
   });
 
   test('skips a directory named like the discovered configuration file', () => {
-    mkdirSync(`${temporaryDirectory}/cssnano.config.js`);
+    mkdirSync(`${temporaryDirectory()}/cssnano.config.js`);
     assert.strictEqual(
       postcss([cssnano()]).plugins.length,
       defaultPreset().length
@@ -165,14 +161,14 @@ describe('cssnano config loading', () => {
   });
 
   test('throws for a JSON configFile, because a JSON file cannot import a preset', () => {
-    writeFileSync(`${temporaryDirectory}/config.json`, '{"preset":"lite"}');
+    writeFileSync(`${temporaryDirectory()}/config.json`, '{"preset":"lite"}');
     assert.throws(() => cssnano({ configFile: 'config.json' }), {
       message: /^config\.json: JSON configuration files are not supported/v,
     });
   });
 
   test('throws for a JSON configFile whose extension is upper case, too', () => {
-    writeFileSync(`${temporaryDirectory}/config.JSON`, '{}');
+    writeFileSync(`${temporaryDirectory()}/config.JSON`, '{}');
     assert.throws(() => cssnano({ configFile: 'config.JSON' }), {
       message: /^config\.JSON: JSON configuration files are not supported/v,
     });
@@ -181,11 +177,11 @@ describe('cssnano config loading', () => {
   test('configFile accepts relative and absolute paths', () => {
     writePackageType('commonjs');
     writeFileSync(
-      `${temporaryDirectory}/custom-config.js`,
+      `${temporaryDirectory()}/custom-config.js`,
       cjsConfig('{ preset: lite }')
     );
     writeFileSync(
-      `${temporaryDirectory}/custom-config`,
+      `${temporaryDirectory()}/custom-config`,
       cjsConfig('{ preset: lite }')
     );
     assert.strictEqual(
@@ -198,7 +194,7 @@ describe('cssnano config loading', () => {
     );
     assert.strictEqual(
       postcss([
-        cssnano({ configFile: `${temporaryDirectory}/custom-config.js` }),
+        cssnano({ configFile: `${temporaryDirectory()}/custom-config.js` }),
       ]).plugins.length,
       litePreset().length
     );
@@ -207,11 +203,11 @@ describe('cssnano config loading', () => {
   test('resolves dependencies of JavaScript configuration files locally', () => {
     writePackageType('commonjs');
     writeFileSync(
-      `${temporaryDirectory}/local-options.js`,
+      `${temporaryDirectory()}/local-options.js`,
       'module.exports = { disable: ["discardComments"] };'
     );
     writeFileSync(
-      `${temporaryDirectory}/cssnano.config.js`,
+      `${temporaryDirectory()}/cssnano.config.js`,
       `const options = require("./local-options.js");\nmodule.exports = { ...options, preset: require(${presetRequire('lite')}) };`
     );
     assert.strictEqual(
@@ -221,7 +217,7 @@ describe('cssnano config loading', () => {
   });
 
   test('an inline preset bypasses the discovered configuration file without reading it', async () => {
-    writeFileSync(`${temporaryDirectory}/cssnano.config.js`, '{ preset: ');
+    writeFileSync(`${temporaryDirectory()}/cssnano.config.js`, '{ preset: ');
     const result = await postcss([cssnano({ preset: litePreset })]).process(
       'h1{color:#ffffff}',
       { from: undefined }
@@ -231,7 +227,7 @@ describe('cssnano config loading', () => {
 
   test('throws for a configuration file that names a preset by a string, which is not a preset function', () => {
     writeFileSync(
-      `${temporaryDirectory}/cssnano.config.js`,
+      `${temporaryDirectory()}/cssnano.config.js`,
       'export default { preset: "lite" };'
     );
     assert.throws(() => cssnano(), {
@@ -242,7 +238,7 @@ describe('cssnano config loading', () => {
 
   test('throws for a preset array in a configuration file', () => {
     writeFileSync(
-      `${temporaryDirectory}/cssnano.config.js`,
+      `${temporaryDirectory()}/cssnano.config.js`,
       'export default { preset: ["lite", { colormin: false }] };'
     );
     assert.throws(() => cssnano(), {
@@ -253,7 +249,7 @@ describe('cssnano config loading', () => {
 
   test('throws for plugins inside a configuration file, so a plugin the user added is not dropped', () => {
     writeFileSync(
-      `${temporaryDirectory}/cssnano.config.js`,
+      `${temporaryDirectory()}/cssnano.config.js`,
       esmConfig('{ preset: lite, plugins: [] }')
     );
     assert.throws(
@@ -264,7 +260,7 @@ describe('cssnano config loading', () => {
 
   test('throws for configFile inside a configuration file, which is not an option of a file', () => {
     writeFileSync(
-      `${temporaryDirectory}/cssnano.config.js`,
+      `${temporaryDirectory()}/cssnano.config.js`,
       esmConfig('{ configFile: "other.js", preset: lite }')
     );
     assert.throws(() => cssnano(), {
@@ -275,7 +271,7 @@ describe('cssnano config loading', () => {
 
   test('throws for an empty configFile, because a non-empty name is the only valid value', () => {
     writeFileSync(
-      `${temporaryDirectory}/cssnano.config.js`,
+      `${temporaryDirectory()}/cssnano.config.js`,
       esmConfig('{ preset: lite }')
     );
     assert.throws(() => cssnano({ configFile: '' }), {
@@ -297,7 +293,7 @@ describe('cssnano config loading', () => {
 
   test('throws when preset and configFile are both given', () => {
     writeFileSync(
-      `${temporaryDirectory}/custom.js`,
+      `${temporaryDirectory()}/custom.js`,
       esmConfig('{ preset: lite }')
     );
     assert.throws(
@@ -308,7 +304,7 @@ describe('cssnano config loading', () => {
 
   test('throws for a configuration file whose export is not an object', () => {
     writeFileSync(
-      `${temporaryDirectory}/cssnano.config.js`,
+      `${temporaryDirectory()}/cssnano.config.js`,
       'export default "lite";'
     );
     assert.throws(() => cssnano(), {
@@ -318,7 +314,7 @@ describe('cssnano config loading', () => {
 
   test('a configuration file with only browserslist and no preset runs the default preset with those targets', async () => {
     writeFileSync(
-      `${temporaryDirectory}/cssnano.config.js`,
+      `${temporaryDirectory()}/cssnano.config.js`,
       'export default { browserslist: { query: "defaults" } };'
     );
     const result = await postcss([cssnano()]).process('h1{color:#ffffff}', {
@@ -332,7 +328,7 @@ describe('cssnano config loading', () => {
 
   test('names the file when its disable names a plugin that the default preset does not run, and it has no preset', () => {
     writeFileSync(
-      `${temporaryDirectory}/cssnano.config.js`,
+      `${temporaryDirectory()}/cssnano.config.js`,
       'export default { disable: ["zindex"] };'
     );
     assert.throws(() => cssnano(), {
@@ -343,7 +339,7 @@ describe('cssnano config loading', () => {
 
   test('throws for an ES module configuration without a default export, which the docs require', () => {
     writeFileSync(
-      `${temporaryDirectory}/cssnano.config.js`,
+      `${temporaryDirectory()}/cssnano.config.js`,
       'export const options = { browserslist: { query: "defaults" } };'
     );
     assert.throws(() => cssnano(), {
@@ -354,7 +350,7 @@ describe('cssnano config loading', () => {
 
   test('throws for an unknown key in a configuration file, and names the file', () => {
     writeFileSync(
-      `${temporaryDirectory}/cssnano.config.js`,
+      `${temporaryDirectory()}/cssnano.config.js`,
       esmConfig('{ presett: "lite", preset: lite }')
     );
     assert.throws(() => cssnano(), {
@@ -364,7 +360,7 @@ describe('cssnano config loading', () => {
   });
 
   test('names the file when it throws a value that is not an Error', () => {
-    writeFileSync(`${temporaryDirectory}/cssnano.config.js`, 'throw "stop";');
+    writeFileSync(`${temporaryDirectory()}/cssnano.config.js`, 'throw "stop";');
     assert.throws(() => cssnano(), {
       message: 'cssnano.config.js: stop',
     });
@@ -372,11 +368,11 @@ describe('cssnano config loading', () => {
 
   test('a configuration file can import a local module and export its options', async () => {
     writeFileSync(
-      `${temporaryDirectory}/local-options.mjs`,
+      `${temporaryDirectory()}/local-options.mjs`,
       `import lite from ${presetImport('lite')};\nexport default { preset: lite, disable: ['discardComments'] };\n`
     );
     writeFileSync(
-      `${temporaryDirectory}/local-config.mjs`,
+      `${temporaryDirectory()}/local-config.mjs`,
       `import options from './local-options.mjs';\nexport default options;\n`
     );
     const result = await postcss([

@@ -3,16 +3,14 @@ import { SelectorIds } from '../../../src/ir/selectorIds.js';
 import { childEntriesOf } from '../../../src/ir/blockChildren.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import postcss from 'postcss';
-import { createRunContext } from '../../../src/run/runContext.js';
-import MergeState from '../../../src/merge/rules/mergeState.js';
+/** @import MergeState from '../../../src/merge/rules/mergeState.js' */
 import { writeBack } from '../../../src/ir/tree/writeBack.js';
 import {
   nodesOf,
   blockRecordOf,
   ruleRecordOf,
-  buildTestRecords,
   placeUnlinked,
+  recordsOf,
 } from './liveRecords.js';
 import { remove, takePlaceOf } from '../../../src/ir/treeEdits.js';
 import { adopt, moveRule, substitute } from '../../../src/ir/arenaEdits.js';
@@ -29,10 +27,7 @@ const tokenLists = new TokenLists();
  * @return {{root: Root, state: MergeState}}
  */
 function setup(css) {
-  const root = postcss.parse(css);
-  const context = createRunContext(true);
-  const state = new MergeState(['chrome 120'], context);
-  state.records = buildTestRecords(root, state, true);
+  const { root, state } = recordsOf(css, true);
   return { root, state };
 }
 

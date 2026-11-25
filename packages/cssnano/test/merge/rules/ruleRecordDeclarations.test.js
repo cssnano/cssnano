@@ -4,15 +4,13 @@ import { SelectorIds } from '../../../src/ir/selectorIds.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import MergeState from '../../../src/merge/rules/mergeState.js';
-import { createRunContext } from '../../../src/run/runContext.js';
 import {
-  buildTestRecords,
   claimAt,
   declarationIds,
   ruleRecordOf,
   placeUnlinked,
   nodeOfEntry,
+  recordsOf,
 } from './liveRecords.js';
 import {
   appendChild,
@@ -43,13 +41,7 @@ const tokenLists = new TokenLists();
  * @return {{records: BlockRecords, rule: import('postcss').Rule, record: RuleRecord}}
  */
 const arenaOf = (css, consistencyChecks = false) => {
-  const root = postcss.parse(css);
-  const state = new MergeState(
-    ['chrome 120'],
-    createRunContext(consistencyChecks)
-  );
-  state.records = buildTestRecords(root, state, consistencyChecks);
-  const { records } = state;
+  const { root, state, records } = recordsOf(css, consistencyChecks);
   return {
     state,
     records,

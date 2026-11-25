@@ -42,11 +42,6 @@ const { longstandingFeatures } =
 const { discardOverriddenInList } =
   await import('../../src/merge/longhand/decl/overriddenDeclarations.js');
 
-/** @returns {number} tokenize calls made so far */
-function tokenizeTotal() {
-  return [...counter.calls.values()].reduce((sum, n) => sum + n, 0);
-}
-
 const helpers = { result: { warn() {}, messages: [] } };
 
 /**
@@ -79,10 +74,10 @@ suite(
       const { records, context } = recordsAfterWalk(root, [stage]);
       const atRule = records.links.firstChild(records.root.index);
       assert.equal(records.entry(atRule).marked, false);
-      const before = tokenizeTotal();
+      const before = counter.totalCalls();
       const list = context.tokenLists.get(records.entry(atRule).preludeId);
       assert.equal(list.length, 7);
-      assert.equal(tokenizeTotal() - before, 0);
+      assert.equal(counter.totalCalls() - before, 0);
     });
 
     test('a prelude that a stage edits is written as tokens that spell its text', () => {
@@ -95,9 +90,9 @@ suite(
       const { records, context } = recordsAfterWalk(root, [stage]);
       const atRule = records.links.firstChild(records.root.index);
       assert.equal(records.entry(atRule).marked, true);
-      const before = tokenizeTotal();
+      const before = counter.totalCalls();
       const list = context.tokenLists.get(records.entry(atRule).preludeId);
-      assert.equal(tokenizeTotal() - before, 0);
+      assert.equal(counter.totalCalls() - before, 0);
       assert.equal(list.map((token) => token[1]).join(''), 'z and (x)');
     });
   }
@@ -148,9 +143,9 @@ suite('the record walk reads the value lists the build interned', () => {
     const { declarations, context } = declarationsAfterWalk(root, [stage]);
     const [decl] = declarations;
     assert.equal(tokensText(context.tokenLists.get(decl.valueList)), '1 1px');
-    const before = tokenizeTotal();
+    const before = counter.totalCalls();
     assert.equal(context.tokenLists.get(decl.valueList).length, 3);
-    assert.equal(tokenizeTotal() - before, 0);
+    assert.equal(counter.totalCalls() - before, 0);
   });
 
   test('two declarations of one property in one context that spell one value share one list', () => {
@@ -180,13 +175,13 @@ suite('the record walk shares one token list per value text', () => {
     const stage = {
       forProperty: () => (buffer) => buffer.tokens(),
     };
-    const before = tokenizeTotal();
+    const before = counter.totalCalls();
     walkDown(
       records,
       context,
       declarationPlansOf([stage], false, commentStateOf([stage]))
     );
-    assert.equal(tokenizeTotal() - before, 0);
+    assert.equal(counter.totalCalls() - before, 0);
   });
 
   test('a unicode-range value does not take a list read in the default mode', () => {
@@ -265,14 +260,14 @@ suite('the at-rule reducers write tokens that spell their text', () => {
 function afterWalk(root, plan) {
   const context = createRunContext(undefined);
   const state = runDriver.build(root, context);
-  const before = tokenizeTotal();
+  const before = counter.totalCalls();
   walkUp(state, plan);
   runDriver.end(state, {
     browsers: [],
     folded: false,
     result: helpers.result,
   });
-  return tokenizeTotal() - before;
+  return counter.totalCalls() - before;
 }
 
 suite('the after-merge walk reads the selector lists the build made', () => {
@@ -300,9 +295,9 @@ suite('the merge longhand readers read the text their writers wrote', () => {
     const root = postcss.parse('a { gap: 1px 1px; gap: 2px }');
     const block = readBlock(root.first, createRunContext());
     foldShorthandDeclaration(block.list, 0, 'gap');
-    const before = tokenizeTotal();
+    const before = counter.totalCalls();
     discardOverriddenInList(block.list, block.list.chain, longstandingFeatures);
-    assert.equal(tokenizeTotal() - before, 0);
+    assert.equal(counter.totalCalls() - before, 0);
   });
 
   test("minifyShorthand's edited tokens spell text()", () => {
@@ -317,9 +312,9 @@ suite('the merge longhand readers read the text their writers wrote', () => {
     const root = postcss.parse('a { gap: 1px 1px }');
     const block = readBlock(root.first, createRunContext());
     foldShorthandDeclaration(block.list, 0, 'gap');
-    const before = tokenizeTotal();
+    const before = counter.totalCalls();
     foldShorthandDeclaration(block.list, 0, 'gap');
-    assert.equal(tokenizeTotal() - before, 0);
+    assert.equal(counter.totalCalls() - before, 0);
   });
 });
 

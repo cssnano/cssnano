@@ -1,17 +1,15 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import postcss from 'postcss';
-import { createRunContext } from '../../../src/run/runContext.js';
 import { DeclarationRecord } from '../../../src/ir/declarationRecord.js';
 import { declarationsOf } from '../../../src/ir/blockChildren.js';
 import { writeBack } from '../../../src/ir/tree/writeBack.js';
-import MergeState from '../../../src/merge/rules/mergeState.js';
+/** @import MergeState from '../../../src/merge/rules/mergeState.js' */
 import {
   blockRecordOf,
-  buildTestRecords,
   nodesOf,
   ruleRecordOf,
   tokenListsOf,
+  recordsOf,
 } from '../../merge/rules/liveRecords.js';
 
 /** @import {Container, Root} from 'postcss' */
@@ -23,10 +21,7 @@ import {
  * @return {{root: Root, state: MergeState, records: BlockRecords}}
  */
 function setup(css) {
-  const root = postcss.parse(css);
-  const context = createRunContext(true);
-  const state = new MergeState(['chrome 120'], context);
-  state.records = buildTestRecords(root, state, true);
+  const { root, state } = recordsOf(css, true);
   return { root, state, records: state.records };
 }
 

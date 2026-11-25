@@ -1,18 +1,17 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
+import { random } from '../../../../../util/fuzzRng.js';
 // The counter must hook the tokenizer before any module below loads it.
-const { counter } = await import('../../../../../util/countTokenize.js');
-const { createRunContext } = await import('../../../src/run/runContext.js');
+const { tokenizedBy } = await import('../../../../../util/countTokenize.js');
 const { declarationKeys } = await import('../../../src/ir/declarationCache.js');
 const { declarationsOf } = await import('../../../src/ir/blockChildren.js');
 const { commitDeclarations } = await import('../../../src/ir/arenaEdits.js');
 const { declarationsFromRecords } =
   await import('../../../src/merge/longhand/recordDeclarations.js');
 const { writeBack } = await import('../../../src/ir/tree/writeBack.js');
-const { default: MergeState } =
-  await import('../../../src/merge/rules/mergeState.js');
-const { buildTestRecords, nodesOf, ruleRecordOf, tokenListsOf } =
+/** @import MergeState from '../../../src/merge/rules/mergeState.js' */
+const { nodesOf, recordsOf, ruleRecordOf, tokenListsOf } =
   await import('./liveRecords.js');
 
 /** @import {Container, Root} from 'postcss' */
@@ -27,10 +26,7 @@ const { buildTestRecords, nodesOf, ruleRecordOf, tokenListsOf } =
  * @return {{root: Root, state: MergeState, records: BlockRecords}}
  */
 function setup(css, checks = true) {
-  const root = postcss.parse(css);
-  const context = createRunContext(checks);
-  const state = new MergeState(['chrome 120'], context);
-  state.records = buildTestRecords(root, state, checks);
+  const { root, state } = recordsOf(css, checks);
   return { root, state, records: state.records };
 }
 
@@ -74,27 +70,6 @@ function editAndWrite({ root, state, records }, container, edit) {
   commitDeclarations(records, state.runContext, container, list);
   writeBack(records, nodesOf(records), tokenListsOf(records));
   return String(root);
-}
-
-/**
- * Runs `commit` and returns the text of each tokenize call it made.
- *
- * @param {() => void} commit
- * @return {string[]}
- */
-function tokenizedBy(commit) {
-  const texts = [];
-  const record = counter.record;
-  counter.record = (input) => {
-    texts.push(input.css);
-    record.call(counter, input);
-  };
-  try {
-    commit();
-  } finally {
-    counter.record = record;
-  }
-  return texts;
 }
 
 test('a rewrite of the value keeps the keys of the property', () => {
@@ -312,25 +287,12 @@ test('a commit of a block with no edit prints the input, comments included', () 
 const source = 'a{a:0;b:1; c:2;&{x:y}d:3;/* e */f:4;@media print{g:5}h:6}';
 
 /**
- * Park–Miller minimal standard generator; every product stays below 2^53.
- *
- * @param {number} seed
- * @return {(bound: number) => number} an integer in [0, bound)
- */
-function createRandom(seed) {
-  let state = seed;
-  return (bound) => {
-    state = (state * 48271) % 2147483647;
-    return state % bound;
-  };
-}
-
-/**
  * @param {number} seed
  * @return {[string, string]} the committed and the PostCSS serializations
  */
 function runEditSequence(seed) {
-  const random = createRandom(seed);
+  // The first draw of a small seed is near 0, so the seed is spread first.
+  const rng = random(seed * 7919 + 1);
   const expected = postcss.parse(source);
   const expectedRule = /** @type {import('postcss').Rule} */ (expected.first);
   const actualSetup = setup(source);
@@ -346,9 +308,9 @@ function runEditSequence(seed) {
     attached.push([declarations[position], position]);
   }
   for (let step = 0; step < 12 && attached.length > 0; step++) {
-    const index = random(attached.length);
+    const index = rng.int(attached.length);
     const [expectedNode, position] = attached[index];
-    if (random(2) === 0) {
+    if (rng.chance(0.5)) {
       expectedNode.remove();
       list.remove(position);
       attached.splice(index, 1);
