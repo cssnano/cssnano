@@ -208,4 +208,31 @@ suite('fold that fires', () => {
       modernBl
     )
   );
+
+  test(
+    'fold: a folded :is() shares a prefix with an identical parsed :is()',
+    processCSS(
+      '.x .a .y,.x .b .y,.x :is(.a,.b) .z{color:red}',
+      '.x :is(.a,.b) :is(.y,.z){color:red}',
+      modernBl
+    )
+  );
+
+  test(
+    'fold: a folded :is() shares a suffix with an identical parsed :is()',
+    processCSS(
+      '.y .a .x,.y .b .x,.z :is(.a,.b) .x{color:red}',
+      ':is(.y,.z) :is(.a,.b) .x{color:red}',
+      modernBl
+    )
+  );
+
+  test(
+    'fold: a parsed :is(.b,.a) does not share a prefix with a folded :is(.a,.b) because its arguments are not sorted',
+    processCSS(
+      '.x .a .y,.x .b .y,.x :is(.b,.a) .z{color:red}',
+      '.x :is(.a,.b) .y,.x :is(.b,.a) .z{color:red}',
+      modernBl
+    )
+  );
 });

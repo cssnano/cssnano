@@ -1,14 +1,25 @@
 export type SelectorArena = import('./arena.js').SelectorArena;
 export type Specificity = import('./arena.js').Specificity;
 export type Normalized = import('./normalizeOutput.js').Normalized;
+export type Part = import('./normalizeOutput.js').Part;
+export type OutputPool = import('./normalizePool.js').OutputPool;
 /** @typedef {import('./arena.js').SelectorArena} SelectorArena */
 /** @typedef {import('./arena.js').Specificity} Specificity */
 /** @typedef {import('./normalizeOutput.js').Normalized} Normalized */
+/** @typedef {import('./normalizeOutput.js').Part} Part */
+/** @typedef {import('./normalizePool.js').OutputPool} OutputPool */
 /** @param {{pairs:Map<number,Map<number,number>>,next:number}} state @param {number} left @param {number} right */
 export declare function consId(state: {
     pairs: Map<number, Map<number, number>>;
     next: number;
 }, left: number, right: number): number;
+/**
+ * The key a part contributes to a fold's prefix and suffix. A folded `:is()`
+ * and a parsed `:is()` with the same spelling share a key. Other parts keep
+ * their identity, so only `:is()` parts serialize their text.
+ * @param {SelectorArena} arena @param {OutputPool} pool @param {Part} part
+ */
+export declare function foldPartKey(arena: SelectorArena, pool: OutputPool, part: Part): number;
 export type FoldOccurrence = {
     selector: ActiveSelector;
     position: number;
