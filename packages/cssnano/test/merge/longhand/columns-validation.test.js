@@ -292,3 +292,36 @@ describe('columns order-independent validation and merging', () => {
     passthroughCSS('a{columns:initial}')
   );
 });
+
+test(
+  'keeps column longhands before a columns value with two math widths, because browsers ignore it',
+  passthroughCSS(
+    'a{column-width:10px;column-count:2;columns:calc(1px) calc(2px)}'
+  )
+);
+
+test(
+  'keeps column longhands before a columns value with two math counts, because browsers ignore it',
+  passthroughCSS('a{column-width:10px;column-count:2;columns:calc(2) 3}')
+);
+
+test(
+  'merges column longhands before a columns value whose calc() is a width and whose other term is a count',
+  processCSS(
+    'a{column-width:10px;column-count:2;columns:calc(1px) 3}',
+    'a{columns:10px 2;columns:calc(1px) 3}'
+  )
+);
+
+test(
+  'keeps the merge of column longhands before a two-term var() columns value, because a substitution is typed at computed-value time',
+  processCSS(
+    'a{column-width:10px;column-count:2;columns:var(--x) var(--y)}',
+    'a{columns:10px 2;columns:var(--x) var(--y)}'
+  )
+);
+
+test(
+  'keeps columns whose width is a calc() beside var(), because the pair is two terms and not one length',
+  passthroughCSS('a{columns:calc(1px) var(--x) 2}')
+);

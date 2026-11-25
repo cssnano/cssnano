@@ -2,7 +2,7 @@ import cssnanoUtils from '#utils';
 import { hasHack } from '#stylehacks';
 import { shorthand, initialValues, cssWideKeywords } from '../../../ir/spec.js';
 import { isLengthValue } from '../lengthGrammar.js';
-import { isFunctionOfType } from '../mathType.js';
+import { isFunctionOfType, mathType } from '../mathType.js';
 import { closingTokens } from '../valueComponents.js';
 
 /** @import {DeclarationItem} from '../blockDeclarations.js'; */
@@ -259,6 +259,24 @@ const isKeywordOrUnresolved = (v, types) =>
   v === auto || cssWideKeywords.has(v) || isUnresolvedText(v, types);
 
 /**
+ * The role of a function component in a two-term value: a substitution stays
+ * unresolved, and a math function takes the type it computes. Any other type
+ * makes the value invalid.
+ *
+ * @param {string} text
+ * @return {'width' | 'count' | 'unresolved' | undefined}
+ */
+function functionRole(text) {
+  if (!isUnresolvedText(text, eitherTypes)) return undefined;
+  const spelled = cssnanoUtils.tokens(text);
+  if (isFunctionOfType(spelled, 0, spelled.length, [])) return 'unresolved';
+  const type = mathType(spelled, 0, spelled.length);
+  if (type === 'length') return 'width';
+  if (type === 'number') return 'count';
+  return undefined;
+}
+
+/**
  * @param {DeclarationItem} d
  * @return {boolean}
  */
@@ -286,12 +304,10 @@ export function isValidColumns(d) {
       } else {
         const val = asciiLowerCase(parsed.value.slice(term.start, term.end));
         // CSS-wide keywords cannot combine with other tokens (CSS Cascading 4
-        // § 7.2); only unresolved functions keep a two-term value valid.
-        if (isUnresolvedText(val, eitherTypes)) {
-          pairRoles.push('unresolved');
-        } else {
-          return false;
-        }
+        // § 7.2); only functions keep a two-term value valid.
+        const fnRole = functionRole(val);
+        if (fnRole === undefined) return false;
+        pairRoles.push(fnRole);
       }
     }
     if (pairRoles[0] === 'width' && pairRoles[1] === 'width') return false;
