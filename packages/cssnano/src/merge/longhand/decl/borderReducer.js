@@ -90,6 +90,11 @@ function normalizeBorderSingleton(list, position) {
 }
 
 /**
+ * An author rarely writes a fallback for ubiquitous syntax such as `rgba()`
+ * under another property, so only merge-blocking support makes one there.
+ * A shorthand the plugin created stands for the author's own longhands,
+ * which may have had a same-property fallback.
+ *
  * @param {BlockDeclarations} list
  * @param {number} prev
  * @param {number} d
@@ -99,7 +104,10 @@ function normalizeBorderSingleton(list, position) {
 function isDeclarationFallback(list, prev, d, features) {
   const earlier = list.at(prev);
   const later = list.at(d);
-  if (asciiLowerCase(earlier.prop) === asciiLowerCase(later.prop)) {
+  if (
+    later.inheritedSupport !== null ||
+    asciiLowerCase(earlier.prop) === asciiLowerCase(later.prop)
+  ) {
     return isFallback(earlier, later, features);
   }
   return (
