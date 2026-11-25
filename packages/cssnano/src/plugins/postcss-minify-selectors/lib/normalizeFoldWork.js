@@ -197,10 +197,10 @@ function canFoldSelectorList(selectors, arena) {
   return false;
 }
 
-/** @param {ActiveSelector[]} consumed @param {Set<FoldGroup>} touched @param {ActiveSelector | undefined} head @return {ActiveSelector | undefined} */
-function deactivateSelectors(consumed, touched, head) {
+/** @param {FoldOccurrence[]} occurrences @param {Set<FoldGroup>} touched @param {ActiveSelector | undefined} head @return {ActiveSelector | undefined} */
+function deactivateSelectors(occurrences, touched, head) {
   let nextHead = head;
-  for (const selector of consumed) {
+  for (const { selector } of occurrences) {
     if (!selector.active) continue;
     selector.active = false;
     for (const occurrence of selector.memberships) {
@@ -246,16 +246,13 @@ export function foldSelectors(arena, pool, selectors, sort) {
 
   while (heap.values.length > 0) {
     const candidate = heap.pop();
-    if (!candidate || candidate.version !== candidate.group.version) continue;
-    const current = foldCandidate(candidate.group);
-    if (!current) continue;
-    const occurrences = activeOccurrences(current.group);
-    const consumed = occurrences.map(({ selector }) => selector);
-    if (consumed.length < 2) continue;
-    const first = current.first.selector;
+    if (candidate.version !== candidate.group.version) continue;
+    const occurrences = activeOccurrences(candidate.group);
+    if (occurrences.length < 2) continue;
+    const first = candidate.first.selector;
     const replacement = buildFoldedSelector(
       pool,
-      current,
+      candidate,
       occurrences,
       first.order,
       sort
@@ -271,7 +268,7 @@ export function foldSelectors(arena, pool, selectors, sort) {
     first.previous = replacement;
 
     touched.clear();
-    head = deactivateSelectors(consumed, touched, head);
+    head = deactivateSelectors(occurrences, touched, head);
     registerSelector(replacement, arena, pool, cons, groups, sequence, touched);
     enqueueGroups(heap, touched);
   }

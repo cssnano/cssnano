@@ -65,11 +65,10 @@ export declare function occurrenceText(left: FoldOccurrence, right: FoldOccurren
 export declare function foldCandidate(group: FoldGroup): FoldCandidate | undefined;
 export declare class CandidateHeap {
     /** @type {FoldCandidate[]} */ values: FoldCandidate[];
-    sort: boolean;
+    /** @type {(left:FoldCandidate,right:FoldCandidate)=>boolean} */
+    before: (left: FoldCandidate, right: FoldCandidate) => boolean;
     /** @param {boolean} sort */
     constructor(sort: boolean);
-    /** @param {FoldCandidate} left @param {FoldCandidate} right */
-    before(left: FoldCandidate, right: FoldCandidate): boolean;
     /** @param {FoldCandidate} value */
     push(value: FoldCandidate): void;
     pop(): FoldCandidate;

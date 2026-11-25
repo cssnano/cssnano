@@ -180,25 +180,19 @@ export class CandidateHeap {
   /** @param {boolean} sort */
   constructor(sort) {
     /** @type {FoldCandidate[]} */ this.values = [];
-    this.sort = sort;
-  }
-
-  /** @param {FoldCandidate} left @param {FoldCandidate} right */
-  before(left, right) {
-    return foldCandidateBefore(this.sort, left, right);
+    /** @type {(left:FoldCandidate,right:FoldCandidate)=>boolean} */
+    this.before = (left, right) => foldCandidateBefore(sort, left, right);
   }
 
   /** @param {FoldCandidate} value */
   push(value) {
     this.values.push(value);
-    siftUp(this.values, this.values.length - 1, (left, right) =>
-      this.before(left, right)
-    );
+    siftUp(this.values, this.values.length - 1, this.before);
   }
 
   pop() {
     const root = this.values[0];
-    siftDown(this.values, (left, right) => this.before(left, right));
+    siftDown(this.values, this.before);
     return root;
   }
 }
