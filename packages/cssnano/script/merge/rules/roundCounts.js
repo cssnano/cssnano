@@ -14,6 +14,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { basename } from 'node:path';
 import { Session } from 'node:inspector/promises';
 import postcss from 'postcss';
+import { callCount } from '../../../../../util/coverageCounts.js';
 import { testTargets } from '../../../../../util/testHelpers.js';
 
 /** The function whose calls each count reads, by the module that defines it. */
@@ -35,15 +36,11 @@ const COUNTED = /** @type {const} */ ({
 function countsOf(coverage) {
   const counts = /** @type {Record<CountName, number>} */ ({});
   for (const [name, [module, functionName]] of Object.entries(COUNTED)) {
-    let calls = 0;
-    for (const script of coverage) {
-      if (!script.url.endsWith(module)) continue;
-      for (const fn of script.functions) {
-        // A function's first range spans its body, and its count is the calls.
-        if (fn.functionName === functionName) calls += fn.ranges[0].count;
-      }
-    }
-    counts[/** @type {CountName} */ (name)] = calls;
+    counts[/** @type {CountName} */ (name)] = callCount(
+      coverage,
+      module,
+      functionName
+    );
   }
   return counts;
 }

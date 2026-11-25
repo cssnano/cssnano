@@ -16,17 +16,29 @@ const bugs = JSON.parse(
 );
 const bugKeys = Object.keys(bugs);
 
+/**
+ * Random target sets with a non-empty subset of each. A round whose subset
+ * comes out empty is skipped, not redrawn, so each seed keeps its sequence.
+ *
+ * @param {number} seed
+ * @return {Generator<{ superset: string[], subset: string[] }>}
+ */
+function* targetSets(seed) {
+  const rng = random(seed);
+  for (let round = 0; round < 1000; round += 1) {
+    const size = 1 + rng.int(12);
+    const superset = [];
+    for (let index = 0; index < size; index += 1) {
+      superset.push(rng.pick(known));
+    }
+    const subset = superset.filter(() => rng.chance(0.5));
+    if (subset.length > 0) yield { superset, subset };
+  }
+}
+
 describe('target sets are monotonic', () => {
   test('a feature supported by every target of B is supported by every non-empty subset A', () => {
-    const rng = random(20260515);
-    for (let round = 0; round < 1000; round += 1) {
-      const size = 1 + rng.int(12);
-      const superset = [];
-      for (let index = 0; index < size; index += 1) {
-        superset.push(rng.pick(known));
-      }
-      const subset = superset.filter(() => rng.chance(0.5));
-      if (subset.length === 0) continue;
+    for (const { superset, subset } of targetSets(20260515)) {
       for (const feature of featureKeys) {
         if (supportsAll(superset, feature)) {
           assert.ok(
@@ -39,15 +51,7 @@ describe('target sets are monotonic', () => {
   });
 
   test('a bug that affects a non-empty subset A also affects its superset B', () => {
-    const rng = random(20260516);
-    for (let round = 0; round < 1000; round += 1) {
-      const size = 1 + rng.int(12);
-      const superset = [];
-      for (let index = 0; index < size; index += 1) {
-        superset.push(rng.pick(known));
-      }
-      const subset = superset.filter(() => rng.chance(0.5));
-      if (subset.length === 0) continue;
+    for (const { superset, subset } of targetSets(20260516)) {
       for (const bug of bugKeys) {
         if (anyAffected(subset, bug)) {
           assert.ok(

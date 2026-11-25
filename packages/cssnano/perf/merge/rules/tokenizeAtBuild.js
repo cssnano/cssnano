@@ -13,6 +13,7 @@ import { buildRecords } from '../../../src/ir/tree/buildRecords.js';
 import { createRunContext } from '../../../src/run/runContext.js';
 import { TokenLists } from '../../../src/ir/tokenLists.js';
 import { tokenizeMode } from '../../../src/values/tokenizeMode.js';
+import { callCount } from '../../../../../util/coverageCounts.js';
 import { testTargets } from '../../../../../util/testHelpers.js';
 
 const session = new Session();
@@ -104,13 +105,8 @@ function distinctValuesOf(root) {
  */
 function analysisCalls(coverage) {
   let calls = 0;
-  for (const script of coverage) {
-    for (const [module, functionName] of ANALYSES) {
-      if (!script.url.endsWith(module)) continue;
-      for (const fn of script.functions) {
-        if (fn.functionName === functionName) calls += fn.ranges[0].count;
-      }
-    }
+  for (const [module, functionName] of ANALYSES) {
+    calls += callCount(coverage, module, functionName);
   }
   return calls;
 }

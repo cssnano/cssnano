@@ -9,6 +9,7 @@ import { Session } from 'node:inspector/promises';
 import postcss from 'postcss';
 import { onlyTransform } from '../../../test/merge/onlyTransform.js';
 import MergeState from '../../../src/merge/rules/mergeState.js';
+import { callCount } from '../../../../../util/coverageCounts.js';
 
 const plugin = onlyTransform(['mergeRules']);
 const POOL = 4;
@@ -32,18 +33,12 @@ await session.post('Profiler.startPreciseCoverage', {
 after(() => session.disconnect());
 
 /**
- * @param {object[]} scripts the precise coverage of a run
+ * @param {import('node:inspector').Profiler.ScriptCoverage[]} scripts the
+ * precise coverage of a run
  * @return {number} the calls of the parser's entry point
  */
 function parserCalls(scripts) {
-  let calls = 0;
-  for (const script of scripts) {
-    if (!script.url.endsWith('/lib/isInvalidSelector.js')) continue;
-    for (const fn of script.functions) {
-      if (fn.functionName === 'isInvalidSelector') calls += fn.ranges[0].count;
-    }
-  }
-  return calls;
+  return callCount(scripts, '/lib/isInvalidSelector.js', 'isInvalidSelector');
 }
 
 /**
