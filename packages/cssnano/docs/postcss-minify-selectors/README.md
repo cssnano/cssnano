@@ -58,8 +58,8 @@ section h1, article h1, aside h1, nav h1 { font-size: 25px }
 ### Browserslist
 
 The plugin reads the `browserslist` configuration from the host project by
-default, and targets `baseline widely available with downstream` when the
-project has none. The cssnano `browserslist` options `query`, `stats` and `env`
+default. When the project has none, it targets Baseline widely available on
+the release date, with downstream browsers. The cssnano `browserslist` options `query`, `stats` and `env`
 override it for every plugin at once, and the PostCSS `from` option sets where
 the project config is looked up.
 

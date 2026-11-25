@@ -12,6 +12,7 @@ import postcss from 'postcss';
 import { launchChromium } from './chromium.js';
 import { syntheticCorpus } from './valueValidityCorpus.js';
 import { oneStagePlugin, withTargets } from './testHelpers.js';
+import { defaultTargetsQuery } from '../packages/cssnano/src/utils/browserTargets.js';
 
 /**
  * @typedef {object} ValueChange
@@ -74,7 +75,7 @@ export function invalidBecameValid(changes, supports) {
 
 // The repository's own browserslist config targets IE 11, which switches off
 // the stages that need modern browsers, so the gate pins its targets.
-const modernTargets = withTargets('baseline widely available with downstream');
+const modernTargets = withTargets(defaultTargetsQuery);
 
 /**
  * @param {string} stage the plugin directory name of a value stage

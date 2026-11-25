@@ -113,7 +113,8 @@ module.exports = {
 - `browserslist.stats` is a usage data file path or object, for queries such as `> 1% in my stats`.
 
 Without a `query`, cssnano reads the browserslist config that PostCSS's `from`
-option points to, and otherwise uses the Baseline widely available targets. A
+option points to, and otherwise uses the browsers that support every feature
+Baseline widely available on the release date. A
 plugin cannot have its own targets, so a target option set in `options`, such as
 `overrideBrowserslist`, throws, because ignoring it would widen the targets.
 
