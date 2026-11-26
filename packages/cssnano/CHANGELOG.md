@@ -1,5 +1,343 @@
 # Change Log
 
+## 10.0.0
+
+### Major Changes
+
+- feat(cssnano)!: cssnano no longer reads `env` and `stats` from the PostCSS process options
+
+  When no preset sets them, the browser targets took `env` and `stats` from the options of the PostCSS `process()` call. They are now read only from `browserslist.env` and `browserslist.stats`, so the targets of a build are set in one place, the cssnano config. Pass them as `browserslist: { env, stats }` in the preset options.
+
+- feat(cssnano)!: one options object for presets, plugins and browser targets
+
+  cssnano takes `preset`, `disable`, `options` and `browserslist`, inline or in a `cssnano.config.js` module. `preset` is a function imported from `cssnano/presets/default`, `cssnano/presets/lite` or `cssnano/presets/advanced`. `disable` lists transforms to leave out, and `options` configures transforms, merged over their defaults. A transform is one optimization, and each transform is one PostCSS plugin. `browserslist` sets the browser targets for every plugin. A built preset is a list of PostCSS plugins, so other plugins are composed in the PostCSS configuration:
+
+  ```js
+  import autoprefixer from 'autoprefixer';
+  import lite from 'cssnano/presets/lite';
+
+  export default { plugins: [autoprefixer(), ...lite({ disable: ['discardComments'] })] };
+  ```
+
+  Without a preset, the default preset runs, and `disable` and `options` name its plugins. Types follow the chosen preset: `disable` and `options` accept only that preset's plugins.
+
+  Inline options replace the configuration file, which is then not read, `browserslist` included. An empty option sets nothing, so the file is still read.
+
+  Removed and unknown keys throw, and the message says where the setting moved: `plugins`, `svgo`, the browser target keys `overrideBrowserslist`, `env`, `stats` and `path` (see the preset-wide-browser-targets changeset), and a misspelled key. So does a transform name in `options` or `disable` that the chosen preset does not run, and a plugin name at the top level. A non-object passed to `cssnano()` throws. A known key with a value of the wrong type, a transform in both `disable` and `options`, or an unreadable configuration file throws, and the message names the key or the file.
+
+  The configuration file is a JavaScript module with a default export; a module with only named exports throws. JSON files are not read: a `.cssnanorc.json` in the working directory throws when cssnano looks for a configuration file (not with `configFile` or inline options), and a `configFile` ending in `.json` throws. Built-in presets with default options produce the same CSS as before this change.
+
+  | Before | After |
+  |---|---|
+  | `preset: 'lite'` | `preset: lite`, imported from `cssnano/presets/lite` |
+  | `.cssnanorc.json` with `{ "preset": "lite" }` | `cssnano.config.js` with `import lite from 'cssnano/presets/lite'; export default { preset: lite };` |
+  | `preset: ['default', { colormin: false }]` | `preset: defaultPreset, disable: ['colormin']` |
+  | `{ colormin: { exclude: true } }` | `disable: ['colormin']` |
+  | `{ colormin: true }`, `{ exclude: false }` | omit it |
+  | `['default', { discardComments: { removeAll: true } }]` | `preset: defaultPreset, options: { discardComments: { removeAll: true } }` |
+  | `overrideBrowserslist` (preset, plugin) | `browserslist: { query }` |
+  | `env`, `stats` (preset, plugin) | `browserslist: { env, stats }` |
+  | `path` | `browserslist: { path }` |
+  | `preset: lite()` | `plugins: [...lite()]` in the PostCSS configuration |
+  | `svgo: false` | omit it (throws) |
+  | `plugins: [...]` | add them to the PostCSS configuration (throws) |
+  | `disable: ['mergeLonghand']`, `disable: ['discardDuplicates']` | `disable: ['merge']` (also turns off rule merging) |
+  | `disable: ['mergeRules']` | `options: { merge: { rules: false } }` |
+
+- feat(cssnano)!: discardComments no longer has a `removeAllButFirst` option, so every comment marked as important (`/*!`) is kept unless `removeAll` or `remove` asks for it
+
+  Important comments often carry license notices, which a bundle must keep for each library it includes. A configuration that still passes `removeAllButFirst` now keeps every important comment.
+
+- feat(cssnano)!: drop browser workarounds for targets older than IE 11
+
+  Workarounds for IE 5.5 to 10, Firefox 2 and Opera 9 are removed, so output is written for IE 11 and newer. IE 11 keeps the zero-unit, `media all` and `unicode-range` workarounds, and `@media \0screen` is kept for every target.
+
+  `initial` is no longer rewritten for targets without the initial keyword, such as IE 11, which ignores a declaration that uses it. `min-width:initial` stays as written for `ie 11`.
+
+  `rgba(0,0,0,0)` becomes `transparent` for every known target. A query that matches no browser keeps `rgba()`.
+
+  Stylehacks is no longer a PostCSS plugin and is not part of the public package. postcss-merge-longhand still uses its detection functions, so it never merges hacked declarations.
+
+  A browser version that caniuse-lite does not list adds a PostCSS warning.
+
+- feat(cssnano): run the merge transforms as one `merge` transform
+
+  mergeLonghand, discardDuplicates and mergeRules are now one transform, `merge`, which runs in one PostCSS plugin, `cssnano-merge`, instead of three plugins that each walk the stylesheet. Longhand merging and duplicate removal always run together. `options: { merge: { rules: false } }` turns off rule merging, and `disable: ['merge']` turns off all three. The transforms are otherwise unchanged, apart from the fixes listed in their own entries: property names are compared by ASCII case and decoded spelling, a statement at-rule is kept apart from a block at-rule, `offset-*` properties are compared with the `inset-*` properties they alias, a hacked declaration (`_height`, `*zoom`) is kept apart from its plain property, and a stale longhand fallback is dropped once a later shorthand overrides it. Code that filters `result.messages` or `plugins` by the old plugin names must use `cssnano-merge`.
+
+- feat(cssnano)!: drop per-plugin browser target options
+
+  Browser targets are set once for every plugin, with `browserslist: { query, env, stats }`. The plugins are no longer published separately, so every plugin judges a file against the same browsers. `overrideBrowserslist`, `stats`, `env` and `path` given to one plugin, such as `options: { colormin: { overrideBrowserslist: 'ie 11' } }`, throw, because ignoring them would widen the targets.
+
+- feat(cssnano)!: resolve one set of browser targets for every plugin, defaulting to Baseline widely available
+
+  Every plugin that depends on browser support reads one resolver, so the plugins of a preset judge a file against the same browsers. Targets come from `browserslist.query`, then the project's browserslist config or `BROWSERSLIST`, and otherwise from `baseline widely available on 2026-11-30 with downstream`. Projects without a config previously got browserslist's `defaults`, and now get the Baseline targets, which allow more optimizations, such as merging alignment longhands into `place-*` shorthands. A query that matches no browser turns off every support-dependent optimization and adds a PostCSS warning.
+
+  Output may stop working in browsers that `defaults` includes but Baseline does not, such as Opera Mini, UC Browser, QQ Browser, KaiOS, Opera Mobile and Chrome 109. To keep the previous targets, add a browserslist config with `defaults`, or pass `browserslist: { query: 'defaults' }`.
+
+  The default fixes the Baseline date at the release date, so a release produces the same output whenever it runs; a later release that moves the date can change it. Feature support still comes from the installed `caniuse-lite` and `baseline-browser-mapping`, so a lockfile pins the rest.
+
+  Feature support is read from `caniuse-lite`, which replaces `caniuse-api`. A feature that needs a vendor prefix, such as unprefixed `:autofill` for chrome 8, counts as unsupported, and so does a target that caniuse-lite does not list. The browserslist config is searched from the PostCSS `from` or `file` option, or the working directory when neither is set. `browserslist.path` overrides that search directory, and `browserslist.config` names the config file to read. The browserslist options `ignoreUnknownVersions`, `mobileToDesktop` and `throwOnMissing` are forwarded, and `dangerousExtend` throws. The top-level `path` option is removed; use `browserslist.path`.
+
+  The documentation site's playground embeds the targets that the default query resolves at build time. It runs the same checks as the Node build, but ignores `browserslist.query`.
+
+- refactor(cssnano)!: a built-in preset returns one `cssnano-host` plugin
+
+  The default and lite presets no longer return one PostCSS plugin per option. Each returns one `cssnano-host` plugin that walks the stylesheet to run the value transforms, comment removal, whitespace cleanup, empty-node removal and merging. The advanced preset returns that host plugin, which also runs `discardUnused`, `mergeIdents`, `reduceIdents` and `zindex`. A preset's array therefore has fewer entries, and a host plugin is not the same object as the plugin it replaces. Option keys and their meaning are unchanged.
+
+  Code that inspects a preset's plugins by `postcssPlugin` name, or that expects `postcss-calc`, `postcss-convert-values`, `postcss-discard-empty` or `postcss-discard-unused` to be its own entry, needs to read the `cssnano-host` entry instead.
+
+  Output changes in this release:
+
+  - An existing `@charset` is dropped when its only non-ASCII text was in a rule that discardEmpty removes. The `@charset` decision now runs after that removal.
+  - With the advanced preset, a container that held only at-rules discardUnused removes, such as `@media print{@keyframes a{…}}` with `a` unused, is removed too, unless discardEmpty is disabled. An emptied named `@layer` stays, since it may fix the layer order.
+  - With the advanced preset, an existing `@charset` is dropped when its only non-ASCII text was in an at-rule that discardUnused removes.
+  - With the advanced preset, a container that held only a repeat definition mergeIdents removes is removed too, unless discardEmpty is disabled, such as an unnamed `@layer` that held `@keyframes a{…}` when another `@keyframes a{…}` survives. An emptied named `@layer` stays.
+  - With the advanced preset, an existing `@charset` is dropped when its only non-ASCII text was a name that mergeIdents removes or reduceIdents renames.
+
+### Minor Changes
+
+- feat(cssnano): merge the `outline-width`, `outline-style` and `outline-color` longhands into `outline`, and the three longhands of each logical border side into `border-block-start`, `border-block-end`, `border-inline-start` and `border-inline-end`. A logical side is merged only for targets that parse it, and not beside a physical border property, an axis shorthand, a legacy `-webkit-border-before` style spelling or `all`, which can set the same side in some writing modes. `outline` keeps its color, because the initial `outline-color` differs between specifications, and merges `outline-style: auto` only when every target parses it, because an engine without it would drop the whole shorthand.
+
+- feat(cssnano): merge the longhands of `border-block`, `border-inline`, `grid-row`, `grid-column`, `grid-area`, `list-style`, `text-emphasis` and `text-decoration` into their shorthands, where every target parses the shorthand and its components
+
+### Patch Changes
+
+- fix(cssnano): keep `anchor-size()` inset sides unshortened
+
+  `inset: anchor-size(width) 1px anchor-size(width) 1px` is no longer shortened to `inset: anchor-size(width) 1px`. The sides keep their written form, so the output is a few bytes longer with the same meaning.
+
+- fix(cssnano): an at-rule name folds ASCII case only, so `@` followed by a Kelvin sign is not `@keyframes` and is not discarded as overridden
+
+- fix(cssnano): an at-rule whose name differs from a later one only by ASCII case is treated as the same at-rule
+
+  At-rule names are ASCII case-insensitive, but the merge pass kept `@Foo` and `@foo` as two at-rules when it discarded duplicates. The earlier one is now removed, as it is for any other repeated at-rule.
+
+- fix(cssnano): drop a `background-*` longhand that repeats what the `background` shorthand before it already sets, such as `background-image:none` after `background:red`. Only a single-layer shorthand of keywords, a hex or named colour and a `url()` counts, and only when every target parses it.
+
+- fix(cssnano): a backslash that ends the last declaration of a block keeps the character it escapes. A value with a comment keeps its important comments and the space a removed comment stood for, and an escaped space before a semicolon or an `!important` flag is no longer replaced by the whitespace before the closing brace
+
+- fix(cssnano): keep border side colours that fall back for `rgba()` side colours
+
+  When each side's colour, such as `border-top-color:#000`, was followed by the same side in `rgba()`, cssnano merged the four `rgba()` sides into one `border-color` and then dropped the earlier colours, so a browser without `rgba()` lost the border colour. The earlier side colours now stay as the fallback.
+
+- fix(cssnano): postcss-calc's `mediaQueries` option leaves a container `style()` query unchanged
+
+  A `calc()` inside `@container style()` was reduced, although a style query matches the custom property as written. The other conditions of the container query are still reduced.
+
+- fix(cssnano): postcss-calc's `mediaQueries` option reduces only `@media` and `@container` preludes
+
+  With `mediaQueries` on, postcss-calc reduced the prelude of every at-rule, so a `calc()` in an `@supports` condition or an `@import` `supports()` was rewritten. A reduced `abs()` can pass a feature test that the original fails, so those conditions are now left unchanged.
+
+- fix(cssnano): keep colors that carry an escape hack such as `\9` or `\0/`
+
+  Colormin leaves a color unchanged when an escape hack, such as the IE `\9`, `\0` or `\0/`, ends or directly follows it. This includes an identifier after a color function, such as `rgb(255,0,0)\41`. Before, `red\9` became `red`, which every browser applies, and `rgb(255,0,0)\9` became `red \9`.
+
+- fix(cssnano): keep column longhands before an invalid two-term `columns` value
+
+  A `columns` value with two math widths, such as `calc(1px) calc(2px)`, or two math counts, such as `calc(2) 3`, is invalid, and browsers ignore it. cssnano treated it as valid and dropped the `column-width` and `column-count` longhands before it, so those longhands now stay. A two-term value with one math width and one math count, such as `calc(1px) 3`, is valid and still merges.
+
+- fix(cssnano): convert-values keeps a dot after a number, such as `1.`, `1.em` or `10.px`
+
+  A number followed by a dot is invalid CSS, but convert-values read it as the valid number, so `opacity:1.` became `opacity:1`, `width:1.em` became `width:1em` and `calc(10.px + 0px)` became `calc(10px + 0px)`. These values now stay as written, so a browser keeps ignoring them as it does in the source.
+
+- fix(cssnano): convert-values keeps a unit that it would drop when the next token touches the number
+
+  `0px.5px`, `0%top`, `100%%`, `50%%` and `50%e3` were shortened to `0.5px`, `0top`, `1%`, `.5%` and `.5e3`. The unitless number joined the token after it, so valid CSS changed meaning and invalid CSS became valid. Such values now stay as written.
+
+- fix(cssnano): convert-values keeps a `+` number and reads `U+` ranges only in `unicode-range`
+
+  Outside `unicode-range`, `margin: u+1.0e2` was read as `u+1` followed by `.0e2` and became `margin: u+10`. Other values now use the default tokenizer, so the value keeps its number (`u+100`). A `+` sign is now dropped only after whitespace, a comment, punctuation or a bracket, so `1px+1.0` becomes `1px+1` instead of the merged token `1px1`, and `-+1.0px` becomes `-+1px` instead of the valid length `-1px`. With `transformCustomProperties`, a custom property that contains a `U+` range is left unchanged, since `--x: u+1.0e2` reads as a range in `unicode-range` and as a number elsewhere.
+
+- feat(cssnano): discardDuplicates treats property names that differ only by ASCII case as the same property
+
+  A declaration such as `COLOR:red` after `color:red` is now removed as a duplicate. Custom properties stay case-sensitive, so `--Foo` and `--foo` are both kept.
+
+- fix(cssnano): discardDuplicates no longer removes a block that differs from a later one only in the text of an important comment
+
+  A block with an important comment such as `/*! a */` is compared by that text, so two such blocks are both kept.
+
+- fix(cssnano): discardDuplicates removes many duplicates in linear time
+
+  Each removed duplicate made PostCSS scan its parent's children, so a rule or stylesheet with many duplicates still took quadratic time. Removals are now collected and each block is rebuilt once. The output is unchanged.
+
+- fix(cssnano): selector lists that differ only in the whitespace around their commas are the same list
+
+  Duplicate discarding, and the comparison of nested rules' containers, now treat `a, b` and `a,b` as one selector list, so a duplicate declaration under either spelling is removed, as it already was when both are spelled alike. The same holds for keyframe selectors, such as `0%, 100%` and `0%,100%`. A comment with whitespace beside it counts as whitespace there, as in `a /* x */, b`. Whitespace inside a selector still counts, since it can be a combinator, and so does a comment between two of its parts, as in `a/**/.b`.
+
+- fix(cssnano): keep a statement at-rule and a block at-rule with the same prelude
+
+  discardDuplicates treated `@foo x;` and `@foo x{…}` as equal, so the earlier one was removed when a later one followed it. Those are different constructs, so both are now kept.
+
+- `discardUnused` removes a counter style that only an unused counter style extends in the same run, and keeps one that a used counter style names in `fallback` or `speak-as`, or that `counter()`, `counters()`, `target-counter()` or `target-counters()` names in `content`, `bookmark-label` or `copy-into`; it matches escaped names and predefined names in any case, and keeps every counter style when one of those declarations or `list-style` uses a substitution function such as `var()`, `env()`, or an `attr()` with a fallback or a type that yields an identifier
+
+- fix(cssnano): discardUnused matches font faces by the family name browsers use
+
+  A font face now stays when a rule names its family with different quoting, CSS escapes, spacing or ASCII case, and it goes when a used family only contains its name as a substring, such as `"Foo Bar"` for a face named `Foo`. A face with several `font-family` descriptors stays when any of them is used, and a descriptor that is not a single string or a sequence of identifiers keeps the face. A `var()` in a property other than `font`, `font-family`, `animation` or `animation-name` no longer keeps every font face and keyframes rule.
+
+- `discardUnused` keeps a `@keyframes` whose escaped or quoted name matches an animation's name
+
+- fix(cssnano): discard-unused keeps a namespace whose prefix is followed by a comment
+
+  A comment between a namespace prefix and `|` reset the prefix, so `@namespace ns url(x);ns/**/|a{}` lost its `@namespace` and the selector no longer had a declared namespace. Comments are removed before parsing, so the prefix is now kept and the output is `@namespace ns url(x);ns/**/|a{}`.
+
+- fix(cssnano): keep keyframes and font faces that a substitution function may name
+
+  `discardUnused` removed a `@keyframes` or `@font-face` whose name reached its use only through `var()`, `env()`, `attr()` or a custom function, such as `:root{--a:foo}a{animation:var(--a) 1s}`. A value holding one of these may name any keyframes or family, so they all stay now. A `@font-face` without a `font-family` is still removed.
+
+- fix(cssnano): property names are compared by their decoded spelling
+
+  `\63olor:blue` names `color`, so `.a{color:red}.b{\63olor:blue;color:red}` is no longer merged into `.a,.b{color:red}.b{\63olor:blue}`, which changed the color of `.b`. `\61 ll` is `all`, and `--\61:1;--a:1` keeps one copy, since `--\61` is `--a`. Custom properties stay case-sensitive.
+
+- Keep a rule or at-rule prelude that ends in a backslash, followed by a slash, as written. The backslash escapes the slash, so the text after it is not a comment, and a space after the backslash would make the selector valid.
+
+- fix(cssnano): whitespace normalization keeps the space that an escape takes at the end of a selector, an at-rule prelude or a value
+
+  `a\ {…}`, `@media a\ {…}`, `@keyframes fade\ {…}`, `@layer a\ ;` and `fade\ !important` were minified to text where the backslash escaped the `{`, the `;` or the `!`, which changed or broke the stylesheet.
+
+- fix(cssnano): a folded `:is()` now merges with an identical parsed `:is()`
+
+  A selector whose `:is()` came from an earlier fold did not share a prefix or suffix with a later selector that spelled the same `:is()` in its source, so the later fold was missed. The two now group together.
+
+- fix(cssnano): a comment or the space before `;` inside a value is no longer removed when its option is disabled and the longhand merge does not change the value. `a{margin:1px/*c*/ 2px}` keeps its comment with `discardComments` disabled, and `a{border-radius:.5em ;}` keeps its space with `normalizeWhitespace` disabled, as `a{color:red/*c*/}` already did
+
+- fix(cssnano): the stylesheet's leading whitespace follows its first rule when a merge removes that rule
+
+  When the `advanced` preset's rule merging emptied and removed the first rule of a stylesheet, the rule after it printed its own whitespace, and the leading whitespace was lost. The output now starts with the whitespace of the removed rule, as PostCSS prints it.
+
+- fix(cssnano): the stylesheet's leading whitespace follows its first child when that child is removed
+
+  When a removed rule, comment or charset led the stylesheet, its whitespace could be left out of the output, or the whitespace of a later removed rule could be printed. The output now starts with the whitespace of the child that remains first, as PostCSS prints it. The `advanced` preset no longer leaves leading whitespace when a merge moves the first rule.
+
+- perf(cssnano): discardDuplicates is now linear, and merge-rules checks override order in linear time per round
+
+  discardDuplicates compared each node with every earlier node of the same kind, so large inputs with many @media blocks or declarations took quadratic time. It now compares equality keys in constant time. merge-rules no longer compares every pair of declarations when it checks whether sharing would change the cascade, so rules with many repeated longhands are faster. The output is unchanged.
+
+- fix(cssnano): merge longhands that use math functions when every target parses them
+
+  With explicit browser targets, a longhand set with a math function such as `clamp()`, `min()`, `max()`, `round()`, `mod()` or `rem()` in a box property stayed unmerged, although every target parses the function. Targets such as Chrome 79, Firefox 75 and Safari 13.1 now merge the longhands for `min()`, `max()` and `clamp()`, as they already did for `calc()`. `round()`, `mod()` and `rem()` need Chrome 125, Firefox 118 and Safari 17.2, and `abs()` needs Chrome 138, Firefox 118 and Safari 15.4, so the longhands merge only for targets at or above those versions.
+
+- fix(cssnano): hoist an escaped `direction` or `unicode-bidi` declaration past a later `all`
+
+  `all` does not reset `direction` or `unicode-bidi`, but the merge pass compared the raw spelling of the property, so `a{\64irection:rtl}b{\64irection:rtl;all:initial}` kept the escaped declaration in both rules. The escaped name is now read as `direction`, so the declaration is hoisted like the unescaped one.
+
+- fix(cssnano): mergeIdents keeps definitions in different layers apart when the stylesheet has an `@import`
+
+  An imported stylesheet can declare cascade layers before the importing one, as `@import url(x.css) layer(x)` does, so the layer order is not known from the importing stylesheet alone. mergeIdents assumed the order of its `@layer` rules, so it could merge two `@keyframes` or `@counter-style` names that resolve to different definitions, or remove a repeat definition that won the cascade. In a stylesheet with an `@import`, it now merges names and removes repeat definitions only within one layer.
+
+- fix(cssnano): merge-idents reads `@layer a\  {}` as the layer `a ` that `@layer a\20 {}` names
+
+  A block whose name ends in an escaped space, such as `@layer a\  {}`, was read as the name `a�`, so it was a different layer from `@layer a\20 {}`. PostCSS keeps the escaped space in `raws.between` rather than in the layer's params, and the layer reader now reads the prelude with that space, as merge-idents already does for keyframes and counter styles.
+
+- fix(cssnano): ignore the names of a block `@layer` with a name list
+
+  A block `@layer` takes at most one name, so browsers drop `@layer x, y{…}`. mergeIdents still used it to order `x` and `y`, so a later `@layer y, x;` could be overruled and the wrong repeat `@keyframes` or `@counter-style` kept. Such a block now declares no layer.
+
+- fix(cssnano): join rules whose declarations differ only in an `important: false` flag
+
+  Rule merging treated a declaration that longhand created with `important: false` as different from the same declaration without the flag, although both print without `!important`. A rule of four radius longhands now joins a `border-radius` rule with the same value, and rule merging keeps a `margin: 0` that a later rule with the same declaration had dropped.
+
+- fix(cssnano): merge keeps a value's important comment, such as `/*! k */`, as written
+
+  A longhand is not folded, rewritten or removed when its value holds an important comment, and no shorthand is merged across it. Before, `margin:0 /*! k */ 1px` became `margin:0 1px` and `margin-top:1px /*! k */;margin-top:2px` became `margin-top:2px`, losing the comment. A plain comment in a value still goes when the value is rewritten.
+
+- fix(cssnano): the merge pass keeps an important comment beside whitespace in a selector
+
+  PostCSS keeps a selector comment that has whitespace beside it only in the raw selector, so a merge that rebuilt the selector from `rule.selectors` lost it: `c{color:red;margin:0}a /*!x*/,b{color:red;margin:0;top:0}` became `a,b,c{color:red;margin:0}a,b{top:0}`. The walk now moves such comments into the selector, and the output is `a /*!x*/,b,c{color:red;margin:0}a /*!x*/,b{top:0}`.
+
+- fix(cssnano): merge keeps a declaration whose value has an important comment, such as `/*! k */`, apart from the same value without it
+
+  Rule merging and duplicate discarding compare a declaration by its value as written when that holds an important comment, so `color:red/*! k */;` is no longer treated as `color:red`. Before, `a{color:red/*! k */;}b{color:red}` became `a,b{color:red}`, losing the comment.
+
+- feat(cssnano): merge-rules joins a rule into an earlier one when the join breaks even
+
+  A later rule that repeats a declaration of an earlier rule now gives it up and adds its selector to the earlier rule even when this saves no bytes by itself. The repeated declaration then no longer stands between the earlier rule and further rules, which can join it and shorten the output.
+
+- fix(cssnano): rules whose selectors differ by an escaped space are not merged
+
+  A selector ending in an escaped space, such as `a\ `, selects an element whose name ends in a space, which is not the element `a`. Rules with `a\ ,b` and `a\,b` as selectors were joined as if they were one selector, so `a\ ,b{color:red}c{top:0}a\,b{color:blue}` gave `a\ ,b{color:red;color:blue}c{top:0}`, which made the element `a ` blue. Now the first input is left unchanged, and the second gives `@media print{a\ ,b{color:red}a\,b{color:blue}}c{top:0}`, keeping both rules apart.
+
+- fix(cssnano): mergeRules keeps a hacked declaration apart from the same property without the hack
+
+  A declaration such as `_height:1px` or `*zoom:1` is no longer merged with `height` or `zoom` on another rule. Modern browsers ignore the hack, so the merge would apply the property to the rules it was moved to.
+
+- fix(cssnano): mergeRules no longer mistakes text that only looks like `:host` or a mixin for one
+
+  Rules whose selectors use the `:host` or `:host-context()` pseudo-class, or end in a colon as a mixin does, are still kept apart. But a `:host` that only appears inside an attribute value, such as `[title=":host"]`, no longer stops a merge, and neither does an escaped colon in a class or element name, such as `.a\:host` or `a\:`.
+
+- fix(cssnano): mergeRules joins many rules with the same selector in linear time
+
+  Each rule joined into an earlier rule with the same selector made the earlier rule rebuild its property table and rescan its children, and made PostCSS scan the stylesheet to remove the joined rule. A stylesheet alternating two selectors took quadratic time: 10,000 rules took 15.9 s and now take 0.15 s. The output is unchanged.
+
+- fix(cssnano): list a selector both rules share once in a partial merge
+
+  `.a,.b{color:red;top:0}.a,.c{color:red;left:0}` now becomes `.a,.b{top:0}.a,.b,.c{color:red}.a,.c{left:0}`, where the previous output kept both rules.
+
+- fix(cssnano): merge removes a declaration that repeats a later one after a stray semicolon
+
+  A stray `;` before a declaration is no longer read as a browser hack, so `a{zoom:1;;zoom:1}` keeps one `zoom:1`.
+
+- fix(cssnano): escape a font family name that is a lone hyphen
+
+  `font-family: "-"` became `font-family: -`. A bare hyphen tokenizes as a delim, so the family list was invalid and browsers ignored the declaration. It is now `\-`. The preset snapshot is unchanged.
+
+- fix(cssnano): minify a selector list whose duplicate items leave one selector
+
+  A selector list such as `.a,\n.a` or `.a.b, .a.b` now minifies to its one remaining selector, `.a` or `.a.b`. It stayed unchanged before.
+
+- fix(cssnano): keep the whitespace around `\9` inside a string
+
+  The IE hack's `\9` was matched in the whole value, so `content:"a \9 b"` became `content:"a\9b"`, which changes the string. Only the text outside strings is now trimmed around `\9`.
+
+- fix(cssnano): normalize-whitespace keeps the whitespace after `\9` that separates two components
+
+  The space after a `\9` escape ends the escape. Dropping it turned `1px\9 a` into `1px\9a`, which reads as the character U+009A, and dropping the whitespace after it joined two components, so `1px\9  solid` became `1px\9solid`. Both are now kept. The whitespace is still removed before a delimiter such as `,` or `!`, and at the end of the value. The preset snapshot is unchanged.
+
+- fix(cssnano): `offset-block-*` and `offset-inline-*` are compared with the `inset-*` properties they alias
+
+  `.a{inset-block-start:0}.b{offset-block-start:1px}.a{inset-block-start:2px}` is no longer merged into `.a{inset-block-start:0;inset-block-start:2px}.b{offset-block-start:1px}`, which changed the value of `inset-block-start` on an element matching both rules in browsers that spell the flow-relative insets with `offset-`.
+
+  Merges across `offset-block-*` and `offset-inline-*` and the Motion Path `offset`, `offset-path`, `offset-distance`, `offset-position`, `offset-anchor` and `offset-rotate` properties, or the `place-content`, `place-items` and `place-self` properties, are no longer blocked, since none of those sets an inset.
+
+- fix(cssnano): `cjk-ideographic` is a predefined counter style, so reduce-idents no longer renames a style with that name and discard-unused keeps the override; a counter style name folds ASCII case only, so a name spelled with a Kelvin sign is not `khmer`
+
+- fix(cssnano): reduce-transforms keeps the text after a reduced function whose argument also reduces
+
+  `transform: scale(scale(2,1), 1) translate(0)` became `scaleX(scale(2,1))translate(0)`: the inner reduction shortened the text before the outer one was applied with its original offsets, so the space after the outer function was lost. Only the outer reduction now applies, and the value becomes `scaleX(scale(2,1)) translate(0)`.
+
+- Keep a selector list that ends in an invalid escape invalid when the comment before a comma is removed, instead of turning its trailing backslash into a valid escape.
+
+- fix(cssnano): a selector list whose item ends in a backslash stays as written when a neighbouring rule merges into it
+
+  A rule such as `.a\` followed by a newline and `,.b` is invalid. When a later rule with the same declarations merged into it, cssnano rewrote it as the valid selector `.a\,.b`. It now keeps the list as written.
+
+- fix(cssnano): an item that ends in a backslash before a newline stays invalid
+
+  A selector or at-rule prelude ending in `\` before a newline is invalid. cssnano rewrote its newline as a space, which escapes the space and makes it valid, and it let a later list with the same item inherit that valid reading. The newline and the invalid reading are now kept. cssnano also no longer deduplicates or reorders a selector list that has such an item, no longer merges `@layer a\` followed by a newline with `@layer a\` followed by a space, and keeps the newline when it removes a comment after the backslash, in a selector or an at-rule prelude.
+
+- fix(cssnano): update reference data
+
+- fix(cssnano): drop a longhand's fallback once a later shorthand overrides it
+
+  When merge-longhand folds declarations into a shorthand, it keeps an earlier value only while it is still a fallback for the declaration that now sets that side. Before, `a{margin-left:1px;margin-left:var(--a);margin:2px 1px}` kept `margin-left:1px` after removing the `var()` declaration it backed up. A second run then removed it, so the output was larger than needed and running cssnano twice gave a different result. The same applies to `border-radius` and `columns`.
+
+- fix(cssnano): postcss-unique-selectors keeps the empty selector of a list with comments, so the rule stays invalid
+
+  A selector list with a comment in an item and an empty item, such as `:is(/*a*/.x,/*b*/.y), :is(.x,.y),`, lost its empty item, which made the rule valid and applied it in browsers that ignore the rule. The empty item is kept. Deduplicated selectors are joined with a bare comma, without the space that followed the comma before.
+
+- fix(cssnano): no declaration moves past a write of another property when the property data does not describe one of the two, so a vendor-prefixed property no longer lets a later or earlier declaration of a known property overtake it
+
+- fix(cssnano): an `@CHARSET` that is not written in lowercase is left as it is
+
+  Browsers read an encoding only from the exact lowercase `@charset` bytes, so any other case is an unknown at-rule. The charset normalization no longer removes it, moves it or rewrites it to lowercase, which would have turned an ignored rule into a live encoding declaration.
+
+- Keep the newline after a final backslash in a declaration value when a comment after it is removed, so the backslash no longer escapes the closing brace or semicolon.
+
+- fix: update browser compatibility information
+
+- fix(cssnano): zindex leaves a z-index value with more than one component as written
+
+  `z-index: 100 200` and `z-index: 1/*c*/00` are invalid and browsers ignore them, but zindex rewrote them to a valid number, which changed how the page renders.
+
 ## 9.9.0
 
 ### Minor Changes
