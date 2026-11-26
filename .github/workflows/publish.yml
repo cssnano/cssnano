@@ -9,8 +9,8 @@ on: workflow_dispatch
 
 jobs:
   lint:
-    name: Lint
-    runs-on: ubuntu-slim
+    name: Verify
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -82,4 +82,4 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Stage packages
-        run: pnpm stage publish -r
+        run: pnpm stage publish -r --tag next
