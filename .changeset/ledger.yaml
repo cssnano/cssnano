@@ -550,6 +550,84 @@ cssnano-utils@9.0.0:
   intents:
     - lean-utils-exports
     - quiet-hex-digits
+cssnano@10.0.0:
+  dir: packages/cssnano
+  intents:
+    - anchor-size-sides-stay-unshortened
+    - ascii-case-at-rule-names
+    - at-rule-names-fold-case
+    - background-redundant-longhands
+    - block-escape-keeps-its-character
+    - border-side-colour-fallbacks
+    - browserslist-process-options
+    - calc-container-style-query
+    - calc-media-queries-at-rules
+    - colormin-keeps-slash9-hack
+    - columns-invalid-two-term-keeps-longhands
+    - configuration-presets
+    - convert-values-invalid-decimal-unit
+    - convert-values-touching-token
+    - convert-values-unicode-plus
+    - discard-comments-keeps-every-important-comment
+    - discard-duplicates-ascii-case
+    - discard-duplicates-important-comment
+    - discard-duplicates-linear-removals
+    - discard-duplicates-selector-whitespace
+    - discard-statement-at-rules
+    - discard-unused-counter-style-chain
+    - discard-unused-font-family-matching
+    - discard-unused-keyframes-escapes
+    - discard-unused-namespace-comment
+    - discard-unused-substitution-functions
+    - drop-pre-ie11-targets
+    - escaped-property-names
+    - escaped-slash-before-comment
+    - escaped-space-before-delimiter
+    - folded-is-merges-with-parsed-is
+    - keep-comment-in-unchanged-value
+    - leading-whitespace-of-merged-away-first-rule
+    - leading-whitespace-of-removed-first-child
+    - linear-duplicate-and-override-checks
+    - math-function-longhands-merge
+    - merge-escaped-direction-hoist
+    - merge-idents-imported-layers
+    - merge-idents-layer-escaped-space
+    - merge-idents-layer-list-block
+    - merge-important-false-equal
+    - merge-keeps-important-comment-values
+    - merge-keeps-selector-comments
+    - merge-keys-important-comment-values
+    - merge-outline-and-logical-border-sides
+    - merge-pass
+    - merge-rules-break-even-joins
+    - merge-rules-escaped-space-selectors
+    - merge-rules-hack-prefixes
+    - merge-rules-host-in-strings
+    - merge-rules-linear-selector-joins
+    - merge-shared-selector-once
+    - merge-shorthand-candidates
+    - merge-stray-semicolon-hack
+    - minify-family-lone-hyphen
+    - minify-selectors-single-deduped-item
+    - normalize-whitespace-hack-in-string
+    - normalize-whitespace-hack-space
+    - offset-alias-conflicts
+    - predefined-counter-style-cjk-ideographic
+    - preset-wide-browser-targets
+    - reduce-transforms-nested-reduction
+    - selector-comment-before-comma-escape
+    - selector-item-tokens-from-list
+    - selector-trailing-backslash-invalid
+    - shaggy-worms-knock
+    - shared-browser-targets
+    - stale-slot-fallbacks
+    - unique-selectors-empty-selector
+    - unknown-property-conflicts-with-every-write
+    - uppercase-charset-untouched
+    - value-newline-after-backslash
+    - value-stages-host-plugin
+    - wise-knives-invite
+    - zindex-multiple-components
 cssnano@8.0.10:
   dir: packages/cssnano
   intents:
